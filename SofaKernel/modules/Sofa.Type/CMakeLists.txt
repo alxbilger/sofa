@@ -69,6 +69,10 @@ add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Config)
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
 
+if (SOFA_UNITY_BUILD)
+    set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+endif()
+
 sofa_add_targets_to_package(
     PACKAGE_NAME SofaFramework
     PACKAGE_VERSION ${Sofa_VERSION}

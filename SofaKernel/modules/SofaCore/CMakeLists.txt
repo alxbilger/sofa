@@ -285,6 +285,10 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-attributes)
 endif()
 
+if (SOFA_UNITY_BUILD)
+    set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+endif()
+
 sofa_add_targets_to_package(
     PACKAGE_NAME SofaFramework
     TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES

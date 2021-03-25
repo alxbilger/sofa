@@ -80,6 +80,10 @@ else()
     message("OpenGL advanced functions (e.g shaders, FBO) are disabled.")
 endif()
 
+if (SOFA_UNITY_BUILD)
+    set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+endif()
+
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}
     PACKAGE_VERSION ${Sofa_VERSION}

@@ -161,6 +161,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread" )
 endif()
 
+if (SOFA_UNITY_BUILD)
+    set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
+endif()
+
 sofa_add_targets_to_package(
     PACKAGE_NAME SofaFramework
     TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
