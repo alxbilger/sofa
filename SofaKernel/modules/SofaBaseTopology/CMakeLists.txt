@@ -104,6 +104,7 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if (SOFA_UNITY_BUILD)
+    set_property(SOURCE ${SOFABASETOPOLOGY_SRC}/TriangleSetGeometryAlgorithms.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
     set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD ON)
 endif()
 
