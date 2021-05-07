@@ -624,7 +624,7 @@ void  Base::writeDatas (std::ostream& out, const std::string& separator)
         }
         else
         {
-            if(field->isPersistent() && field->isSet())
+            if((field->isPersistent() || field->getName() == "name") && field->isSet())
             {
                 std::string val = field->getValueString();
                 if (!val.empty())
