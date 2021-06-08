@@ -96,7 +96,7 @@ void EulerImplicitSolver::solve(const core::ExecParams* params, SReal dt, sofa::
 #endif
 
 
-    const SReal& h = dt;
+    const SReal h = dt;
     const bool firstOrder = f_firstOrder.getValue();
 
     // the only difference for the trapezoidal rule is the factor tr = 0.5 for some usages of h
@@ -123,8 +123,6 @@ void EulerImplicitSolver::solve(const core::ExecParams* params, SReal dt, sofa::
     }
     else
     {
-        // new more powerful visitors
-
         // force in the current configuration
         b.eq(f,1.0/tr);                                                                         // b = f0
 
@@ -177,96 +175,99 @@ void EulerImplicitSolver::solve(const core::ExecParams* params, SReal dt, sofa::
     {
     if (firstOrder)
     {
-        const char* prevStep = "UpdateV";
-        sofa::helper::AdvancedTimer::stepBegin(prevStep);
-#define SOFATIMER_NEXTSTEP(s) { sofa::helper::AdvancedTimer::stepNext(prevStep,s); prevStep=s; }
-
-        newVel.eq(x);                       // vel = x
+        {
+            sofa::helper::ScopedAdvancedTimer timer("UpdateV");
+            newVel.eq(x);                       // vel = x
+        }
 
         if (solveConstraint)
         {
-            SOFATIMER_NEXTSTEP("CorrectV");
+            sofa::helper::ScopedAdvancedTimer timer("CorrectV");
             mop.solveConstraint(newVel,core::ConstraintParams::VEL);
         }
-        SOFATIMER_NEXTSTEP("UpdateX");
 
-        newPos.eq(pos, newVel, h);          // pos = pos + h vel
+        {
+            sofa::helper::ScopedAdvancedTimer timer("UpdateX");
+            newPos.eq(pos, newVel, h);          // pos = pos + h vel
+        }
 
         if (solveConstraint)
         {
-            SOFATIMER_NEXTSTEP("CorrectX");
+            sofa::helper::ScopedAdvancedTimer timer("CorrectX");
             mop.solveConstraint(newPos,core::ConstraintParams::POS);
         }
-#undef SOFATIMER_NEXTSTEP
-        sofa::helper::AdvancedTimer::stepEnd  (prevStep);
     }
     else
     {
-        const char* prevStep = "UpdateV";
-        sofa::helper::AdvancedTimer::stepBegin(prevStep);
-#define SOFATIMER_NEXTSTEP(s) { sofa::helper::AdvancedTimer::stepNext(prevStep,s); prevStep=s; }
-
-        // vel = vel + x
-        newVel.eq(vel, x);
+        {
+            sofa::helper::ScopedAdvancedTimer timer("UpdateV");
+            newVel.eq(vel, x); // vel = vel + x
+        }
 
         if (solveConstraint)
         {
-            SOFATIMER_NEXTSTEP("CorrectV");
+            sofa::helper::ScopedAdvancedTimer timer("CorrectV");
             mop.solveConstraint(newVel,core::ConstraintParams::VEL);
         }
-        SOFATIMER_NEXTSTEP("UpdateX");
 
-        // pos = pos + h vel
-        newPos.eq(pos, newVel, h);
+
+        {
+            sofa::helper::ScopedAdvancedTimer timer("UpdateX");
+            newPos.eq(pos, newVel, h); // pos = pos + h vel
+        }
 
         if (solveConstraint)
         {
-            SOFATIMER_NEXTSTEP("CorrectX");
+            sofa::helper::ScopedAdvancedTimer timer("CorrectX");
             mop.solveConstraint(newPos,core::ConstraintParams::POS);
         }
-#undef SOFATIMER_NEXTSTEP
-        sofa::helper::AdvancedTimer::stepEnd  (prevStep);
     }
 
     }
 #ifndef SOFA_NO_VMULTIOP
     else
     {
-        typedef core::behavior::BaseMechanicalState::VMultiOp VMultiOp;
-        VMultiOp ops;
+        core::behavior::BaseMechanicalState::VMultiOp ops;
+
+        // Create a set of linear operations that will be executed on two vectors
+        // In our case, the operations will be executed to compute the new velocity vector,
+        // and the new position vector.
+        ops.resize(2);
+
+        // Associate the new velocity vector as the result to the first set of operations
+        ops[0].first = newVel;
+
         if (firstOrder)
         {
-            ops.resize(2);
-            ops[0].first = newVel;
-            ops[0].second.push_back(std::make_pair(x.id(),1.0));
-            ops[1].first = newPos;
-            ops[1].second.push_back(std::make_pair(pos.id(),1.0));
-            ops[1].second.push_back(std::make_pair(newVel.id(),h));
+            //the first operation is: newVel = x
+            ops[0].second.emplace_back(x.id(),1.0);
         }
         else
         {
-            ops.resize(2);
-            ops[0].first = newVel;
-            ops[0].second.push_back(std::make_pair(vel.id(),1.0));
-            ops[0].second.push_back(std::make_pair(x.id(),1.0));
-            ops[1].first = newPos;
-            ops[1].second.push_back(std::make_pair(pos.id(),1.0));
-            ops[1].second.push_back(std::make_pair(newVel.id(),h));
+            //the first operation is: newVel = vel + x
+            ops[0].second.emplace_back(vel.id(),1.0);
+            ops[0].second.emplace_back(x.id(),1.0);
         }
 
-        sofa::helper::AdvancedTimer::stepBegin("UpdateVAndX");
+        // Associate the new position vector as the result to the second set of operations
+        ops[1].first = newPos;
+        // The two following operations are actually a unique operation: newPos = pos + newVel * h
+        ops[1].second.emplace_back(pos.id(),1.0);
+        ops[1].second.emplace_back(newVel.id(),h);
+
+        sofa::helper::ScopedAdvancedTimer timer("updateState");
+
+        // Execute the defined operations to compute the new velocity vector and
+        // the new position vector.
         vop.v_multiop(ops);
-        if (!solveConstraint)
+
+        if (solveConstraint)
         {
-            sofa::helper::AdvancedTimer::stepEnd("UpdateVAndX");
-        }
-        else
-        {
-            sofa::helper::AdvancedTimer::stepNext ("UpdateVAndX", "CorrectV");
+            sofa::helper::AdvancedTimer::stepBegin("CorrectV");
             mop.solveConstraint(newVel,core::ConstraintParams::VEL);
             sofa::helper::AdvancedTimer::stepNext ("CorrectV", "CorrectX");
             mop.solveConstraint(newPos,core::ConstraintParams::POS);
-            sofa::helper::AdvancedTimer::stepEnd  ("UpdateVAndX");
+            sofa::helper::AdvancedTimer::stepEnd  ("CorrectX");
         }
     }
 #endif
