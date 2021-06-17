@@ -1,17 +1,16 @@
-<!-- For more details see: https://wiki.sofa-framework.org/tdev/wiki/Notes/NewLoaderArchitecture -->
+<?xml version="1.0" ?>
+
+<!--
+    Scene showing how to use MeshOffLoader to load a mesh
+    with a .obj extension.
+-->
+
 <Node name="Root" gravity="0 -9.81 0" dt="0.02">
     <RequiredPlugin name="SofaOpenglVisual"/>
-    <RequiredPlugin pluginName='SofaLoader'/>
-    <RequiredPlugin pluginName='SofaMiscCollision'/>
+    <RequiredPlugin name="SofaLoader"/>
 
     <VisualStyle displayFlags="showVisual showBehaviorModels showForceFields showCollision showMapping" />
-    <DefaultPipeline name="DefaultCollisionPipeline" verbose="0" draw="0" depth="6" />
-    <BruteForceBroadPhase/>
-    <BVHNarrowPhase/>
-    <MinProximityIntersection name="Proximity" alarmDistance="0.3" contactDistance="0.2" />
-    <DefaultContactManager name="Response" response="default" />
-    <DefaultCollisionGroupManager name="Group" />
-    
+
     <Node name="obj file">
         <MeshObjLoader name="ObjLoader" filename="mesh/floor3.obj" />
         <MechanicalObject name="dofs" src="@ObjLoader" />

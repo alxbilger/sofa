@@ -18,14 +18,14 @@
         <EulerImplicitSolver  rayleighStiffness="0.1" rayleighMass="0.1" />
         <CGLinearSolver iterations="30" tolerance="1e-5" threshold="1e-5"/>
         <SparseGridTopology n="10 5 10" fileTopology="mesh/frog.obj" />
-        <MechanicalObject dx="-10.0" />
+        <MechanicalObject dx="-10.0" name="dofs"/>
         <UniformMass vertexMass="1.0" />
         <BoxConstraint box="-18.0 2.0 -5.0 -2.0 3.0 5.0" />
         <MeshSpringForceField name="Springs" stiffness="50000" damping="4" />
         <Node name="Visu">
-            <MeshObjLoader name="meshLoader_0" filename="mesh/frog.obj" handleSeams="1" />
+            <MeshObjLoader name="meshLoader_0" filename="mesh/frog.obj" />
             <OglModel name="Visual" src="@meshLoader_0" color="0.5 1.0 0.5 1.0" />
-            <BarycentricMapping input="@.." output="@Visual" />
+            <BarycentricMapping input="@../dofs" output="@Visual" />
         </Node>
         <Node name="TriangleSurf">
             <MeshObjLoader name="loader" filename="mesh/frog.obj" />

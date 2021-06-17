@@ -1,4 +1,10 @@
-<!-- For more details see: https://wiki.sofa-framework.org/tdev/wiki/Notes/NewLoaderArchitecture -->
+<?xml version="1.0" ?>
+
+<!--
+    Scene showing how to use MeshOffLoader to load a mesh
+    with a .stl extension.
+-->
+
 <Node>
     <RequiredPlugin name="SofaOpenglVisual"/>
     <VisualStyle displayFlags="showVisual" />
