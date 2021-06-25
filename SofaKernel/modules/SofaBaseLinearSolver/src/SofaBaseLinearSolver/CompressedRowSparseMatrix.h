@@ -661,7 +661,7 @@ public:
                 dmsg_info_when(EMIT_EXTRA_MESSAGE)
                         << "("<<rowSize()<<","<<colSize()<<"): new temp bloc ("<<i<<","<<j<<")" ;
 
-                btemp.push_back(IndexedBloc(i,j));
+                btemp.emplace_back(i,j);
                 traits::clear(btemp.back().value);
             }
             return &btemp.back().value;

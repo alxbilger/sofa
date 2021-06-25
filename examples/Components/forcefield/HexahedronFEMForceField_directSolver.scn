@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<Node name="root" dt="0.02">
+
+    <RequiredPlugin name="SofaBoundaryCondition"/>
+    <RequiredPlugin name="SofaImplicitOdeSolver"/>
+    <RequiredPlugin name="SofaSimpleFem"/>
+    <RequiredPlugin name="SofaSparseSolver"/>
+    <RequiredPlugin name="SofaEngine"/>
+
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+
+    <Node name="M1">
+        <EulerImplicitSolver name="odesolver" printLog="false"  rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver/>
+        <MechanicalObject />
+        <UniformMass vertexMass="1" />
+        <RegularGridTopology nx="8" ny="8" nz="40" xmin="-1.5" xmax="1.5" ymin="-1.5" ymax="1.5" zmin="0" zmax="19" />
+        <BoxROI box="-1.5 -1.5 0 1.5 1.5 0.0001" name="box"/>
+        <FixedConstraint indices="@box.indices" />
+        <HexahedronFEMForceField name="FEM" youngModulus="4000" poissonRatio="0.3" method="large" />
+    </Node>
+</Node>

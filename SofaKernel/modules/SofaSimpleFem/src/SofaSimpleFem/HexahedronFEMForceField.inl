@@ -26,6 +26,7 @@
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/helper/decompose.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
 
 // WARNING: indices ordering is different than in topology node
 //
@@ -1125,29 +1126,38 @@ void HexahedronFEMForceField<DataTypes>::addKToMatrix(const core::MechanicalPara
     Index node1, node2;
 
     sofa::core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate);
+    const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(mparams, this->rayleighStiffness.getValue());
+    const auto& elementStiffnesses = _elementStiffnesses.getValue();
+
+    if (auto* crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<double> * >(r.matrix))
+    {
+        crsmat->btemp.reserve(m_topology->getNbHexahedra() * 8 * 8 * 3 * 3);
+    }
 
     for(it = this->getIndexedElements()->begin(), e=0 ; it != this->getIndexedElements()->end() ; ++it,++e)
     {
-        const ElementStiffness &Ke = _elementStiffnesses.getValue()[e];
+        const ElementStiffness& Ke = elementStiffnesses[e];
+        const Transformation& Rot = getElementRotation(e);
 
-        Transformation Rot = getElementRotation(e);
-
-        Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(mparams, this->rayleighStiffness.getValue());
         // find index of node 1
         for (n1=0; n1<8; n1++)
         {
             node1 = (*it)[n1];
+            const auto nodeOffset1 = r.offset + 3 * node1;
+
             // find index of node 2
             for (n2=0; n2<8; n2++)
             {
                 node2 = (*it)[n2];
+                const auto nodeOffset2 = r.offset + 3 * node2;
 
-                Mat33 tmp = Rot.multTranspose( Mat33(Coord(Ke[3*n1+0][3*n2+0],Ke[3*n1+0][3*n2+1],Ke[3*n1+0][3*n2+2]),
+                const Mat33 tmp = Rot.multTranspose( Mat33(
+                        Coord(Ke[3*n1+0][3*n2+0],Ke[3*n1+0][3*n2+1],Ke[3*n1+0][3*n2+2]),
                         Coord(Ke[3*n1+1][3*n2+0],Ke[3*n1+1][3*n2+1],Ke[3*n1+1][3*n2+2]),
                         Coord(Ke[3*n1+2][3*n2+0],Ke[3*n1+2][3*n2+1],Ke[3*n1+2][3*n2+2])) ) * Rot;
                 for(i=0; i<3; i++)
                     for (j=0; j<3; j++)
-                        r.matrix->add(r.offset+3*node1+i, r.offset+3*node2+j, - tmp[i][j]*kFactor);
+                        r.matrix->add(nodeOffset1 + i, nodeOffset2 + j, - tmp[i][j]*kFactor);
             }
         }
     }
