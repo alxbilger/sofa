@@ -220,6 +220,7 @@ public:
 
     /// Add Mass contribution to global Matrix assembling
     void addMToMatrix(const core::MechanicalParams *mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
+    void buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices) override;
 
     SReal getElementMass(Index index) const override;
     void getElementMass(Index index, linearalgebra::BaseMatrix *m) const override;

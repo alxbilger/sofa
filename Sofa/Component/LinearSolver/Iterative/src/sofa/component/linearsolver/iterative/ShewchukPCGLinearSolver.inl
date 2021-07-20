@@ -51,6 +51,12 @@ ShewchukPCGLinearSolver<TMatrix,TVector>::ShewchukPCGLinearSolver()
     this->f_listening.setValue(true);
 }
 
+template <class TMatrix, class TVector>
+void ShewchukPCGLinearSolver<TMatrix, TVector>::checkLinearSystem()
+{
+    Inherit1::checkLinearSystem();
+}
+
 template<class TMatrix, class TVector>
 void ShewchukPCGLinearSolver<TMatrix,TVector>::init()
 {

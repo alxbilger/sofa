@@ -28,6 +28,8 @@
 #include <sofa/core/behavior/BaseForceField.h>
 #include <sofa/core/visual/DisplayFlags.h>
 
+#include <sofa/component/solidmechanics/spring/SpringForceField.h>
+
 namespace sofa::gui::component::performer
 {
 
@@ -77,7 +79,15 @@ protected:
     */
 
     MouseContactMapper  *mapper;
+    /// The following components are created to create a spring between the two following objects:
+    /// 1- the collision model
+    /// 2- the mouse
+    ///@{
     MouseForceField::SPtr m_forcefield;
+    simulation::Node::SPtr m_node;
+    typename sofa::component::statecontainer::MechanicalObject<DataTypes>::SPtr m_mstate;
+    typename sofa::component::mapping::linear::SubsetMultiMapping<DataTypes, DataTypes>::SPtr m_subsetMapping;
+    ///@}
 
     core::visual::DisplayFlags flags;
 };

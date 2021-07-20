@@ -25,6 +25,8 @@
 namespace sofa::core
 {
 
+class MappingMatrixAccumulator;
+
 /** An interface to convert a model state to an other model state.
 The model states are positions and velocities or generalizations of these (class sofa::core::BaseState).
 The source is denoted using various names: from, input, master, parent…
@@ -136,7 +138,7 @@ public:
     /// Disable the mapping to get the original coordinates of the mapped model.
     virtual void disable()=0;
 
-    /// @name New API for global matrix assembly (used in the Compliant plugin)
+    /// @name API for global matrix assembly (used in the Compliant plugin)
     /// @{
 
     /// Returns pointers to Jacobian matrices associated with parent states, consistently with getFrom(). Most mappings have only one parent, however Multimappings have several parents.
@@ -153,6 +155,9 @@ public:
     /// This matrix is associated with the parent DOFs. It is a square matrix with a size of the total number of parent DOFs.
     /// For efficiency concerns, please return a pointer to a defaulttype::EigenBaseSparseMatrix
     virtual const linearalgebra::BaseMatrix* getK() { return nullptr; }
+
+    virtual void buildGeometricStiffnessMatrix();
+    virtual void buildGeometricStiffnessMatrix(sofa::core::MappingMatrixAccumulator* matrices);
 
     /// @}
 

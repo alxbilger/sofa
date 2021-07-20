@@ -24,7 +24,7 @@
 #include <fstream>
 #include <sofa/defaulttype/MatrixExporter.h>
 
-namespace sofa::component::linearsolver
+namespace sofa::component::linearsystem
 {
 
 int GlobalSystemMatrixExporterClass = core::RegisterObject("Export the global system matrix from a linear solver.")

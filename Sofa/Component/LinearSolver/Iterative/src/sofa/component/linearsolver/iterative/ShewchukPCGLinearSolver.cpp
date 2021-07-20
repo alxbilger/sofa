@@ -21,13 +21,18 @@
 ******************************************************************************/
 #define SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_SHEWCHUKPCGLINEARSOLVER_CPP
 #include <sofa/component/linearsolver/iterative/ShewchukPCGLinearSolver.inl>
-#include <sofa/component/linearsolver/iterative/MatrixLinearSolver.h>
+#include <sofa/component/linearsolver/iterative/MatrixLinearSolver.inl>
 #include <sofa/core/ObjectFactory.h>
-
-#include <sofa/helper/ScopedAdvancedTimer.h>
+#include <sofa/component/linearsystem/MatrixFreeSystem.h>
 
 namespace sofa::component::linearsolver::iterative
 {
+
+template<> SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_API
+inline void ShewchukPCGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::checkLinearSystem()
+{
+    this->doCheckLinearSystem<linearsystem::MatrixFreeSystem<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector> >();
+}
 
 int ShewchukPCGLinearSolverClass = core::RegisterObject("Linear system solver using the conjugate gradient iterative algorithm")
     .add< ShewchukPCGLinearSolver<GraphScatteredMatrix,GraphScatteredVector> >(true)

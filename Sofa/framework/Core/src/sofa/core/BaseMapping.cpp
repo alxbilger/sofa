@@ -22,6 +22,9 @@
 #include <sofa/core/BaseMapping.h>
 #include <sofa/core/objectmodel/BaseNode.h>
 #include <sofa/core/BaseState.h>
+#include <sofa/core/BaseLocalMappingMatrix.h>
+#include <sofa/linearalgebra/BaseMatrix.h>
+#include <sofa/core/BaseMatrixAccumulatorComponent.h>
 
 namespace sofa::core
 {
@@ -134,6 +137,44 @@ sofa::linearalgebra::BaseMatrix* BaseMapping::createMappedMatrix(const behavior:
 {
     dmsg_error() << "Calling a virtual method not implemented." ;
     return nullptr;
+}
+
+void BaseMapping::buildGeometricStiffnessMatrix()
+{
+    const auto& slaves = getSlaves();
+
+    ListMappingMatrixAccumulator matrices;
+
+    for (const auto& slave : slaves )
+    {
+        using type = get_base_object_strong_type<matrixaccumulator::Contribution::GEOMETRIC_STIFFNESS>;
+        if (auto matrix = sofa::core::objectmodel::SPtr_dynamic_cast<type>(slave))
+        {
+            matrices.push_back(matrix.get());
+        }
+    }
+
+    if (!matrices.empty())
+    {
+        matrices.clear();
+        buildGeometricStiffnessMatrix(&matrices);
+    }
+}
+
+void BaseMapping::buildGeometricStiffnessMatrix(sofa::core::MappingMatrixAccumulator* matrices)
+{
+    const sofa::linearalgebra::BaseMatrix* mappingK = this->getK();
+
+    if (mappingK)
+    {
+        for (sofa::linearalgebra::BaseMatrix::Index i = 0; i < mappingK->rowSize(); ++i)
+        {
+            for (sofa::linearalgebra::BaseMatrix::Index j = 0; j < mappingK->colSize(); ++j)
+            {
+                matrices->add(i, j, mappingK->element(i, j));
+            }
+        }
+    }
 }
 
 bool BaseMapping::testMechanicalState(BaseState* state)

@@ -60,6 +60,8 @@ protected:
     int timeStepCount{0};
     bool equilibriumReached{false};
 
+    void checkLinearSystem() override;
+
 public:
     void init() override;
     void reinit() override {};
@@ -93,6 +95,9 @@ public:
     SOFA_ATTRIBUTE_DISABLED__CGLINEARSOLVER_DATANAME("To fix your code, use d_graph")
     DeprecatedAndRemoved f_graph;
 };
+
+template<>
+inline void CGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::checkLinearSystem();
 
 template<>
 inline void CGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::cgstep_beta(const core::ExecParams* /*params*/, Vector& p, Vector& r, Real beta);

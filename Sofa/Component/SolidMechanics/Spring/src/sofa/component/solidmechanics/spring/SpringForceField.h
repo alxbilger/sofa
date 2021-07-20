@@ -32,6 +32,14 @@
 
 #include <sofa/core/topology/TopologySubsetIndices.h>
 
+#include <sofa/core/behavior/BaseMechanicalState.h>
+#include <sofa/component/statecontainer/MechanicalObject.h>
+
+#include <sofa/component/mapping/linear/SubsetMultiMapping.h>
+#include <sofa/component/topology/container/dynamic/PointSetTopologyContainer.h>
+#include <sofa/simulation/Node.h>
+#include <sofa/simulation/graph/DAGNode.h>
+
 namespace sofa::component::solidmechanics::spring
 {
 
@@ -187,6 +195,88 @@ public:
     /// stream to export Potential Energy to gnuplot files
     std::ofstream* m_gnuplotFileEnergy;
 };
+
+/**
+ * Utilitary function to create a series of springs between nodes of two objects. A Node is created in the provided
+ * context. In this Node, 3 components are inserted: 1) a new mechanical state which will be the fusion of the provided
+ * objects, 2) a SubsetMultiMapping that will make the link between the two provided objects and the new mechanical state,
+ * and 3) the spring force field.
+ * @tparam SpringForceFieldType Type of force field that will be created. SpringForceField or a derived class is expected. The
+ * data types are deduced from SpringForceFieldType.
+ * @param context The context where all the components will be inserted
+ * @param mstate1 The mechanical state of the first object
+ * @param mstate2 The mechanical state of the second object
+ * @param springsRelativeToBothObjects A list of springs where the indices refer to nodes in mstate1 and mstate2
+ * @return A tuple containing the created Node and the 3 created components, which are inserted into the created Node
+ */
+template<class SpringForceFieldType>
+std::tuple<
+    simulation::Node::SPtr,
+    typename sofa::component::statecontainer::MechanicalObject<typename SpringForceFieldType::DataTypes>::SPtr,
+    typename mapping::linear::SubsetMultiMapping<typename SpringForceFieldType::DataTypes, typename SpringForceFieldType::DataTypes>::SPtr,
+    typename SpringForceFieldType::SPtr>
+CreateSpringBetweenObjects(
+    sofa::core::objectmodel::BaseContext* context,
+    core::behavior::BaseMechanicalState* mstate1,
+    core::behavior::BaseMechanicalState* mstate2,
+    const sofa::type::vector<LinearSpring<typename SpringForceFieldType::Real> >& springsRelativeToBothObjects)
+{
+    using DataTypes = typename SpringForceFieldType::DataTypes;
+    typename SpringForceFieldType::SPtr createdObject = sofa::core::objectmodel::New<SpringForceFieldType>();
+
+    if (context)
+    {
+        if (auto* node = dynamic_cast<simulation::graph::DAGNode*>(context))
+        {
+            const std::string mergeName = "merge_" + mstate1->getName() + "-" + mstate2->getName();
+            const auto createdNode = node->createChild(mergeName);
+
+            auto mstate = core::objectmodel::New<sofa::component::statecontainer::MechanicalObject<DataTypes> >();
+            mstate->setName(mergeName);
+            createdNode->addObject(mstate);
+
+            auto topology = core::objectmodel::New<sofa::component::topology::container::dynamic::PointSetTopologyContainer>();
+            topology->setName("topology");
+            createdNode->addObject(topology);
+
+            auto mapping = core::objectmodel::New<mapping::linear::SubsetMultiMapping<DataTypes, DataTypes> >();
+            mapping->setName("multiMapping");
+            createdNode->addObject(mapping);
+
+            mapping->addInputModel(mstate1);
+            mapping->addInputModel(mstate2);
+            mapping->addOutputModel(mstate.get());
+
+            createdNode->addObject(createdObject);
+
+            auto springs = sofa::helper::getWriteAccessor(createdObject->springs);
+            springs.clear();
+
+            auto indexPairs = sofa::helper::getWriteAccessor(mapping->indexPairs);
+
+            sofa::Index mstateIndex {};
+            for (const auto& spring : springsRelativeToBothObjects)
+            {
+                auto springRelativeToNewMstate = spring;
+
+                indexPairs->push_back(0);
+                indexPairs->push_back(spring.m1);
+                springRelativeToNewMstate.m1 = mstateIndex++;
+
+                indexPairs->push_back(1);
+                indexPairs->push_back(spring.m2);
+                springRelativeToNewMstate.m2 = mstateIndex++;
+
+                springs.push_back(springRelativeToNewMstate);
+            }
+
+            return {createdNode, mstate, mapping, createdObject};
+        }
+
+        dmsg_error("SpringForceField")<< "CreateSpringBetweenObjects cannot work on Node type different from DAGNode";
+    }
+    return {nullptr, nullptr, nullptr, nullptr};
+}
 
 #if  !defined(SOFA_COMPONENT_FORCEFIELD_SPRINGFORCEFIELD_CPP)
 extern template class SOFA_COMPONENT_SOLIDMECHANICS_SPRING_API LinearSpring<double>;
