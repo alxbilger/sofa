@@ -27,10 +27,21 @@
 #include <sofa/linearalgebra/BlocFullMatrix.inl>
 #include <sofa/linearalgebra/BlockVector.inl>
 #include <sofa/component/linearsolver/iterative/MatrixLinearSolver.inl>
+#include <sofa/component/linearsystem/MatrixLinearSystem.inl>
+#include <sofa/component/linearsystem/IndirectAssemblingMatrixSystem.inl>
+#include <sofa/component/linearsystem/AssemblingMatrixSystem.inl>
+#include <sofa/linearalgebra/FullVector.h>
+
+namespace sofa::component::linearsystem
+{
+    template class SOFA_COMPONENT_LINEARSOLVER_DIRECT_API MatrixLinearSystem< linearalgebra::BTDMatrix<6, SReal>, linearalgebra::BlockVector<6, SReal> >;
+    template class SOFA_COMPONENT_LINEARSOLVER_DIRECT_API IndirectAssemblingMatrixSystem< linearalgebra::BTDMatrix<6, SReal>, linearalgebra::BlockVector<6, SReal> >;
+    template class SOFA_COMPONENT_LINEARSOLVER_DIRECT_API AssemblingMatrixSystem<linearalgebra::BTDMatrix<6, SReal>, linearalgebra::BlockVector<6, SReal> >;
+
+} // namespace sofa::component::linearsystem
 
 namespace sofa::component::linearsolver::direct
 {
-
 int BTDLinearSolverClass = core::RegisterObject("Linear system solver using Thomas Algorithm for Block Tridiagonal matrices")
     .add< BTDLinearSolver<linearalgebra::BTDMatrix<6, SReal>, linearalgebra::BlockVector<6, SReal> > >(true)
 ;

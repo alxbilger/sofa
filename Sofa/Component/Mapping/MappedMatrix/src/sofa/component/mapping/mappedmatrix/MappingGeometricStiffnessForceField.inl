@@ -78,4 +78,18 @@ void MappingGeometricStiffnessForceField<DataTypes>::addKToMatrix(const sofa::co
     }
 }
 
+template <class DataTypes>
+void MappingGeometricStiffnessForceField<DataTypes>::buildStiffnessMatrix(
+    sofa::core::behavior::StiffnessMatrixAccumulator* matrices)
+{
+    const sofa::linearalgebra::BaseMatrix* mappingK = l_mapping->getK();
+
+    for (sofa::linearalgebra::BaseMatrix::Index i = 0; i < mappingK->rowSize(); ++i)
+    {
+        for (sofa::linearalgebra::BaseMatrix::Index j = 0; j < mappingK->colSize(); ++j)
+        {
+            matrices->add(i, j, mappingK->element(i, j));
+        }
+    }
+}
 } // namespace sofa::component::mapping::mappedmatrix

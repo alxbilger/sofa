@@ -27,6 +27,7 @@
 #include <sofa/core/MultiVecId.h>
 
 namespace sofa::core::behavior { class MultiMatrixAccessor; }
+namespace sofa::core::behavior { class MassMatrixAccumulator; }
 
 namespace sofa::core::behavior
 {
@@ -91,6 +92,9 @@ public:
     /// \param matrix matrix to add the result to
     /// \param mparams \a mparams->mFactor() is the coefficient for mass contributions (i.e. second-order derivatives term in the ODE)
     virtual void addMToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) = 0;
+
+    virtual void buildMassMatrix();
+    virtual void buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices);
 
     /// @}
 

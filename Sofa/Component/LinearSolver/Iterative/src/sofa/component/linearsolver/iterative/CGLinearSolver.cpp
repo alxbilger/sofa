@@ -22,6 +22,8 @@
 #define SOFA_COMPONENT_LINEARSOLVER_CGLINEARSOLVER_CPP
 #include <sofa/component/linearsolver/iterative/CGLinearSolver.inl>
 
+#include <sofa/component/linearsolver/iterative/MatrixLinearSolver.inl>
+#include <sofa/component/linearsolver/iterative/MatrixFreeSystem[GraphScattered].h>
 #include <sofa/linearalgebra/FullMatrix.h>
 #include <sofa/linearalgebra/SparseMatrix.h>
 #include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
@@ -36,6 +38,12 @@ namespace sofa::component::linearsolver::iterative
 using namespace sofa::type;
 using namespace sofa::defaulttype;
 using sofa::core::MultiVecDerivId;
+
+template<> SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_API
+inline void CGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::checkLinearSystem()
+{
+    doCheckLinearSystem<linearsystem::MatrixFreeSystem<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector> >();
+}
 
 template<> SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_API
 inline void CGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::cgstep_beta(const core::ExecParams* /*params*/, Vector& p, Vector& r, Real beta)

@@ -23,6 +23,9 @@ set(HEADER_FILES
     ${SOFAMATRIX_SRC_DIR}/config.h.in
     ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixExporter.h
     ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixExporter.h
+    ${SOFAMATRIX_SRC_DIR}/LocalComponentMatrixExporter.h
+    ${SOFAMATRIX_SRC_DIR}/LocalForceFieldMatrixExporter.h
+    ${SOFAMATRIX_SRC_DIR}/LocalMassMatrixExporter.h
     ${SOFAMATRIX_SRC_DIR}/MatrixImageExporter.h
     ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.h
     ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.inl
@@ -31,6 +34,8 @@ set(SOURCE_FILES
     ${SOFAMATRIX_SRC_DIR}/initSofaMatrix.cpp
     ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixExporter.cpp
     ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixExporter.cpp
+    ${SOFAMATRIX_SRC_DIR}/LocalForceFieldMatrixExporter.cpp
+    ${SOFAMATRIX_SRC_DIR}/LocalMassMatrixExporter.cpp
     ${SOFAMATRIX_SRC_DIR}/MatrixImageExporter.cpp
     ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.cpp
 )
@@ -49,11 +54,18 @@ else()
         ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixImage.h
         ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixImage.h
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageProxy.h
+        ${SOFAMATRIX_SRC_DIR}/LocalComponentMatrixImage.h
+        ${SOFAMATRIX_SRC_DIR}/LocalForceFieldMatrixImage.h
+        ${SOFAMATRIX_SRC_DIR}/LocalMappingMatrixImage.h
+        ${SOFAMATRIX_SRC_DIR}/LocalMassMatrixImage.h
     )
     list(APPEND SOURCE_FILES
         ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixImage.cpp
         ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixImage.cpp
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageViewerWidget.cpp
+        ${SOFAMATRIX_SRC_DIR}/LocalMappingMatrixImage.cpp
+        ${SOFAMATRIX_SRC_DIR}/LocalForceFieldMatrixImage.cpp
+        ${SOFAMATRIX_SRC_DIR}/LocalMassMatrixImage.cpp
     )
     list(APPEND MOC_HEADER_FILES
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageViewerWidget.h

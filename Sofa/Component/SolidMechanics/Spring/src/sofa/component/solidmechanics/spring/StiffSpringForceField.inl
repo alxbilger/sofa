@@ -28,6 +28,8 @@
 
 #include <sofa/core/visual/VisualParams.h>
 
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+
 namespace sofa::component::solidmechanics::spring
 {
 
@@ -321,4 +323,37 @@ void StiffSpringForceField<DataTypes>::addKToMatrix(const core::MechanicalParams
 
 }
 
+template <class DataTypes>
+void StiffSpringForceField<DataTypes>::buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrixAccumulator* matrices)
+{
+    if (this->mstate1 == this->mstate2)
+    {
+        const sofa::type::vector<Spring >& ss = this->springs.getValue();
+        const auto n = std::min(ss.size(), this->dfdx.size());
+        for (std::size_t e = 0; e < n; ++e)
+        {
+            const Spring& s = ss[e];
+            const Mat& m = this->dfdx[e];
+
+            const auto p1 = Deriv::total_size * s.m1;
+            const auto p2 = Deriv::total_size * s.m2;
+
+            for(sofa::Index i = 0; i < N; ++i)
+            {
+                for (sofa::Index j = 0; j < N; ++j)
+                {
+                    const auto k = m[i][j];
+                    matrices->add(p1+i, p1+j, -k);
+                    matrices->add(p1+i, p2+j,  k);
+                    matrices->add(p2+i, p1+j,  k);
+                    matrices->add(p2+i, p2+j, -k);
+                }
+            }
+        }
+    }
+    else
+    {
+        Inherit1::buildStiffnessMatrix(matrices);
+    }
+}
 } // namespace sofa::component::solidmechanics::spring

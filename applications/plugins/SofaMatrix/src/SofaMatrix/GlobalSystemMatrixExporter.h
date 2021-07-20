@@ -25,7 +25,7 @@
 #include <sofa/core/behavior/LinearSolver.h>
 #include <sofa/helper/OptionsGroup.h>
 
-namespace sofa::component::linearsolver
+namespace sofa::component::linearsystem
 {
 
 /**

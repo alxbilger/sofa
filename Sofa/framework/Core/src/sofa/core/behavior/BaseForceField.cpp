@@ -21,6 +21,9 @@
 ******************************************************************************/
 #include <sofa/core/behavior/BaseForceField.h>
 #include <sofa/core/objectmodel/BaseNode.h>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <sofa/core/MechanicalParams.h>
+#include <sofa/core/behavior/MatrixAPICompatibility.h>
 
 namespace sofa::core::behavior
 {
@@ -48,6 +51,55 @@ void BaseForceField::addMBKToMatrix(const MechanicalParams* mparams, const sofa:
         addKToMatrix(mparams, matrix);
     if (sofa::core::mechanicalparams::bFactor(mparams) != 0.0)
         addBToMatrix(mparams, matrix);
+}
+
+void core::behavior::BaseForceField::buildStiffnessMatrix()
+{
+    const auto& slaves = getSlaves();
+
+    ListStiffnessMatrixAccumulator matrices;
+
+    for (const auto& slave : slaves )
+    {
+        if (auto matrix = sofa::core::objectmodel::SPtr_dynamic_cast<matrixaccumulator::BaseForceFieldMatrixAccumulator>(slave))
+        {
+            matrices.push_back(matrix.get());
+        }
+    }
+
+    if (!matrices.empty())
+    {
+        matrices.clear();
+        buildStiffnessMatrix(&matrices);
+    }
+}
+
+void BaseForceField::buildStiffnessMatrix(StiffnessMatrixAccumulator* matrices)
+{
+    static std::set<BaseForceField*> hasEmittedWarning;
+    if (hasEmittedWarning.insert(this).second)
+    {
+        dmsg_warning() << "buildStiffnessMatrix not implemented: for compatibility reason, the "
+            "deprecated API (addKToMatrix) will be used. This compatibility will disapear in the "
+            "future, and will cause issues in simulations. Please update the code of " <<
+            this->getClassName() << " to ensure right behavior: the function addKToMatrix "
+            "has been replaced by buildStiffnessMatrix";
+    }
+
+    MatrixAccessorCompat accessor;
+    accessor.setDoPrintInfo(true);
+
+    AddToMatrixCompatMatrix<BaseForceField> mat;
+    mat.component = this;
+    mat.matrices = matrices;
+
+    accessor.setGlobalMatrix(&mat);
+
+    MechanicalParams params;
+    params.setKFactor(1.);
+    params.setMFactor(1.);
+
+    addKToMatrix(&params, &accessor);
 }
 
 bool BaseForceField::insertInNode( objectmodel::BaseNode* node )

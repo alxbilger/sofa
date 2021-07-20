@@ -27,6 +27,7 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/type/RGBAColor.h>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 #include <string_view>
 #include <type_traits>
@@ -482,6 +483,36 @@ void RestShapeSpringsForceField<DataTypes>::addKToMatrix(const MechanicalParams*
             for (int i = 3; i < 6; i++)
             {
                 mat->add(offset + N * curIndex + i, offset + N * curIndex + i, vr);
+            }
+        }
+    }
+}
+
+template<class DataTypes>
+void RestShapeSpringsForceField<DataTypes>::buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrixAccumulator* matrices)
+{
+    const VecReal& k = d_stiffness.getValue();
+    constexpr sofa::Size N = Coord::total_size;
+
+    if (k.size() != m_indices.size())
+    {
+        const Real k0 = -k[0];
+
+        for (const auto index : m_indices)
+        {
+            for(sofa::Index i = 0; i < N; i++)
+            {
+                matrices->add(N * index + i, N * index + i, k0);
+            }
+        }
+    }
+    else
+    {
+        for (const auto index : m_indices)
+        {
+            for(sofa::Index i = 0; i < N; i++)
+            {
+                matrices->add(N * index + i, N * index + i, - k[index]);
             }
         }
     }

@@ -21,6 +21,9 @@
 ******************************************************************************/
 #include <sofa/core/behavior/BaseMass.h>
 #include <sofa/core/objectmodel/BaseNode.h>
+#include <sofa/core/behavior/BaseLocalMassMatrix.h>
+#include <sofa/core/MechanicalParams.h>
+#include <sofa/core/behavior/MatrixAPICompatibility.h>
 
 namespace sofa::core::behavior
 {
@@ -45,6 +48,54 @@ bool BaseMass::removeInNode( objectmodel::BaseNode* node )
     return true;
 }
 
+void BaseMass::buildMassMatrix()
+{
+    const auto& slaves = getSlaves();
 
-} // namespace sofa::core::behavior
+    ListMassMatrixAccumulator matrices;
 
+    for (const auto& slave : slaves )
+    {
+        if (auto matrix = sofa::core::objectmodel::SPtr_dynamic_cast<matrixaccumulator::BaseMassMatrixAccumulator>(slave))
+        {
+            matrices.push_back(matrix.get());
+        }
+    }
+
+    if (!matrices.empty())
+    {
+        matrices.clear();
+        buildMassMatrix(&matrices);
+    }
+}
+
+void BaseMass::buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices)
+{
+    static std::set<BaseMass*> hasEmittedWarning;
+    if (hasEmittedWarning.insert(this).second)
+    {
+        dmsg_warning() << "buildMassMatrix not implemented: for compatibility reason, the "
+            "deprecated API (addMToMatrix) will be used. This compatibility will disapear in the "
+            "future, and will cause issues in simulations. Please update the code of " <<
+            this->getClassName() << " to ensure right behavior: the function addKToMatrix "
+            "has been replaced by buildMassMatrix";
+    }
+
+    MatrixAccessorCompat accessor;
+    accessor.setDoPrintInfo(true);
+
+    AddToMatrixCompatMatrix<BaseMass> mat;
+    mat.component = this;
+    mat.matrices = matrices;
+
+    accessor.setGlobalMatrix(&mat);
+
+    MechanicalParams params;
+    params.setKFactor(1.);
+    params.setMFactor(1.);
+
+    addMToMatrix(&params, &accessor);
+}
+
+
+} //  namespace sofa::core::behavior

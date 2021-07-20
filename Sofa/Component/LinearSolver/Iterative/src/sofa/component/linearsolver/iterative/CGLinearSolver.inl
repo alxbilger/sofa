@@ -68,6 +68,12 @@ void CGLinearSolver<TMatrix,TVector>::init()
     equilibriumReached = false;
 }
 
+template<class TMatrix, class TVector>
+void CGLinearSolver<TMatrix,TVector>::checkLinearSystem()
+{
+    Inherit1::checkLinearSystem();
+}
+
 /// Clear graph and clean the RHS / LHS vectors
 template<class TMatrix, class TVector>
 void CGLinearSolver<TMatrix,TVector>::resetSystem()

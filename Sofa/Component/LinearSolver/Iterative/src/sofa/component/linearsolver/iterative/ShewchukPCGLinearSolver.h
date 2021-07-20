@@ -65,6 +65,9 @@ public:
 
 protected:
     ShewchukPCGLinearSolver();
+
+    void checkLinearSystem() override;
+
 public:
     void solve (Matrix& M, Vector& x, Vector& b) override;
     void init() override;
@@ -100,6 +103,9 @@ inline void ShewchukPCGLinearSolver<TMatrix,TVector>::cgstep_alpha(Vector& x,Vec
 {
     x.peq(p,alpha);                 // x = x + alpha p
 }
+
+template<>
+inline void ShewchukPCGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::checkLinearSystem();
 
 template<>
 inline void ShewchukPCGLinearSolver<component::linearsolver::GraphScatteredMatrix,component::linearsolver::GraphScatteredVector>::cgstep_beta(Vector& p, Vector& r, double beta);

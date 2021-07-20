@@ -91,6 +91,8 @@ public:
     void addDForce(const core::MechanicalParams* mparams, DataVecDeriv& data_df1, DataVecDeriv& data_df2, const DataVecDeriv& data_dx1, const DataVecDeriv& data_dx2) override;
     using Inherit::addKToMatrix;
     void addKToMatrix(const sofa::core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
+    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrixAccumulator* matrices) override;
+
 
 protected:
 
