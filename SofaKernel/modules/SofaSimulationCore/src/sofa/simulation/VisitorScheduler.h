@@ -55,8 +55,8 @@ protected:
     void doExecuteVisitor(simulation::Node* node, Visitor* act);
 	
 private:
-	VisitorScheduler(const VisitorScheduler& n) ;
-	VisitorScheduler& operator=(const VisitorScheduler& n) ;
+	VisitorScheduler(const VisitorScheduler& n) = delete ;
+	VisitorScheduler& operator=(const VisitorScheduler& n) = delete ;
 	
 	
 };
