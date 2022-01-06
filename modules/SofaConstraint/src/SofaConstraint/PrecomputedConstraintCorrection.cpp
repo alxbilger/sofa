@@ -39,7 +39,7 @@ SOFA_SOFACONSTRAINT_API void PrecomputedConstraintCorrection< defaulttype::Rigid
 
     // On fait tourner les normales (en les ramenant dans le "pseudo" repere initial)
 
-    MatrixDerivRowIterator rowItEnd = c.end();
+    const MatrixDerivRowIterator rowItEnd = c.end();
 
     for (MatrixDerivRowIterator rowIt = c.begin(); rowIt != rowItEnd; ++rowIt)
     {

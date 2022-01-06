@@ -64,7 +64,7 @@ void LinearSolverConstraintCorrection<DataTypes>::init()
 {
     Inherit::init();
 
-    sofa::core::objectmodel::BaseContext* c = this->getContext();
+    const sofa::core::objectmodel::BaseContext* c = this->getContext();
 
     odesolver = c->get<sofa::core::behavior::OdeSolver>() ;
 
@@ -514,8 +514,8 @@ void LinearSolverConstraintCorrection<DataTypes>::resetForUnbuiltResolution(doub
     }
 
     /////////////// SET INFO FOR LINEAR SOLVER /////////////
-    core::VecDerivId forceID(core::VecDerivId::V_FIRST_DYNAMIC_INDEX);
-    core::VecDerivId dxID = core::VecDerivId::dx();
+    const core::VecDerivId forceID(core::VecDerivId::V_FIRST_DYNAMIC_INDEX);
+    const core::VecDerivId dxID = core::VecDerivId::dx();
 
     linearsolvers[0]->setSystemRHVector(forceID);
     linearsolvers[0]->setSystemLHVector(dxID);
@@ -634,10 +634,8 @@ void LinearSolverConstraintCorrection<DataTypes>::setConstraintDForce(double *df
     }
 
     // course on indices of the dofs involved invoved in the bloc //
-    auto it_dof(Vec_I_list_dof[last_force].cbegin()), it_end(Vec_I_list_dof[last_force].cend());
-    for(; it_dof!=it_end; ++it_dof)
+    for (const auto dof : Vec_I_list_dof[last_force])
     {
-        auto dof =(*it_dof) ;
         for (Size j=0; j<derivDim; j++)
             systemRHVector_buf->set(dof * derivDim + j, constraint_force[dof][j]);
     }
@@ -673,9 +671,6 @@ void LinearSolverConstraintCorrection<DataTypes>::getBlockDiagonalCompliance(lin
         {
             MatrixDerivColConstIterator colItEnd = rowIt.end();
 
-            unsigned int dof_buf = 0;
-            int debug = 0;
-
             for (MatrixDerivColConstIterator colIt = rowIt.begin(); colIt != colItEnd; ++colIt)
             {
                 const unsigned int dof = colIt.index();
@@ -683,15 +678,6 @@ void LinearSolverConstraintCorrection<DataTypes>::getBlockDiagonalCompliance(lin
 
                 for (unsigned int r = 0; r < N; ++r)
                     J.add(i, dof * N + r, n[r]);
-
-                if (debug!=0)
-                {
-                    int test = dof_buf - dof;
-                    if (test>2 || test< -2)
-                        dmsg_info() << "For constraint id1 dof1 = " << dof_buf << " dof2 = " << dof;
-                }
-
-                dof_buf = dof;
             }
         }
     }

@@ -105,7 +105,7 @@ struct ConstraintActivation { bool acc, vel, pos; };
 template<class DataTypes>
 std::string PrecomputedConstraintCorrection<DataTypes>::buildFileName()
 {
-    double dt = this->getContext()->getDt();
+    const double dt = this->getContext()->getDt();
     const std::string name = this->getContext()->getName();
 
     std::stringstream ss;
@@ -179,7 +179,7 @@ void PrecomputedConstraintCorrection<DataTypes>::saveCompliance(const std::strin
     msg_info() << "saveCompliance in " << fileName;
 
     std::string filePathInSofaShare;
-    std::string dir = fileDir.getValue();
+    const std::string dir = fileDir.getValue();
     if (!dir.empty())
         filePathInSofaShare = dir + "/" + fileName;
     else
@@ -212,7 +212,7 @@ void PrecomputedConstraintCorrection<DataTypes>::bwdInit()
     nbRows = nbNodes * dof_on_node;
     nbCols = nbNodes * dof_on_node;
 
-    double dt = this->getContext()->getDt();
+    const double dt = this->getContext()->getDt();
 
     invName = f_fileCompliance.getFullPath().empty() ? buildFileName() : f_fileCompliance.getFullPath();
 
@@ -425,7 +425,7 @@ void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpac
 
     /////////// Which node are involved with the contact ? /////
 
-    unsigned int noSparseComplianceSize = _indexNodeSparseCompliance.size();
+    const unsigned int noSparseComplianceSize = _indexNodeSparseCompliance.size();
 
     for (unsigned int i = 0; i < noSparseComplianceSize; ++i)
     {
@@ -443,7 +443,7 @@ void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpac
 
         for (MatrixDerivColConstIterator colIt = rowIt.begin(); colIt != colItEnd; ++colIt)
         {
-            unsigned int dof = colIt.index();
+            const unsigned int dof = colIt.index();
             m_activeDofs.push_back(dof);
 
             if (_indexNodeSparseCompliance[dof] != 0)
@@ -504,7 +504,7 @@ void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpac
 
     for (MatrixDerivRowConstIterator rowIt = c.begin(); rowIt != rowItEnd; ++rowIt)
     {
-        int indexCurRowConst = rowIt.index();
+        const int indexCurRowConst = rowIt.index();
 
         MatrixDerivColConstIterator colItEnd = rowIt.end();
 
@@ -512,14 +512,14 @@ void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpac
         {
             const Deriv n1 = colIt.val();
 
-            unsigned int temp = (unsigned int) _indexNodeSparseCompliance[colIt.index()];
+            const unsigned int temp = (unsigned int) _indexNodeSparseCompliance[colIt.index()];
 
             unsigned int curColConst = curConstraint;
 
             for (MatrixDerivRowConstIterator rowIt2 = rowIt; rowIt2 != rowItEnd; ++rowIt2)
             {
-                int indexCurColConst = rowIt2.index();
-                double w = _sparseCompliance[temp + curColConst] * n1 * factor;
+                const int indexCurColConst = rowIt2.index();
+                const double w = _sparseCompliance[temp + curColConst] * n1 * factor;
 
                 W->add(indexCurRowConst, indexCurColConst, w);
 
@@ -683,7 +683,7 @@ void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const lineara
     const VecCoord& x_free = this->mstate->read(core::ConstVecCoordId::freePosition())->getValue();
     const MatrixDeriv& c = this->mstate->read(core::ConstMatrixDerivId::constraintJacobian())->getValue();
 
-    double dt = this->getContext()->getDt();
+    const double dt = this->getContext()->getDt();
 
     dx.clear();
     dx.resize(v.size());
@@ -1027,7 +1027,7 @@ void PrecomputedConstraintCorrection<DataTypes>::resetForUnbuiltResolution(doubl
 
     _sparseCompliance.resize(constraint_dofs.size() * nbConstraints);
 
-    auto dofsItEnd = constraint_dofs.end();
+    const auto dofsItEnd = constraint_dofs.end();
 
     for (auto dofsIt = constraint_dofs.begin(); dofsIt != dofsItEnd; ++dofsIt)
     {
@@ -1072,7 +1072,7 @@ void PrecomputedConstraintCorrection<DataTypes>::resetForUnbuiltResolution(doubl
         {
             const Deriv n1 = colIt.val();
 
-            unsigned int temp = (unsigned int) _indexNodeSparseCompliance[colIt.index()];
+            const unsigned int temp = (unsigned int) _indexNodeSparseCompliance[colIt.index()];
 
             unsigned int curColConst = curRowConst;
 
@@ -1130,17 +1130,15 @@ void PrecomputedConstraintCorrection<DataTypes>::addConstraintDisplacement(doubl
     }
 
 #else
-    std::list<unsigned int>::iterator itBegin = active_local_force.begin(), itEnd = active_local_force.end();
-
     for (int i = begin; i <= end; i++)
     {
         int c = id_to_localIndex[i];
         double dc = d[i];
 
-        for (auto it = itBegin; it != itEnd; ++it)
+        for (const auto localForceId : active_local_force)
         {
-            int id = localIndex_to_id[*it];
-            dc += localW.element(c, *it) * constraint_force[id];
+            const int id = localIndex_to_id[localForceId];
+            dc += localW.element(c, localForceId) * constraint_force[id];
         }
 
         d[i] = dc;
@@ -1220,7 +1218,7 @@ void PrecomputedConstraintCorrection<DataTypes>::setConstraintDForce(double * /*
     /// fill a local table of active forces (non-null forces)
     for (int i = begin; i <= end; i++)
     {
-        int c = id_to_localIndex[i];
+        const int c = id_to_localIndex[i];
         active_local_force.push_back(c);
     }
     active_local_force.sort();

@@ -37,7 +37,7 @@ Visitor::Result ConstraintStoreLambdaVisitor::fwdConstraintSet(simulation::Node*
 {
     if (core::behavior::BaseConstraint *c = dynamic_cast<core::behavior::BaseConstraint*>(cSet) )
     {
-        ctime_t t0 = begin(node, c);
+        const ctime_t t0 = begin(node, c);
         c->storeLambda(m_cParams, m_cParams->lambda(), m_lambda);
         end(node, c, t0);
     }

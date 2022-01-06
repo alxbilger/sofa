@@ -153,8 +153,8 @@ public:
     void resolution(int line, double** /*w*/, double* displacement, double* force, double* /*dFree*/) override
     {
         Eigen::Map< Eigen::VectorXd > f(&force[line], wBlock.cols());
-        Eigen::Map< Eigen::VectorXd > d(&displacement[line], wBlock.cols());
-        Eigen::VectorXd f_local = wBlockInv.solve(d);
+        const Eigen::Map< Eigen::VectorXd > d(&displacement[line], wBlock.cols());
+        const Eigen::VectorXd f_local = wBlockInv.solve(d);
         f -= f_local;
     }
 

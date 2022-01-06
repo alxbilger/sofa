@@ -433,7 +433,7 @@ void BilateralInteractionConstraint<DataTypes>::getConstraintResolution(const Co
                                                                         unsigned int& offset)
 {
     SOFA_UNUSED(cParams);
-    unsigned minp=std::min(m1.getValue().size(),m2.getValue().size());
+    const unsigned minp=std::min(m1.getValue().size(),m2.getValue().size());
 
     if (!merge.getValue())
     {
@@ -517,15 +517,15 @@ void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualP
     vparams->drawTool()->saveLastState();
     vparams->drawTool()->disableLighting();
 
-    sofa::type::RGBAColor colorActive = sofa::type::RGBAColor::magenta();
-    sofa::type::RGBAColor colorNotActive = sofa::type::RGBAColor::green();
+    const sofa::type::RGBAColor colorActive = sofa::type::RGBAColor::magenta();
+    const sofa::type::RGBAColor colorNotActive = sofa::type::RGBAColor::green();
     std::vector< sofa::type::Vector3 > vertices;
 
-    unsigned minp = std::min(m1.getValue().size(),m2.getValue().size());
+    const unsigned minp = std::min(m1.getValue().size(),m2.getValue().size());
     auto positionsM1 = sofa::helper::getReadAccessor(*this->mstate1->read(ConstVecCoordId::position()));
     auto positionsM2 = sofa::helper::getReadAccessor(*this->mstate2->read(ConstVecCoordId::position()));
-    auto indicesM1 = sofa::helper::getReadAccessor(m1);
-    auto indicesM2 = sofa::helper::getReadAccessor(m2);
+    const auto indicesM1 = sofa::helper::getReadAccessor(m1);
+    const auto indicesM2 = sofa::helper::getReadAccessor(m2);
 
     for (unsigned i=0; i<minp; i++)
     {
@@ -546,15 +546,15 @@ void BilateralInteractionConstraint<DataTypes>::handleEvent(Event *event)
 {
     if (KeypressedEvent::checkEventType(event))
     {
-        KeypressedEvent *ev = static_cast<KeypressedEvent *>(event);
+        const KeypressedEvent *ev = static_cast<KeypressedEvent *>(event);
         switch(ev->getKey())
         {
-
         case 'A':
         case 'a':
             msg_info() << "Activating constraint" ;
             activated = true;
             break;
+        default: ;
         }
     }
 

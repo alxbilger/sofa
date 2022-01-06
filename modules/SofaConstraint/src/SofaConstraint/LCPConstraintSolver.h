@@ -71,7 +71,7 @@ public:
     {
         if (core::behavior::BaseConstraint *c=cSet->toBaseConstraint())
         {
-            ctime_t t0 = begin(node, c);
+            const ctime_t t0 = begin(node, c);
             c->getConstraintInfo(_cparams, _blocks, _ids, _positions, _directions, _areas);
             end(node, c, t0);
         }

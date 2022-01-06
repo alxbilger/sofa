@@ -61,7 +61,7 @@ public:
     {
         resetFlag = true;
         if(forces.empty()) return 0;
-        double f = forces.front();
+        const double f = forces.front();
         forces.pop_front();
         return f;
     }

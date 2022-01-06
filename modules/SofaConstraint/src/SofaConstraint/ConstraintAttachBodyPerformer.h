@@ -72,7 +72,7 @@ public:
 
     virtual void configure(configurationsetting::MouseButtonSetting* setting)
     {
-        if (ConstraintAttachBodyButtonSetting* s = dynamic_cast<ConstraintAttachBodyButtonSetting*>(setting))
+        if (const auto* s = dynamic_cast<ConstraintAttachBodyButtonSetting*>(setting))
         {
             setStiffness((double)s->stiffness.getValue());
             setArrowSize((float)s->arrowSize.getValue());

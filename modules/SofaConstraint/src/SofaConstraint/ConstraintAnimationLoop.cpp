@@ -91,7 +91,7 @@ sofa::simulation::Visitor::Result MechanicalGetConstraintResolutionVisitor::fwdC
 {
     if (core::behavior::BaseConstraint *c=cSet->toBaseConstraint())
     {
-        ctime_t t0 = begin(node, c);
+        const ctime_t t0 = begin(node, c);
         c->getConstraintResolution(_cparams, _res, _offset);
         end(node, c, t0);
     }
@@ -105,7 +105,7 @@ bool MechanicalGetConstraintResolutionVisitor::stopAtMechanicalMapping(simulatio
 
 sofa::simulation::Visitor::Result MechanicalSetConstraint::fwdConstraintSet(simulation::Node* node, core::behavior::BaseConstraintSet* c)
 {
-    ctime_t t0 = begin(node, c);
+    const ctime_t t0 = begin(node, c);
 
     c->setConstraintId(contactId);
     c->buildConstraintMatrix(cparams, res, contactId);
@@ -131,7 +131,7 @@ bool MechanicalSetConstraint::stopAtMechanicalMapping(simulation::Node* /*node*/
 
 void MechanicalAccumulateConstraint2::bwdMechanicalMapping(simulation::Node* node, core::BaseMapping* map)
 {
-    ctime_t t0 = begin(node, map);
+    const ctime_t t0 = begin(node, map);
     map->applyJT(cparams, res, res);
     end(node, map, t0);
 }
@@ -207,15 +207,15 @@ void ConstraintProblem::gaussSeidelConstraintTimed(double &timeout, int numItMax
 {
     double error=0.0;
 
-    double t0 = (double)_timer->getTime() ;
-    double timeScale = 1.0 / (double)CTime::getTicksPerSec();
+    const double t0 = (double)_timer->getTime() ;
+    const double timeScale = 1.0 / (double)CTime::getTicksPerSec();
 
     for(int i=0; i<numItMax; i++)
     {
         error=0.0;
         for(int j=0; j<_dim; ) // increment of j realized at the end of the loop
         {
-            int nb = _constraintsResolutions[j]->getNbLines();
+            const int nb = _constraintsResolutions[j]->getNbLines();
 
             //2. for each line we compute the actual value of d
             //   (a)d is set to dfree
@@ -255,8 +255,8 @@ void ConstraintProblem::gaussSeidelConstraintTimed(double &timeout, int numItMax
         }
 
         /////////////////// GAUSS SEIDEL IS TIMED !!! /////////
-        double t1 = (double)_timer->getTime();
-        double dt = (t1 - t0)*timeScale;
+        const double t1 = (double)_timer->getTime();
+        const double dt = (t1 - t0)*timeScale;
         if(dt > timeout)
         {
             return;
@@ -406,7 +406,7 @@ void ConstraintAnimationLoop::freeMotion(const core::ExecParams* params, simulat
 
 void ConstraintAnimationLoop::setConstraintEquations(const core::ExecParams* params, simulation::Node *context)
 {
-    for (auto cc : constraintCorrections)
+    for (auto* cc : constraintCorrections)
     {
         cc->resetContactForce();
     }
@@ -495,14 +495,11 @@ void ConstraintAnimationLoop::computeComplianceInConstraintSpace()
     /// calling getCompliance => getDelassusOperator(_W) = H*C*Ht
     dmsg_info_when(EMIT_EXTRA_DEBUG_MESSAGE) << "   4. get Compliance " ;
 
-    sofa::helper::AdvancedTimer::stepBegin("Get Compliance");
-    for (auto cc : constraintCorrections)
+    sofa::helper::ScopedAdvancedTimer timer("Get Compliance");
+    for (auto* cc : constraintCorrections)
     {
         cc->addComplianceInConstraintSpace(core::constraintparams::defaultInstance(), getCP()->getW());
     }
-
-    sofa::helper::AdvancedTimer::stepEnd  ("Get Compliance");
-
 }
 
 void ConstraintAnimationLoop::correctiveMotion(const core::ExecParams* params, simulation::Node *context)
@@ -515,7 +512,7 @@ void ConstraintAnimationLoop::correctiveMotion(const core::ExecParams* params, s
     if(d_schemeCorrection.getValue())
     {
         // IF SCHEME CORRECTIVE=> correct the motion using dF
-        for (auto cc : constraintCorrections)
+        for (auto* cc : constraintCorrections)
         {
             cc->applyContactForce(getCP()->getdF());
         }
@@ -523,7 +520,7 @@ void ConstraintAnimationLoop::correctiveMotion(const core::ExecParams* params, s
     else
     {
         // ELSE => only correct the motion using F
-        for (auto cc : constraintCorrections)
+        for (auto* cc : constraintCorrections)
         {
             cc->applyContactForce(getCP()->getF());
         }
@@ -540,7 +537,7 @@ void ConstraintAnimationLoop::correctiveMotion(const core::ExecParams* params, s
 
     if(!d_schemeCorrection.getValue())
     {
-        for (auto cc : constraintCorrections)
+        for (auto* cc : constraintCorrections)
         {
             cc->resetContactForce();
         }
@@ -1007,7 +1004,7 @@ void ConstraintAnimationLoop::gaussSeidelConstraint(int dim, double* dfree, doub
 void ConstraintAnimationLoop::debugWithContact(int numConstraints)
 {
 
-    double mu=0.8;
+    constexpr double mu=0.8;
     ConstraintProblem& CP = (d_doubleBuffer.getValue() && bufCP1) ? CP2 : CP1;
     helper::nlcp_gaussseidel(numConstraints, CP.getDfree()->ptr(), CP.getW()->lptr(), CP.getF()->ptr(), mu, d_tol.getValue(), d_maxIt.getValue(), false, EMIT_EXTRA_DEBUG_MESSAGE);
     CP.getF()->clear();

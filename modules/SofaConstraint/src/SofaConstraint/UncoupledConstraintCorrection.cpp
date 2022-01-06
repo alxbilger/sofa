@@ -79,7 +79,7 @@ SOFA_SOFACONSTRAINT_API void UncoupledConstraintCorrection< defaulttype::Rigid3T
         {
             core::behavior::BaseMass *m = node->mass;
 
-            if (UniformMass< Rigid3Types, Rigid3Mass > *um = dynamic_cast< UniformMass< Rigid3Types, Rigid3Mass >* > (m))
+            if (const UniformMass< Rigid3Types, Rigid3Mass > *um = dynamic_cast< UniformMass< Rigid3Types, Rigid3Mass >* > (m))
                 massValue = um->getVertexMass();
             else
                 msg_warning() << "No mass found.";

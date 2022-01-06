@@ -53,7 +53,7 @@ public:
 
     void resolution(int line, double** /*w*/, double* d, double* force, double*) override
     {
-        double dfree = d[line] - _w * force[line];
+        const double dfree = d[line] - _w * force[line];
 
         if (dfree > _max)
             force[line] = (_max - dfree) * _invW;

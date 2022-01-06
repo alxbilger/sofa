@@ -62,7 +62,7 @@ GenericConstraintCorrection::~GenericConstraintCorrection() {}
 
 void GenericConstraintCorrection::bwdInit()
 {
-    BaseContext* context = this->getContext();
+    const BaseContext* context = this->getContext();
 
     // Find linear solvers
     m_linearSolvers.clear();
@@ -124,7 +124,7 @@ void GenericConstraintCorrection::bwdInit()
     }
 
     msg_info() << "Found " << m_linearSolvers.size() << " m_linearSolvers";
-    for (auto* linearSolver : m_linearSolvers)
+    for (const auto* linearSolver : m_linearSolvers)
         msg_info() << linearSolver->getName();
 }
 
@@ -274,7 +274,7 @@ void GenericConstraintCorrection::getComplianceMatrix(linearalgebra::BaseMatrix*
     if (!m_ODESolver)
         return;
 
-    ConstraintParams cparams(*sofa::core::execparams::defaultInstance());
+    const ConstraintParams cparams(*sofa::core::execparams::defaultInstance());
     const_cast<GenericConstraintCorrection*>(this)->addComplianceInConstraintSpace(&cparams, Minv);
 }
 

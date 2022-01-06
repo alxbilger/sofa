@@ -56,7 +56,7 @@ public:
         const type::vector<int> &m1Indices = self.m1.getValue();
         const type::vector<int> &m2Indices = self.m2.getValue();
 
-        unsigned minp = std::min(m1Indices.size(),m2Indices.size());
+        const unsigned minp = std::min(m1Indices.size(),m2Indices.size());
 
         const typename BilateralInteractionConstraint<T>::DataVecCoord &d_x1 = *self.mstate1->read(core::ConstVecCoordId::position());
         const typename BilateralInteractionConstraint<T>::DataVecCoord &d_x2 = *self.mstate2->read(core::ConstVecCoordId::position());
@@ -93,8 +93,8 @@ public:
                                         unsigned int& offset, double tolerance)
     {
         SOFA_UNUSED(cParams);
-        unsigned minp=std::min(self.m1.getValue().size(),
-                               self.m2.getValue().size());
+        const unsigned minp=std::min(self.m1.getValue().size(),
+                                     self.m2.getValue().size());
         for (unsigned pid=0; pid<minp; pid++)
         {
             resTab[offset] = new BilateralConstraintResolution3Dof();

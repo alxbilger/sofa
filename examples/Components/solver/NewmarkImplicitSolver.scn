@@ -12,7 +12,7 @@
     </Node>
     <Node name="Springs">
         <NewmarkImplicitSolver rayleighMass="0" rayleighStiffness="0" />
-        <LULinearSolver />
+        <SparseLDLSolver />
         <MeshGmshLoader name="loader" filename="mesh/truthcylinder1.msh" />
         <MeshTopology src="@loader" />
         <MechanicalObject src="@loader" dx="15" />
