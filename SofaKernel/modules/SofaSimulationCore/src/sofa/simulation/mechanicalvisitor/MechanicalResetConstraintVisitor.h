@@ -24,9 +24,12 @@
 #include <sofa/simulation/BaseMechanicalVisitor.h>
 
 #include <sofa/core/ConstraintParams.h>
+#include <sofa/simulation/CpuTask.h>
 
 namespace sofa::simulation::mechanicalvisitor
 {
+
+class ResetConstraintVisitorTask;
 
 class SOFA_SIMULATION_CORE_API MechanicalResetConstraintVisitor : public BaseMechanicalVisitor
 {
@@ -36,6 +39,8 @@ public:
             : BaseMechanicalVisitor(cparams)
             , m_cparams(cparams)
     {}
+
+    void processNodeBottomUp(simulation::Node* /*node*/) override;
 
     Result fwdMechanicalState(simulation::Node* /*node*/,sofa::core::behavior::BaseMechanicalState* mm) override;
     Result fwdMappedMechanicalState(simulation::Node* /*node*/,sofa::core::behavior::BaseMechanicalState* mm) override;
@@ -59,5 +64,28 @@ public:
 
 private:
     const sofa::core::ConstraintParams* m_cparams;
+
+    bool m_parallelReset { false };
+
+    /// Container for the parallel tasks
+    std::list<ResetConstraintVisitorTask> m_tasks;
+
+    /// Status for the parallel tasks
+    sofa::simulation::CpuTask::Status m_status;
+};
+
+class ResetConstraintVisitorTask final : public sofa::simulation::CpuTask
+{
+public:
+    ResetConstraintVisitorTask(sofa::simulation::CpuTask::Status* status,
+        const sofa::core::ConstraintParams* cparams,
+        core::behavior::BaseMechanicalState* mstate);
+
+    sofa::simulation::Task::MemoryAlloc run() override;
+
+private:
+
+    const sofa::core::ConstraintParams* m_cparams { nullptr };
+    core::behavior::BaseMechanicalState* m_mstate { nullptr };
 };
 }
