@@ -116,6 +116,7 @@ class SOFA_CORE_API Base
 {
 public:
     typedef Base* Ptr;
+    static constexpr std::string_view MyClassName = "Base";
 
     using SPtr = sptr<Base>;
     

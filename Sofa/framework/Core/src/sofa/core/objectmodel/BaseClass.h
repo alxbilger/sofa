@@ -19,21 +19,13 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_OBJECTMODEL_BASECLASS_H
-#define SOFA_CORE_OBJECTMODEL_BASECLASS_H
+#pragma once
 
 #include <sofa/core/config.h>
 #include <sofa/helper/NameDecoder.h>
 #include <sofa/core/objectmodel/SPtr.h>
-#include <map>
 
-namespace sofa
-{
-
-namespace core
-{
-
-namespace objectmodel
+namespace sofa::core::objectmodel
 {
 
 class Base;
@@ -118,9 +110,24 @@ public:
 #define SOFA_TEMPLATE3(Class,P1,P2,P3) Class<P1,P2,P3>
 #define SOFA_TEMPLATE4(Class,P1,P2,P3,P4) Class<P1,P2,P3,P4>
 
+constexpr std::string_view getClassNameFromMacroParameter(std::string_view className)
+{
+    constexpr std::string_view macroName { "SOFA_TEMPLATE" };
+    const auto templatePos = className.find(macroName);
+    if (templatePos != std::string_view::npos)
+    {
+        const auto start = className.find_first_of('(', templatePos + macroName.size());
+        const auto end = className.find_first_of(" ,)", start);
+        return className.substr(start + 1, end - start - 1);
+    }
+
+    return className;
+}
+
 // This macro should now be used at the beginning of all declarations of classes with 1 base class
 #define SOFA_CLASS(T,Parent) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, Parent > MyClass; \
     typedef Parent Inherit1; \
     SOFA_CLASS_DECL
@@ -128,6 +135,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 1 base class
 #define SOFA_ABSTRACT_CLASS(T,Parent) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, Parent > MyClass; \
     typedef Parent Inherit1; \
     SOFA_ABSTRACT_CLASS_DECL
@@ -135,6 +143,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 2 base classes
 #define SOFA_CLASS2(T,Parent1,Parent2) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -143,6 +152,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 2 base classes
 #define SOFA_ABSTRACT_CLASS2(T,Parent1,Parent2) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -151,6 +161,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 3 base classes
 #define SOFA_CLASS3(T,Parent1,Parent2,Parent3) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -160,6 +171,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 3 base classes
 #define SOFA_ABSTRACT_CLASS3(T,Parent1,Parent2,Parent3) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -169,6 +181,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 4 base classes
 #define SOFA_CLASS4(T,Parent1,Parent2,Parent3,Parent4) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -179,6 +192,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 4 base classes
 #define SOFA_ABSTRACT_CLASS4(T,Parent1,Parent2,Parent3,Parent4) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -189,6 +203,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 5 base classes
 #define SOFA_CLASS5(T,Parent1,Parent2,Parent3,Parent4,Parent5) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4, Parent5> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -200,6 +215,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 5 base classes
 #define SOFA_ABSTRACT_CLASS5(T,Parent1,Parent2,Parent3,Parent4,Parent5) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4, Parent5> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -211,6 +227,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 5 base classes
 #define SOFA_CLASS6(T,Parent1,Parent2,Parent3,Parent4,Parent5,Parent6) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4, Parent5, Parent6> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -223,6 +240,7 @@ public:
 // This macro should now be used at the beginning of all declarations of classes with 5 base classes
 #define SOFA_ABSTRACT_CLASS6(T,Parent1,Parent2,Parent3,Parent4,Parent5,Parent6) \
     typedef T MyType;                                               \
+    static constexpr std::string_view MyClassName = ::sofa::core::objectmodel::getClassNameFromMacroParameter(#T); \
     typedef ::sofa::core::objectmodel::TClass< T, ::sofa::core::objectmodel::Parents<Parent1, Parent2, Parent3, Parent4, Parent5, Parent6> > MyClass; \
     typedef Parent1 Inherit1; \
     typedef Parent2 Inherit2; \
@@ -332,7 +350,7 @@ protected:
     {
         typeName = NameDecoder::getTypeName<T>();
         namespaceName = NameDecoder::getNamespaceName<T>();
-        className = NameDecoder::getClassName<T>();
+        className = T::MyClassName;
         templateName = NameDecoder::getTemplateName<T>();
         shortName = NameDecoder::getShortName<T>();
 
@@ -362,14 +380,4 @@ public:
         return &theClass;
     }
 };
-
-} // namespace objectmodel
-
-} // namespace core
-
-} // namespace sofa
-
-
-
-#endif
-
+} // namespace sofa::core::objectmodel
