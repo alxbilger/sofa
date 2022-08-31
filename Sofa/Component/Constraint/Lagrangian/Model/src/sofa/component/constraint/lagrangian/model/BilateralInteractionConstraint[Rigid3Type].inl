@@ -28,11 +28,6 @@ namespace sofa::component::constraint::lagrangian::model::bilateralinteractionco
 {
 
 template<> SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API
-void BilateralInteractionConstraint<Rigid3Types>::init(){
-    unspecializedInit() ;
-}
-
-template<> SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API
 void BilateralInteractionConstraint<Rigid3Types>::bwdInit()
 {
     if (!this->keepOrientDiff.getValue())

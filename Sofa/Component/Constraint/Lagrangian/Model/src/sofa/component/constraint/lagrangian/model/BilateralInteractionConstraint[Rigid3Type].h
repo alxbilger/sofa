@@ -29,5 +29,9 @@ namespace  sofa::component::constraint::lagrangian::model::bilateralinteractionc
 
 using sofa::defaulttype::Rigid3Types;
 
+#if !defined(SOFA_COMPONENT_CONSTRAINTSET_BILATERALINTERACTIONCONSTRAINT_RIGID3TYPE_CPP)
+extern template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API BilateralInteractionConstraint< Rigid3Types >;
+#endif
+
 } // namespace sofa::component::constraint::lagrangian::model::bilateralinteractionconstraint
 

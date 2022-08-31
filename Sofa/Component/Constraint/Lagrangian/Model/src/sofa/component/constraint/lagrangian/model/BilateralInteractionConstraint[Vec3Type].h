@@ -30,7 +30,7 @@ namespace sofa::component::constraint::lagrangian::model::bilateralinteractionco
 
 using sofa::defaulttype::Vec3Types;
 
-#if !defined(SOFA_COMPONENT_CONSTRAINTSET_BILATERALINTERACTIONCONSTRAINT_CPP)
+#if !defined(SOFA_COMPONENT_CONSTRAINTSET_BILATERALINTERACTIONCONSTRAINT_VEC3TYPE_CPP)
 extern template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API BilateralInteractionConstraint< Vec3Types >;
 #endif
 

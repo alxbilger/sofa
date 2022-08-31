@@ -146,9 +146,6 @@ public:
 
     void addContact(Deriv norm, Real contactDistance, int m1, int m2,
                     long id=0, PersistentID localid=0) ;
-
-private:
-    void unspecializedInit() ;
 };
 
 } // namespace sofa::component::constraint::lagrangian::model::bilateralinteractionconstraint

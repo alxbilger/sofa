@@ -86,7 +86,7 @@ BilateralInteractionConstraint<DataTypes>::BilateralInteractionConstraint()
 }
 
 template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::unspecializedInit()
+void BilateralInteractionConstraint<DataTypes>::init()
 {
     /// Do general check of validity for inputs
     Inherit1::init();
