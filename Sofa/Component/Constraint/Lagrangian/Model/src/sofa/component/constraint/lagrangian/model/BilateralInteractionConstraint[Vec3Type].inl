@@ -31,80 +31,8 @@
 namespace sofa::component::constraint::lagrangian::model::bilateralinteractionconstraint
 {
 
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::init()
-{
-    unspecializedInit();
-}
-
-
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::getConstraintViolation(const ConstraintParams* cParams,
-                                                                       BaseVector *v,
-                                                                       const DataVecCoord &d_x1, const DataVecCoord &d_x2
-                                                                       , const DataVecDeriv & d_v1, const DataVecDeriv & d_v2)
-{
-    if (!activated) return;
-
-    const type::vector<int> &m1Indices = m1.getValue();
-    const type::vector<int> &m2Indices = m2.getValue();
-
-    unsigned minp = std::min(m1Indices.size(), m2Indices.size());
-
-    const VecDeriv& restVector = this->restVector.getValue();
-
-    if (cParams->constOrder() == ConstraintParams::VEL)
-    {
-        getVelocityViolation(v, d_x1, d_x2, d_v1, d_v2);
-        return;
-    }
-
-    const VecCoord &x1 = d_x1.getValue();
-    const VecCoord &x2 = d_x2.getValue();
-
-    if (!merge.getValue())
-    {
-        dfree.resize(minp);
-
-        for (unsigned pid=0; pid<minp; pid++)
-        {
-            dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
-
-            if (pid < restVector.size())
-                dfree[pid] -= restVector[pid];
-
-            v->set(cid[pid]  , dfree[pid][0]);
-            v->set(cid[pid]+1, dfree[pid][1]);
-            v->set(cid[pid]+2, dfree[pid][2]);
-        }
-    }
-    else
-    {
-        for (unsigned pid=0; pid<minp; pid++)
-        {
-            dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
-
-            if (pid < restVector.size())
-                dfree[pid] -= restVector[pid];
-
-            for (unsigned int i=0; i<3; i++)
-            {
-                if(squareXYZ[i])
-                    v->add(cid[pid]+i  , dfree[pid][i]*dfree[pid][i]);
-                else
-                {
-
-                    v->add(cid[pid]+i  , dfree[pid][i]*sofa::helper::sign(dfree[pid][i] ) );
-                }
-            }
-
-        }
-    }
-}
-
-
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::getVelocityViolation(BaseVector *v,
+template<>
+void BilateralInteractionConstraint<Vec3Types>::getVelocityViolation(BaseVector *v,
                                                                      const DataVecCoord &d_x1,
                                                                      const DataVecCoord &d_x2,
                                                                      const DataVecDeriv &d_v1,
@@ -181,8 +109,73 @@ void BilateralInteractionConstraint<DataTypes>::getVelocityViolation(BaseVector 
     }
 }
 
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::addContact(Deriv /*norm*/, Coord P, Coord Q,
+template<>
+void BilateralInteractionConstraint<Vec3Types>::getConstraintViolation(const ConstraintParams* cParams,
+                                                                       BaseVector *v,
+                                                                       const DataVecCoord &d_x1, const DataVecCoord &d_x2
+                                                                       , const DataVecDeriv & d_v1, const DataVecDeriv & d_v2)
+{
+    if (!activated) return;
+
+    const type::vector<int> &m1Indices = m1.getValue();
+    const type::vector<int> &m2Indices = m2.getValue();
+
+    unsigned minp = std::min(m1Indices.size(), m2Indices.size());
+
+    const VecDeriv& restVector = this->restVector.getValue();
+
+    if (cParams->constOrder() == ConstraintParams::VEL)
+    {
+        getVelocityViolation(v, d_x1, d_x2, d_v1, d_v2);
+        return;
+    }
+
+    const VecCoord &x1 = d_x1.getValue();
+    const VecCoord &x2 = d_x2.getValue();
+
+    if (!merge.getValue())
+    {
+        dfree.resize(minp);
+
+        for (unsigned pid=0; pid<minp; pid++)
+        {
+            dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
+
+            if (pid < restVector.size())
+                dfree[pid] -= restVector[pid];
+
+            v->set(cid[pid]  , dfree[pid][0]);
+            v->set(cid[pid]+1, dfree[pid][1]);
+            v->set(cid[pid]+2, dfree[pid][2]);
+        }
+    }
+    else
+    {
+        for (unsigned pid=0; pid<minp; pid++)
+        {
+            dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
+
+            if (pid < restVector.size())
+                dfree[pid] -= restVector[pid];
+
+            for (unsigned int i=0; i<3; i++)
+            {
+                if(squareXYZ[i])
+                    v->add(cid[pid]+i  , dfree[pid][i]*dfree[pid][i]);
+                else
+                {
+
+                    v->add(cid[pid]+i  , dfree[pid][i]*sofa::helper::sign(dfree[pid][i] ) );
+                }
+            }
+
+        }
+    }
+}
+
+
+template<>
+void BilateralInteractionConstraint<Vec3Types>::addContact(Deriv /*norm*/, Coord P, Coord Q,
                                                            Real /*contactDistance*/, int m1, int m2,
                                                            Coord /*Pfree*/, Coord /*Qfree*/,
                                                            long /*id*/, PersistentID /*localid*/)
@@ -196,8 +189,8 @@ void BilateralInteractionConstraint<DataTypes>::addContact(Deriv /*norm*/, Coord
 }
 
 
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::addContact(Deriv norm, Coord P, Coord Q, Real
+template<>
+void BilateralInteractionConstraint<Vec3Types>::addContact(Deriv norm, Coord P, Coord Q, Real
                                                            contactDistance, int m1, int m2,
                                                            long id, PersistentID localid)
 {
@@ -207,8 +200,8 @@ void BilateralInteractionConstraint<DataTypes>::addContact(Deriv norm, Coord P, 
                id, localid);
 }
 
-template<class DataTypes>
-void BilateralInteractionConstraint<DataTypes>::addContact(Deriv norm, Real contactDistance,
+template<>
+void BilateralInteractionConstraint<Vec3Types>::addContact(Deriv norm, Real contactDistance,
                                                            int m1, int m2, long id, PersistentID localid)
 {
     addContact(norm,
