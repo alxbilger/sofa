@@ -26,6 +26,8 @@
 #include <sofa/helper/Factory.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/PathResolver.h>
+
+#include "BaseTracker.h"
 using sofa::core::PathResolver;
 
 #include <sofa/defaulttype/AbstractTypeInfo.h>
@@ -69,10 +71,13 @@ Base::Base()
         /// Increment the state counter but without changing the state.
         return d_componentState.getValue();
     }, {&d_componentState});
+
+    BaseTracker::getInstance().allocateBase();
 }
 
 Base::~Base()
 {
+    BaseTracker::getInstance().destroyBase();
 }
 
 void Base::addRef()

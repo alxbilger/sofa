@@ -25,6 +25,7 @@
 #include <sofa/core/config.h>
 #include <sofa/helper/NameDecoder.h>
 #include <sofa/core/objectmodel/SPtr.h>
+#include <sofa/core/objectmodel/BaseTracker.h>
 #include <map>
 
 namespace sofa
@@ -235,6 +236,7 @@ public:
 // Do not use this macro directly, use SOFA_ABSTRACT_CLASS instead
 #define SOFA_ABSTRACT_CLASS_DECL                                        \
     typedef MyType* Ptr;                                                \
+    ::sofa::core::objectmodel::BaseCounter<MyType> baseCounter {};                                     \
     friend class sofa::helper::NameDecoder;                             \
     static std::string GetDefaultTemplateName(){ return sofa::helper::NameDecoder::DefaultTypeTemplateName<MyType>::Get(); } \
     using SPtr = sofa::core::sptr<MyType>;                              \

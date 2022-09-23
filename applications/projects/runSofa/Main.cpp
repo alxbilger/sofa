@@ -20,6 +20,8 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <sstream>
+
+#include <sofa/core/objectmodel/BaseTracker.h>
 using std::ostringstream ;
 #include <fstream>
 
@@ -527,5 +529,8 @@ int main(int argc, char** argv)
 
     sofa::simulation::common::cleanup();
     sofa::simulation::graph::cleanup();
+
+    sofa::core::objectmodel::BaseTracker::getInstance().print();
+
     return 0;
 }
