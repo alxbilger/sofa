@@ -102,6 +102,8 @@ public:
     /// Destructor.
     ~BaseData() override;
 
+    std::string getIdString() const override;
+
     /// Assign a value to this %Data from a string representation.
     /// \return true on success.
     virtual bool read(const std::string& value) = 0;

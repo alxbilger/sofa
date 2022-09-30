@@ -24,6 +24,9 @@
 #include <cassert>
 #include <sofa/core/objectmodel/DDGNode.h>
 #include <sofa/helper/BackTrace.h>
+
+#include <map>
+
 namespace sofa::core::objectmodel
 {
 
@@ -142,12 +145,59 @@ const DDGNode::DDGLinkContainer& DDGNode::getOutputs()
     return outputs;
 }
 
+class UpdateCounter
+{
+public:
+    static UpdateCounter& getInstance()
+    {
+        static UpdateCounter counter;
+        return counter;
+    }
+
+    std::size_t count(const std::string& data)
+    {
+        return ++m_counter[data];
+    }
+
+    ~UpdateCounter()
+    {
+        std::vector<std::pair<std::string, std::size_t> > sortedCounter;
+        for (const auto& [data, counter] : m_counter)
+        {
+            sortedCounter.emplace_back(data, counter);
+
+        }
+        std::sort(sortedCounter.begin(), sortedCounter.end(), [](const auto& e1, const auto& e2){ return e1.second < e2.second; });
+        for (const auto& [data, counter] : sortedCounter)
+        {
+            std::cerr << data << ": " << counter << std::endl;
+        }
+
+    }
+
+private:
+    UpdateCounter() {}
+
+    std::map<std::string, std::size_t> m_counter {};
+};
+
 void DDGNode::updateIfDirty() const
 {
+    // auto trace = helper::BackTrace::getTrace(3);
+    // const auto count = UpdateCounter::getInstance().count(this->getIdString());
+    // if (count >= 300000 && getIdString() == "RegularGridTopology::p0")
+    // {
+    //     std::cout << " " << std::endl;
+    // }
     if (isDirty())
     {
         const_cast <DDGNode*> (this)->update();
     }
+}
+
+std::string DDGNode::getIdString() const
+{
+    return {};
 }
 
 void DDGNode::doAddInput(DDGNode* n)

@@ -88,6 +88,15 @@ BaseData::~BaseData()
 {
 }
 
+std::string BaseData::getIdString() const
+{
+    if (this->getOwner())
+    {
+        return this->getOwner()->getClassName() + "::" + this->getName();
+    }
+    return "::" + this->getName();
+}
+
 bool BaseData::validParent(const BaseData* parent)
 {
     /// Query the implementation side to see if they two are similar.
