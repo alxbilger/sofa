@@ -207,13 +207,13 @@ public:
 
     bool copyValueFrom(const Data<T>* data);
 
-    static constexpr bool isCopyOnWrite(){ return !std::is_scalar_v<T>; }
+    static constexpr bool isCopyOnWrite(){ return !std::is_arithmetic_v<T>; }
 
     Data(const Data& ) = delete;
     Data& operator=(const Data& ) = delete;
 
 protected:
-    typedef DataContentValue<T,  !std::is_scalar_v<T>> ValueType;
+    typedef DataContentValue<T,  isCopyOnWrite()> ValueType;
 
     /// Value
     ValueType m_value;
