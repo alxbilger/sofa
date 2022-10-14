@@ -26,7 +26,6 @@
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 #include <sofa/core/behavior/BaseConstraintCorrection.h>
 #include <sofa/core/behavior/BaseConstraint.h>
-#include <sofa/linearalgebra/SparseMatrix.h>
 #include <sofa/helper/map.h>
 
 #include <sofa/simulation/CpuTask.h>
@@ -107,6 +106,9 @@ protected:
 
     void clearConstraintProblemLocks();
 
+    void parallelBuildSystem_matrixAssembly(const core::ConstraintParams* cParams);
+    void sequentialBuildSystem_matrixAssembly(const core::ConstraintParams* cParams);
+
     enum { CP_BUFFER_SIZE = 10 };
     sofa::type::fixed_array<GenericConstraintProblem,CP_BUFFER_SIZE> m_cpBuffer;
     sofa::type::fixed_array<bool,CP_BUFFER_SIZE> m_cpIsLocked;
@@ -115,7 +117,7 @@ protected:
     std::vector<char> constraintCorrectionIsActive; // for each constraint correction, a boolean that is false if the parent node is sleeping
 
 
-    sofa::core::objectmodel::BaseContext *context;
+    sofa::core::objectmodel::BaseContext *context { nullptr };
 
     sofa::core::MultiVecDerivId m_lambdaId;
     sofa::core::MultiVecDerivId m_dxId;
