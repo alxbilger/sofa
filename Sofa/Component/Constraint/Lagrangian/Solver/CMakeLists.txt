@@ -13,6 +13,8 @@ set(HEADER_FILES
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/visitors/ConstraintStoreLambdaVisitor.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/visitors/MechanicalGetConstraintResolutionVisitor.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/visitors/MechanicalGetConstraintViolationVisitor.h
+
+    ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/ConstraintStoreLambdaVisitor.h #For deprecation
 )
 
 set(SOURCE_FILES
