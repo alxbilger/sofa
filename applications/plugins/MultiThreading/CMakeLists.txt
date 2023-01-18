@@ -12,12 +12,14 @@ set(HEADER_FILES
     src/MultiThreading/DataExchange.inl
     src/MultiThreading/MeanComputation.h
     src/MultiThreading/MeanComputation.inl
-    src/MultiThreading/ParallelBruteForceBroadPhase.h
     src/MultiThreading/ParallelBVHNarrowPhase.h
+    src/MultiThreading/ParallelBruteForceBroadPhase.h
     src/MultiThreading/ParallelHexahedronFEMForceField.h
     src/MultiThreading/ParallelHexahedronFEMForceField.inl
     src/MultiThreading/ParallelTetrahedronFEMForceField.h
     src/MultiThreading/ParallelTetrahedronFEMForceField.inl
+    src/MultiThreading/component/mass/ParallelUniformMass.h
+    src/MultiThreading/component/mass/ParallelUniformMass.inl
     )
 
 set(SOURCE_FILES
@@ -27,10 +29,11 @@ set(SOURCE_FILES
     src/MultiThreading/BeamLinearMapping_mt.cpp
     src/MultiThreading/DataExchange.cpp
     src/MultiThreading/MeanComputation.cpp
-    src/MultiThreading/ParallelBruteForceBroadPhase.cpp
     src/MultiThreading/ParallelBVHNarrowPhase.cpp
+    src/MultiThreading/ParallelBruteForceBroadPhase.cpp
     src/MultiThreading/ParallelHexahedronFEMForceField.cpp
     src/MultiThreading/ParallelTetrahedronFEMForceField.cpp
+    src/MultiThreading/component/mass/ParallelUniformMass.cpp
     )
 
 find_package(Sofa.Simulation.Common REQUIRED)
@@ -38,6 +41,7 @@ sofa_find_package(Sofa.Component.Collision.Detection.Algorithm REQUIRED)
 sofa_find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
 sofa_find_package(Sofa.Component.Mapping.Linear REQUIRED)
 sofa_find_package(Sofa.Component.StateContainer REQUIRED)
+sofa_find_package(Sofa.Component.Mass REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} Sofa.Simulation.Common)
@@ -45,6 +49,7 @@ target_link_libraries(${PROJECT_NAME} Sofa.Component.Collision.Detection.Algorit
 target_link_libraries(${PROJECT_NAME} Sofa.Component.SolidMechanics.FEM.Elastic)
 target_link_libraries(${PROJECT_NAME} Sofa.Component.Mapping.Linear)
 target_link_libraries(${PROJECT_NAME} Sofa.Component.StateContainer)
+target_link_libraries(${PROJECT_NAME} Sofa.Component.Mass)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-DSOFA_MULTITHREADING_PLUGIN")
 
