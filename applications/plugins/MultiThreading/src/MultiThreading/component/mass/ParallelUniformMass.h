@@ -33,6 +33,14 @@ class ParallelUniformMass : public sofa::component::mass::UniformMass<DataTypes>
 public:
     SOFA_CLASS(SOFA_TEMPLATE(ParallelUniformMass, DataTypes),
                SOFA_TEMPLATE(sofa::component::mass::UniformMass, DataTypes));
+
+    using VecCoord = typename DataTypes::VecCoord;
+    using VecDeriv = typename DataTypes::VecDeriv;
+    using DataVecCoord = sofa::core::objectmodel::Data<VecCoord>;
+    using DataVecDeriv = sofa::core::objectmodel::Data<VecDeriv>;
+
+    void accFromF(const sofa::core::MechanicalParams* mparams, DataVecDeriv& a, const DataVecDeriv& f) override;
+    void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v) override;
 };
 
 }

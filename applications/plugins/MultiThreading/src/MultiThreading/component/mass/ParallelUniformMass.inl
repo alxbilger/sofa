@@ -22,8 +22,23 @@
 #pragma once
 
 #include <MultiThreading/component/mass/ParallelUniformMass.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace multithreading::component::mass
 {
+template <class DataTypes>
+void ParallelUniformMass<DataTypes>::accFromF(const sofa::core::MechanicalParams* mparams,
+    DataVecDeriv& a, const DataVecDeriv& f)
+{
+    Inherit1::accFromF(mparams, a, f);
+}
+
+template <class DataTypes>
+void ParallelUniformMass<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams,
+    DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v)
+{
+    sofa::helper::ScopedAdvancedTimer timer("mass");
+    Inherit1::addForce(mparams, f, x, v);
+}
 
 }
