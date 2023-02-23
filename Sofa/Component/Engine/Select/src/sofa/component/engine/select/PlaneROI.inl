@@ -193,7 +193,7 @@ void PlaneROI<DataTypes>::computePlane(unsigned int planeIndex)
 
 
 template <class DataTypes>
-bool PlaneROI<DataTypes>::isPointInPlane(const typename DataTypes::CPos& p)
+bool PlaneROI<DataTypes>::isPointInPlane(const CPos& p)
 {
     Vec3 pv0 = (p-p0);
     Vec3 pv1 = (p-p2);

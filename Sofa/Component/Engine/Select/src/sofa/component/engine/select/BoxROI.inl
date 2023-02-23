@@ -420,7 +420,7 @@ bool BoxROI<DataTypes>::isPointInAlignedBox(const typename DataTypes::CPos& p, c
 }
 
 template <class DataTypes>
-bool BoxROI<DataTypes>::isPointInBoxes(const typename DataTypes::CPos& p)
+bool BoxROI<DataTypes>::isPointInBoxes(const CPos& p)
 {
     const vector<type::Vec6>& alignedBoxes = d_alignedBoxes.getValue();
 

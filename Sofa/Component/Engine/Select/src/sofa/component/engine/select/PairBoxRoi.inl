@@ -107,7 +107,7 @@ void PairBoxROI<DataTypes>::reinit()
 }
 
 template <class DataTypes>
-bool PairBoxROI<DataTypes>::isPointInBox(const typename DataTypes::CPos& p, const Vec6& b)
+bool PairBoxROI<DataTypes>::isPointInBox(const CPos& p, const Vec6& b)
 {
     return ( p[0] >= b[0] && p[0] <= b[3] && p[1] >= b[1] && p[1] <= b[4] && p[2] >= b[2] && p[2] <= b[5] );
 }
