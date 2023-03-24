@@ -166,12 +166,13 @@ void GenericConstraintCorrection::addComplianceInConstraintSpace(const Constrain
     }
 
     factor *= complianceFactor;
-    // use the Linear solver to compute J*inv(M)*Jt, where M is the mechanical linear system matrix
+    // use the Linear solver to compute W = J*inv(M)*Jt, where M is the mechanical linear system matrix
     l_linearSolver.get()->buildComplianceMatrix(cparams, W, factor);
 }
 
 void GenericConstraintCorrection::computeMotionCorrectionFromLambda(const ConstraintParams* cparams, MultiVecDerivId dx, const linearalgebra::BaseVector * lambda)
 {
+    // M^{-1} * J^T * f
     l_linearSolver.get()->applyConstraintForce(cparams, dx, lambda);
 }
 

@@ -222,13 +222,11 @@ bool GenericConstraintSolver::prepareStates(const core::ConstraintParams *cParam
     return true;
 }
 
-bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams, MultiVecId /*res1*/, MultiVecId /*res2*/)
+void GenericConstraintSolver::assembleJacobianConstraintMatrix(const core::ConstraintParams* cParams, unsigned numConstraints) const
 {
-    unsigned int numConstraints = 0;
-
-    sofa::helper::AdvancedTimer::stepBegin("Accumulate Constraint");
     // mechanical action executed from root node to propagate the constraints
     MechanicalResetConstraintVisitor(cParams).execute(context);
+
     // calling buildConstraintMatrix
     MechanicalBuildConstraintMatrix(cParams, cParams->j(), numConstraints).execute(context);
 
@@ -237,28 +235,10 @@ bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams,
     // suppress the constraints that are on DOFS currently concerned by projective constraint
     core::MechanicalParams mparams = core::MechanicalParams(*cParams);
     MechanicalProjectJacobianMatrixVisitor(&mparams).execute(context);
+}
 
-    sofa::helper::AdvancedTimer::stepEnd  ("Accumulate Constraint");
-    sofa::helper::AdvancedTimer::valSet("numConstraints", numConstraints);
-
-    current_cp->clear(numConstraints);
-
-    {
-        sofa::helper::ScopedAdvancedTimer getConstraintValueTimer("Get Constraint Value");
-        MechanicalGetConstraintViolationVisitor(cParams, &current_cp->dFree).execute(context);
-    }
-
-    {
-        sofa::helper::ScopedAdvancedTimer getConstraintResolutionsTimer("Get Constraint Resolutions");
-        MechanicalGetConstraintResolutionVisitor(cParams, current_cp->constraintsResolutions).execute(context);
-    }
-
-    msg_info() <<"GenericConstraintSolver: "<<numConstraints<<" constraints";
-
-    // Test if the nodes containing the constraint correction are active (not sleeping)
-    for (unsigned int i = 0; i < constraintCorrections.size(); i++)
-        constraintCorrectionIsActive[i] = !constraintCorrections[i]->getContext()->isSleeping();
-
+void GenericConstraintSolver::assembleW(const core::ConstraintParams* cParams, unsigned numConstraints)
+{
     // Resolution depending on the method selected
     switch ( d_resolutionMethod.getValue().getSelectedId() )
     {
@@ -280,6 +260,42 @@ bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams,
         default:
             msg_error() << "Wrong \"resolutionMethod\" given";
     }
+}
+
+void GenericConstraintSolver::computeDFree(const core::ConstraintParams* cParams) const
+{
+    sofa::helper::ScopedAdvancedTimer getConstraintValueTimer("Get Constraint Value");
+    MechanicalGetConstraintViolationVisitor(cParams, &current_cp->dFree).execute(context);
+}
+
+bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams, MultiVecId /*res1*/, MultiVecId /*res2*/)
+{
+    unsigned int numConstraints = 0;
+
+    sofa::helper::AdvancedTimer::stepBegin("Accumulate Constraint");
+
+
+    assembleJacobianConstraintMatrix(cParams, numConstraints);
+
+    sofa::helper::AdvancedTimer::stepEnd  ("Accumulate Constraint");
+    sofa::helper::AdvancedTimer::valSet("numConstraints", numConstraints);
+
+    current_cp->clear(numConstraints);
+
+    computeDFree(cParams);
+
+    {
+        sofa::helper::ScopedAdvancedTimer getConstraintResolutionsTimer("Get Constraint Resolutions");
+        MechanicalGetConstraintResolutionVisitor(cParams, current_cp->constraintsResolutions).execute(context);
+    }
+
+    msg_info() <<"GenericConstraintSolver: "<<numConstraints<<" constraints";
+
+    // Test if the nodes containing the constraint correction are active (not sleeping)
+    for (unsigned int i = 0; i < constraintCorrections.size(); i++)
+        constraintCorrectionIsActive[i] = !constraintCorrections[i]->getContext()->isSleeping();
+
+    assembleW(cParams, numConstraints);
 
     return true;
 }
@@ -441,6 +457,19 @@ void printLCP(std::ostream& file, SReal *q, SReal **M, SReal *f, int dim, bool p
     file << "      ];" << msgendl << msgendl;
 }
 
+void GenericConstraintSolver::assembleF()
+{
+    if(d_computeConstraintForces.getValue())
+    {
+        WriteOnlyAccessor<Data<type::vector<SReal>>> constraints = d_constraintForces;
+        constraints.resize(current_cp->getDimension());
+        for(int i=0; i<current_cp->getDimension(); i++)
+        {
+            constraints[i] = current_cp->getF()[i];
+        }
+    }
+}
+
 bool GenericConstraintSolver::solveSystem(const core::ConstraintParams * /*cParams*/, MultiVecId /*res1*/, MultiVecId /*res2*/)
 {
     current_cp->tolerance = tolerance.getValue();
@@ -496,15 +525,7 @@ bool GenericConstraintSolver::solveSystem(const core::ConstraintParams * /*cPara
         msg_info() << tmp.str() ;
     }
 
-    if(d_computeConstraintForces.getValue())
-    {
-        WriteOnlyAccessor<Data<type::vector<SReal>>> constraints = d_constraintForces;
-        constraints.resize(current_cp->getDimension());
-        for(int i=0; i<current_cp->getDimension(); i++)
-        {
-            constraints[i] = current_cp->getF()[i];
-        }
-    }
+    assembleF();
 
     return true;
 }
@@ -537,10 +558,13 @@ bool GenericConstraintSolver::applyCorrection(const core::ConstraintParams *cPar
             BaseConstraintCorrection* cc = constraintCorrections[i];
             if (!cc->isActive()) continue;
 
+            // dcorrection = M^{-1} * J^T * f
             sofa::helper::AdvancedTimer::stepBegin("ComputeCorrection on: " + cc->getName());
             cc->computeMotionCorrectionFromLambda(cParams, this->getDx(), &current_cp->f);
             sofa::helper::AdvancedTimer::stepEnd("ComputeCorrection on: " + cc->getName());
 
+            //dx = dx_free + dcorrection * positionFactor;
+            //dv = dv_free + dcorrection * velocityFactor;
             sofa::helper::AdvancedTimer::stepBegin("ApplyCorrection on: " + cc->getName());
             cc->applyMotionCorrection(cParams, xId, vId, cParams->dx(), this->getDx() );
             sofa::helper::AdvancedTimer::stepEnd("ApplyCorrection on: " + cc->getName());
