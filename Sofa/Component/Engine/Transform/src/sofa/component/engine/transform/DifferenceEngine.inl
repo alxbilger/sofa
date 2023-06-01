@@ -66,8 +66,10 @@ void DifferenceEngine<DataType>::doUpdate()
 
     out.resize( in.size() );
 
+    const auto in_minus_sub = in - sub;
+
     for( size_t i=0 ; i<in.size() ; ++i )
-        out[i] = in[i] - sub[i];
+        out[i] = in_minus_sub[i];
 }
 
 } //namespace sofa::component::engine::transform

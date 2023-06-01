@@ -24,3 +24,4 @@
 #include <sofa/helper/accessor/ReadAccessor.h>
 #include <sofa/helper/accessor/WriteAccessor.h>
 #include <sofa/helper/accessor/WriteOnlyAccessor.h>
+#include <sofa/helper/accessor/BinaryOperationOnReadAccessor.h>

@@ -49,5 +49,4 @@ TEST(ReadAccessor, VectorTypes)
     EXPECT_EQ(accessor.end(), vector.end());
 }
 
-
 }

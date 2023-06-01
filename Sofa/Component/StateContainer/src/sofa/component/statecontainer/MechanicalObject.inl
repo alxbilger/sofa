@@ -1928,13 +1928,13 @@ void MechanicalObject<DataTypes>::vOp(const core::ExecParams* params, core::VecI
                         auto vv = this->getWriteOnlyAccessor<vtype_v>(v);
                         auto va = this->getReadAccessor<vtype_v>(a);
                         auto vb = this->getReadAccessor<vtype_b>(b);
+                        auto vab = va + vb;
 
                         vv.resize(va.size());
 
                         for (unsigned int i = 0; i < vb.size(); ++i)
                         {
-                            vv[i] = va[i];
-                            vv[i] += vb[i];
+                            vv[i] = vab[i];
                         }
                     });
                     msg_error_when(!isApplied) << "Invalid vOp operation 7 ("<<v<<','<<a<<','<<b<<','<<f<<")";
@@ -1948,13 +1948,13 @@ void MechanicalObject<DataTypes>::vOp(const core::ExecParams* params, core::VecI
                         auto vv = this->getWriteOnlyAccessor<vtype_v>(v);
                         auto va = this->getReadAccessor<vtype_v>(a);
                         auto vb = this->getReadAccessor<vtype_b>(b);
+                        auto vabf = va + vb * static_cast<Real>(f);
 
                         vv.resize(va.size());
 
                         for (unsigned int i = 0; i < vb.size(); ++i)
                         {
-                            vv[i] = va[i];
-                            vv[i] += vb[i] * static_cast<Real>(f);
+                            vv[i] = vabf[i];
                         }
                     });
                     msg_error_when(!isApplied) << "Invalid vOp operation 8 ("<<v<<','<<a<<','<<b<<','<<f<<")";

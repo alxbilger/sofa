@@ -10,6 +10,7 @@ set(SOURCE_FILES
     OptionsGroup_test.cpp
     TagFactory_test.cpp
     Utils_test.cpp
+    accessor/BinaryOperationOnReadAccessor_test.cpp
     accessor/ReadAccessor.cpp
     accessor/WriteAccessor.cpp
     io/MeshOBJ_test.cpp

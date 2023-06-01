@@ -54,6 +54,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/hash.h
     ${SRC_ROOT}/init.h
     ${SRC_ROOT}/integer_id.h
+    ${SRC_ROOT}/accessor/BinaryOperationOnReadAccessor.h
     ${SRC_ROOT}/accessor/ReadAccessor.h
     ${SRC_ROOT}/accessor/ReadAccessorVector.h
     ${SRC_ROOT}/accessor/WriteAccessor.h
