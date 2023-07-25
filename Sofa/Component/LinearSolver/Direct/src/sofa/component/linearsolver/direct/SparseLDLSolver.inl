@@ -31,6 +31,8 @@
 #include <fstream>
 #include <iomanip>      // std::setprecision
 #include <string>
+#include <sofa/linearalgebra/DiagonalSystemSolver.h>
+#include <sofa/linearalgebra/TriangularSystemSolver.h>
 #include <sofa/simulation/MainTaskSchedulerFactory.h>
 #include <sofa/simulation/ParallelForEach.h>
 
