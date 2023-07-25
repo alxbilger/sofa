@@ -27,10 +27,6 @@
 #include <sofa/component/linearsolver/direct/SparseCommon.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <csparse.h>
-#include <sofa/linearalgebra/DiagonalSystemSolver.h>
-#include <sofa/linearalgebra/TriangularSystemSolver.h>
-
-
 extern "C" {
 #include <metis.h>
 }
@@ -56,23 +52,23 @@ inline void CSPARSE_symbolic (int n,int * M_colptr,int * M_rowind,int * colptr,i
 {
     for (int k = 0 ; k < n ; k++)
     {
-        Parent [k] = -1 ;	    // parent of k is not yet known 
-        Flag [k] = k ;		    // mark node k as visited 
-        Lnz [k] = 0 ;		    // count of nonzeros in column k of L 
-        const int kk = perm[k];  // kth original, or permuted, column 
+        Parent [k] = -1 ;	    // parent of k is not yet known
+        Flag [k] = k ;		    // mark node k as visited
+        Lnz [k] = 0 ;		    // count of nonzeros in column k of L
+        const int kk = perm[k];  // kth original, or permuted, column
         for (int p = M_colptr[kk] ; p < M_colptr[kk+1] ; p++)
         {
-            // A (i,k) is nonzero (original or permuted A) 
+            // A (i,k) is nonzero (original or permuted A)
             int i = invperm[M_rowind[p]];
             if (i < k)
             {
-                // follow path from i to root of etree, stop at flagged node 
+                // follow path from i to root of etree, stop at flagged node
                 for ( ; Flag [i] != k ; i = Parent [i])
                 {
-                    // find parent of i if not yet determined 
+                    // find parent of i if not yet determined
                     if (Parent [i] == -1) Parent [i] = k ;
-                    Lnz [i]++ ;				// L (k,i) is nonzero 
-                    Flag [i] = k ;			// mark i as visited 
+                    Lnz [i]++ ;				// L (k,i) is nonzero
+                    Flag [i] = k ;			// mark i as visited
                 }
             }
         }
@@ -90,42 +86,42 @@ inline void CSPARSE_numeric(int n,int * M_colptr,int * M_rowind,Real * M_values,
 
     for (int k = 0 ; k < n ; k++)
     {
-        Y [k] = 0.0 ;		    // Y(0:k) is now all zero 
-        top = n ;		    // stack for pattern is empty 
-        Flag [k] = k ;		    // mark node k as visited 
-        Lnz [k] = 0 ;		    // count of nonzeros in column k of L 
-        kk = perm[k];  // kth original, or permuted, column 
+        Y [k] = 0.0 ;		    // Y(0:k) is now all zero
+        top = n ;		    // stack for pattern is empty
+        Flag [k] = k ;		    // mark node k as visited
+        Lnz [k] = 0 ;		    // count of nonzeros in column k of L
+        kk = perm[k];  // kth original, or permuted, column
         for (p = M_colptr[kk] ; p < M_colptr[kk+1] ; p++)
         {
-            i = invperm[M_rowind[p]];	// get A(i,k) 
+            i = invperm[M_rowind[p]];	// get A(i,k)
             if (i <= k)
             {
-                Y[i] += M_values[p] ;  // scatter A(i,k) into Y (sum duplicates) 
+                Y[i] += M_values[p] ;  // scatter A(i,k) into Y (sum duplicates)
                 for (len = 0 ; Flag[i] != k ; i = Parent[i])
                 {
-                    Pattern [len++] = i ;   // L(k,i) is nonzero 
-                    Flag [i] = k ;	    // mark i as visited 
+                    Pattern [len++] = i ;   // L(k,i) is nonzero
+                    Flag [i] = k ;	    // mark i as visited
                 }
                 while (len > 0) Pattern[--top] = Pattern [--len] ;
             }
         }
-        // compute numerical values kth row of L (a sparse triangular solve) 
-        D[k] = Y [k] ;		    // get D(k,k) and clear Y(k) 
+        // compute numerical values kth row of L (a sparse triangular solve)
+        D[k] = Y [k] ;		    // get D(k,k) and clear Y(k)
         Y[k] = 0.0 ;
         for ( ; top < n ; top++)
         {
-            i = Pattern [top] ;	    // Pattern [top:n-1] is pattern of L(:,k) 
-            yi = Y [i] ;	    // get and clear Y(i) 
+            i = Pattern [top] ;	    // Pattern [top:n-1] is pattern of L(:,k)
+            yi = Y [i] ;	    // get and clear Y(i)
             Y [i] = 0.0 ;
             for (p = colptr[i] ; p < colptr[i] + Lnz [i] ; p++)
             {
                 Y[rowind[p]] -= values[p] * yi ;
             }
-            l_ki = yi / D[i] ;	    // the nonzero entry L(k,i) 
+            l_ki = yi / D[i] ;	    // the nonzero entry L(k,i)
             D[k] -= l_ki * yi ;
-            rowind[p] = k ;	    // store L(k,i) in column form of L 
+            rowind[p] = k ;	    // store L(k,i) in column form of L
             values[p] = l_ki ;
-            Lnz[i]++ ;		    // increment count of nonzeros in col i 
+            Lnz[i]++ ;		    // increment count of nonzeros in col i
         }
 
         if (D[k] == 0.0)
@@ -161,44 +157,36 @@ protected :
     {}
 
     template<class VecInt,class VecReal>
-    void solve_cpu(Real * x,const Real * b,SparseLDLImplInvertData<VecInt,VecReal> * data)
-    {
+    void solve_cpu(Real * x,const Real * b,SparseLDLImplInvertData<VecInt,VecReal> * data) {
         int n = data->n;
-        if (n == 0)
-        {
-            return;
-        }
-
+        const Real * invD = data->invD.data();
         const int * perm = data->perm.data();
+        const int * L_colptr = data->L_colptr.data();
+        const int * L_rowind = data->L_rowind.data();
+        const Real * L_values = data->L_values.data();
+        const int * LT_colptr = data->LT_colptr.data();
+        const int * LT_rowind = data->LT_rowind.data();
+        const Real * LT_values = data->LT_values.data();
 
         Tmp.clear();
         Tmp.fastResize(n);
 
-        // A x = b
-        //   <=> (L * D * L^T) * x = b
-        //   <=> D * L^T * x = L^-1 * b         # Step 1: compute L^-1 * b
-        //   <=> L^T * x = D^-1 * L^-1 * b      # Step 2: compute D^-1 * L^-1 * b
-        //   <=> x = L^T^-1 * D^1 * L^-1 * b    # Step 3: compute L^T^-1 * D^1 * L^-1 * b
-
-        // apply the permutation to the right-hand side
-        for (int i = 0; i < n; ++i)
-        {
-            Tmp[i] = b[perm[i]];
+        for (int j = 0 ; j < n ; j++) {
+            Real acc = b[perm[j]];
+            for (int p = LT_colptr [j] ; p < LT_colptr[j+1] ; p++) {
+                acc -= LT_values[p] * Tmp[LT_rowind[p]];
+            }
+            Tmp[j] = acc;
         }
 
-        // Step 1: compute L^-1 * b
-        sofa::linearalgebra::solveLowerTriangularSystem(n, Tmp.data(), Tmp.data(), data->LT_colptr.data(), data->LT_rowind.data(), data->LT_values.data());
+        for (int j = n-1 ; j >= 0 ; j--) {
+            Tmp[j] *= invD[j];
 
-        // Step 2: compute D^-1 * [L^-1 * b]
-        sofa::linearalgebra::solveDiagonalSystemUsingInvertedValues(n, Tmp.data(), Tmp.data(), data->invD.data());
+            for (int p = L_colptr[j] ; p < L_colptr[j+1] ; p++) {
+                Tmp[j] -= L_values[p] * Tmp[L_rowind[p]];
+            }
 
-        // Step 3: compute L^T^-1 * [D^1 * L^-1 * b]
-        sofa::linearalgebra::solveUpperTriangularSystem(n, Tmp.data(), Tmp.data(), data->L_colptr.data(), data->L_rowind.data(), data->L_values.data());
-
-        // apply the permutation to the solution
-        for (int i = 0; i < n; ++i)
-        {
-            x[perm[i]] = Tmp[i];
+            x[perm[j]] = Tmp[j];
         }
     }
 
