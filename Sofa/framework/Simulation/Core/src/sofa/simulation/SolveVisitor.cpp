@@ -82,7 +82,7 @@ void SolveVisitor::processNodeBottomUp(simulation::Node*)
     {
         auto* taskScheduler = sofa::simulation::MainTaskSchedulerFactory::createInRegistry();
         assert(taskScheduler != nullptr);
-        sofa::helper::ScopedAdvancedTimer parallelSolveTimer("waitParallelTasks");
+        SCOPED_TIMER("waitParallelTasks");
         taskScheduler->workUntilDone(&m_status);
     }
     m_tasks.clear();

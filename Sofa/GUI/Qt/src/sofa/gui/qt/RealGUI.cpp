@@ -2132,7 +2132,7 @@ void RealGUI::exportOBJ (simulation::Node* root,  bool exportMTL )
 {
     if ( !root ) return;
 
-    sofa::helper::ScopedAdvancedTimer exportOBJTimer("exportOBJ");
+    SCOPED_TIMER("exportOBJ");
 
     const std::string sceneFileName(this->windowFilePath ().toStdString());
     std::ostringstream ofilename;

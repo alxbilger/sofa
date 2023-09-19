@@ -293,7 +293,7 @@ protected :
         // we test if the matrix has the same struct as previous factorized matrix
         if (data->new_factorization_needed  || !d_precomputeSymbolicDecomposition.getValue() )
         {
-            sofa::helper::ScopedAdvancedTimer factorizationTimer("symbolic_factorization");
+            SCOPED_TIMER("symbolic_factorization");
             msg_info() << "Recomputing new factorization" ;
 
             data->perm.clear();data->perm.fastResize(data->n);
@@ -336,7 +336,7 @@ protected :
 
         //Numeric Factorization
         {
-            sofa::helper::ScopedAdvancedTimer factorizationTimer("numeric_factorization");
+            SCOPED_TIMER("numeric_factorization");
             LDL_numeric(data->n, M_colptr, M_rowind, M_values, colptr, rowind, values, D,
                         data->perm.data(), data->invperm.data(), data->Parent.data());
 

@@ -65,7 +65,7 @@ bool LCPConstraintSolver::prepareStates(const core::ConstraintParams * /*cParams
 
     msg_info() <<" propagate DXn performed - collision called" ;
 
-    helper::ScopedAdvancedTimer resetContactForceTimer("resetContactForce");
+    SCOPED_TIMER("resetContactForce");
 
     for (const auto cc : l_constraintCorrections)
     {
@@ -86,13 +86,13 @@ bool LCPConstraintSolver::buildSystem(const core::ConstraintParams * /*cParams*/
 
     if(build_lcp.getValue())
     {
-        helper::ScopedAdvancedTimer buildTimer("build_LCP");
+        SCOPED_TIMER("build_LCP");
 
         build_LCP();
     }
     else
     {
-        helper::ScopedAdvancedTimer buildTimer("build_problem");
+        SCOPED_TIMER("build_problem");
 
         build_problem_info();
     }
@@ -277,14 +277,14 @@ void LCPConstraintSolver::init()
 
 void LCPConstraintSolver::resetConstraints(core::ConstraintParams cparams)
 {
-    helper::ScopedAdvancedTimer resetConstraintsTimer("Reset Constraint");
+    SCOPED_TIMER("Reset Constraint");
     MechanicalResetConstraintVisitor resetCtr(&cparams);
     resetCtr.execute(context);
 }
 
 void LCPConstraintSolver::buildConstraintMatrix(core::ConstraintParams cparams)
 {
-    helper::ScopedAdvancedTimer buildConstraintMatrixTimer("Build Constraint Matrix");
+    SCOPED_TIMER("Build Constraint Matrix");
 
     MechanicalBuildConstraintMatrix buildConstraintMatrix(&cparams, cparams.j(), _numConstraints );
     buildConstraintMatrix.execute(context);
@@ -292,7 +292,7 @@ void LCPConstraintSolver::buildConstraintMatrix(core::ConstraintParams cparams)
 
 void LCPConstraintSolver::accumulateMatrixDeriv(core::ConstraintParams cparams)
 {
-    helper::ScopedAdvancedTimer accumulateMatrixDerivTimer("Accumulate Matrix Deriv");
+    SCOPED_TIMER("Accumulate Matrix Deriv");
 
     MechanicalAccumulateMatrixDeriv accumulateMatrixDeriv(&cparams, cparams.j());
     accumulateMatrixDeriv.execute(context);
@@ -372,7 +372,7 @@ void LCPConstraintSolver::build_LCP()
     lcp->clear(_numConstraints);
 
     {
-        helper::ScopedAdvancedTimer getConstraintValueTimer("Get Constraint Value");
+        SCOPED_TIMER("Get Constraint Value");
         MechanicalGetConstraintViolationVisitor(&cparams, _dFree).execute(context);
     }
 
@@ -722,7 +722,7 @@ void LCPConstraintSolver::build_problem_info()
     _Wdiag->resize(_numConstraints,_numConstraints);
 
     {
-        helper::ScopedAdvancedTimer getConstraintValueTimer("Get Constraint Value");
+        SCOPED_TIMER("Get Constraint Value");
         MechanicalGetConstraintViolationVisitor(&cparams, _dFree).execute(context);
     }
 
@@ -975,7 +975,7 @@ int LCPConstraintSolver::nlcp_gaussseidel_unbuilt(SReal *dfree, SReal *f, std::v
 
     buildDiagonalTimer.reset();
 
-    helper::ScopedAdvancedTimer gaussSeidelTimer("GAUSS_SEIDEL");
+    SCOPED_TIMER("GAUSS_SEIDEL");
 
     SReal error = 0;
     SReal dn, dt, ds, fn, ft, fs, fn0;
@@ -1205,7 +1205,7 @@ int LCPConstraintSolver::lcp_gaussseidel_unbuilt(SReal *dfree, SReal *f, std::ve
     }
 
     buildDiagonalTimer.reset();
-    sofa::helper::ScopedAdvancedTimer gaussSeidelTimer("GAUSS_SEIDEL");
+    SCOPED_TIMER("GAUSS_SEIDEL");
 
     SReal error = 0;
     SReal dn, fn, fn0;
