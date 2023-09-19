@@ -27,6 +27,10 @@
 #include <sofa/helper/logging/Message.h>
 #include <sofa/helper/logging/ConsoleMessageHandler.h>
 #include <sofa/helper/logging/DefaultStyleMessageFormatter.h>
+#ifdef TRACY_ENABLE
+#include <tracy/Tracy.hpp>
+#endif
+
 
 namespace sofa::helper::logging
 {
@@ -38,6 +42,13 @@ ConsoleMessageHandler::ConsoleMessageHandler(MessageFormatter* formatter)
 
 void ConsoleMessageHandler::process(Message &m) {
     m_formatter->formatMessage(m, m.type()>=Message::Error ? std::cerr : std::cout ) ;
+
+#ifdef TRACY_ENABLE
+    std::stringstream ss;
+    m_formatter->formatMessage(m, ss) ;
+    TracyMessage(ss.str().c_str(), ss.str().size());
+#endif
+
 }
 
 void ConsoleMessageHandler::setMessageFormatter(MessageFormatter* formatter)
