@@ -61,7 +61,7 @@ void EigenDirectSparseSolver<TBlockType, EigenSolver>
     ::invert(Matrix& A)
 {
     {
-        sofa::helper::ScopedAdvancedTimer copyTimer("copyMatrixData");
+        SCOPED_TIMER("copyMatrixData");
         Mfiltered.copyNonZeros(A);
         Mfiltered.compress();
     }
@@ -76,7 +76,7 @@ void EigenDirectSparseSolver<TBlockType, EigenSolver>
 
     if (analyzePattern)
     {
-        sofa::helper::ScopedAdvancedTimer patternAnalysisTimer("patternAnalysis");
+        SCOPED_TIMER("patternAnalysis");
         std::visit([this](auto&& solver)
         {
             solver.analyzePattern(*m_map);
@@ -87,7 +87,7 @@ void EigenDirectSparseSolver<TBlockType, EigenSolver>
     }
 
     {
-        sofa::helper::ScopedAdvancedTimer factorizeTimer("factorization");
+        SCOPED_TIMER("factorization");
         std::visit([this](auto&& solver)
         {
             solver.factorize(*m_map);
