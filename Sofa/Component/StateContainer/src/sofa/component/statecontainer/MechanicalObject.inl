@@ -855,17 +855,39 @@ void MechanicalObject<DataTypes>::copyToBaseMatrix(linearalgebra::BaseMatrix* de
     {
         const MatrixDeriv& matrix = matrixData->getValue();
 
-        for (MatrixDerivRowConstIterator rowIt = matrix.begin(); rowIt != matrix.end(); ++rowIt)
+        bool genericCopy = true;
+        if constexpr (std::is_base_of_v<sofa::linearalgebra::CompressedRowSparseMatrixGeneric<Deriv>, MatrixDeriv>)
         {
-            const int cid = rowIt.index();
-            for (MatrixDerivColConstIterator colIt = rowIt.begin(); colIt != rowIt.end(); ++colIt)
+            if (auto* crs = dynamic_cast<sofa::linearalgebra::CompressedRowSparseMatrixGeneric<Deriv>*>(dest))
             {
-                const unsigned int dof = colIt.index();
-                const Deriv n = colIt.val();
+                crs->nBlockRow = matrix.nBlockRow;
+                crs->nBlockCol = matrix.nBlockCol;
+                crs->rowIndex = matrix.rowIndex;
+                crs->rowBegin = matrix.rowBegin;
+                crs->colsIndex = matrix.colsIndex;
+                crs->colsValue = matrix.colsValue;
+                crs->touchedBlock = matrix.touchedBlock;
+                crs->btemp = matrix.btemp;
+                crs->skipCompressZero = matrix.skipCompressZero;
 
-                for (unsigned int r = 0; r < Deriv::size(); ++r)
+                genericCopy = false;
+            }
+        }
+
+        if (genericCopy)
+        {
+            for (MatrixDerivRowConstIterator rowIt = matrix.begin(); rowIt != matrix.end(); ++rowIt)
+            {
+                const int cid = rowIt.index();
+                for (MatrixDerivColConstIterator colIt = rowIt.begin(); colIt != rowIt.end(); ++colIt)
                 {
-                    dest->add(cid, offset + dof * Deriv::size() + r, n[r]);
+                    const unsigned int dof = colIt.index();
+                    const Deriv n = colIt.val();
+
+                    for (unsigned int r = 0; r < Deriv::size(); ++r)
+                    {
+                        dest->add(cid, offset + dof * Deriv::size() + r, n[r]);
+                    }
                 }
             }
         }
