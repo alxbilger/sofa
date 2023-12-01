@@ -9,6 +9,7 @@ set(HEADER_FILES
     ${SOFATYPESRC_ROOT}/Vec.h
     ${SOFATYPESRC_ROOT}/Mat.h
     ${SOFATYPESRC_ROOT}/MatSym.h
+    ${SOFATYPESRC_ROOT}/MatView.h
     ${SOFATYPESRC_ROOT}/Mat_solve_Cholesky.h
     ${SOFATYPESRC_ROOT}/Mat_solve_LU.h
     ${SOFATYPESRC_ROOT}/Mat_solve_SVD.h

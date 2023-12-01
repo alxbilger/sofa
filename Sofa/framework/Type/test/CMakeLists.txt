@@ -9,6 +9,7 @@ set(SOURCE_FILES
     SVector_test.cpp
     vector_test.cpp
     MatTypes_test.cpp
+    MatView_test.cpp
     VecTypes_test.cpp
     fixed_array_test.cpp
 )
