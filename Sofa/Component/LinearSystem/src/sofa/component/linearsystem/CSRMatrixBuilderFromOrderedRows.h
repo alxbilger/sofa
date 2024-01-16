@@ -85,7 +85,10 @@ struct CSRMatrixBuilderFromOrderedRows : linearalgebra::BaseMatrix
 
     void finalize()
     {
-        m_matrix->rowBegin.push_back(m_matrix->colsValue.size());
+        if (m_isOrdered)
+        {
+            m_matrix->rowBegin.push_back(m_matrix->colsValue.size());
+        }
         m_matrix->compress();
     }
 };

@@ -151,14 +151,14 @@ private:
 template<class JacobianMatrixType>
 class MappingJacobians
 {
-    const BaseMechanicalState& m_mappedState;
+    BaseMechanicalState* m_mappedState;
 
     std::map< core::behavior::BaseMechanicalState*, std::shared_ptr<JacobianMatrixType> > m_map;
 
 public:
 
     MappingJacobians() = delete;
-    MappingJacobians(const BaseMechanicalState& mappedState) : m_mappedState(mappedState) {}
+    MappingJacobians(BaseMechanicalState& mappedState) : m_mappedState(&mappedState) {}
 
     void addJacobianToTopMostParent(std::shared_ptr<JacobianMatrixType> jacobian, core::behavior::BaseMechanicalState* topMostParent)
     {

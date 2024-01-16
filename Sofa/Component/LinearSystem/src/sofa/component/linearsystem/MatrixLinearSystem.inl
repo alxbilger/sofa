@@ -23,6 +23,7 @@
 #include <optional>
 #include <unordered_set>
 #include <mutex>
+#include <sofa/component/linearsystem/CSRMatrixBuilderFromOrderedRows.h>
 #include <sofa/component/linearsystem/MatrixLinearSystem.h>
 #include <sofa/component/linearsystem/TypedMatrixLinearSystem.inl>
 
@@ -1065,14 +1066,20 @@ auto MatrixLinearSystem<TMatrix, TVector>::computeJacobiansFrom(BaseMechanicalSt
 
     // copy the jacobian matrix stored in the mechanical states into a local
     // matrix data structure
-    const auto inputs = m_mappingGraph.getTopMostMechanicalStates(mstate);
-    for (auto* input : inputs)
+    const type::vector<BaseMechanicalState*> inputs = m_mappingGraph.getTopMostMechanicalStates(mstate);
+    for (BaseMechanicalState* input : inputs)
     {
         auto J = std::make_shared<LocalMappedMatrixType<Real> >();
         jacobians.addJacobianToTopMostParent(J, input);
         J->resize(mstate->getMatrixSize(), input->getMatrixSize());
-        unsigned int offset {};
-        input->copyToBaseMatrix(J.get(), mappingJacobianId, offset);
+        {
+            unsigned int offset {};
+            SCOPED_TIMER("copy");
+
+            CSRMatrixBuilderFromOrderedRows Jtemp(J.get());
+            input->copyToBaseMatrix(&Jtemp, mappingJacobianId, offset);
+            Jtemp.finalize();
+        }
         J->fullRows();
     }
 
