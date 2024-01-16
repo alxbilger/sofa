@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(Sofa.Component.LinearSystem_test)
 
 set(SOURCE_FILES
+    CSRMatrixBuilderFromOrderedRows_test.cpp
     MatrixLinearSystem_test.cpp
     MappingGraph_test.cpp
 )
