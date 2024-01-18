@@ -20,17 +20,31 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #pragma once
+#include <sofa/component/linearsystem/config.h>
 #include <sofa/linearalgebra/BaseMatrix.h>
-#include <sofa/linearalgebra/CompressedRowSparseMatrixGeneric.h>
+#include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
 
 
 namespace sofa::component::linearsystem
 {
 
-template<typename TBlock, typename TPolicy = linearalgebra::CRSDefaultPolicy>
+/**
+ * \brief Proxy class to accelerate the convertion of a block CRS matrix to
+ * another block CRS matrix
+ *
+ * This class acts as a BaseMatrix for a fast assembly of another matrix of
+ * type CompressedRowSparseMatrix. The result is a compressed matrix.
+ *
+ * The assembly is optimized when the matrix entries are accumulated in
+ * increasing order rows and columns. Any other order is supported, but it
+ * won't be faster than a regular accumulation.
+ *
+ * \tparam TBlock Type of blocks for the real matrix to build
+ */
+template<typename TBlock>
 struct CSRMatrixBuilderFromOrderedRows : linearalgebra::BaseMatrix
 {
-    using MatrixBackend = linearalgebra::CompressedRowSparseMatrixGeneric<TBlock, TPolicy>;
+    using MatrixBackend = linearalgebra::CompressedRowSparseMatrix<TBlock>;
     using VecIndex = typename MatrixBackend::VecIndex;
     using VecBlock = typename MatrixBackend::VecBlock;
 
@@ -93,4 +107,7 @@ struct CSRMatrixBuilderFromOrderedRows : linearalgebra::BaseMatrix
     }
 };
 
+#if !defined(SOFA_COMPONENT_LINEARSYSTEM_CSRMATRIXBUILDERFROMORDEREDROWS_CPP)
+extern template struct SOFA_COMPONENT_LINEARSYSTEM_API CSRMatrixBuilderFromOrderedRows<SReal>;
+#endif
 }

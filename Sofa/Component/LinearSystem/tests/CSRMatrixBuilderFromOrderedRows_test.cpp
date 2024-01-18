@@ -30,7 +30,9 @@ void generateMatrix(sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>& matr
     typename sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>::Real sparsity)
 {
     using Real = typename sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>::Real;
-    const auto nbNonZero = static_cast<sofa::SignedIndex>(sparsity * static_cast<Real>(nbRows*nbCols));
+    auto NL = sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>::NL;
+    auto NC = sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>::NC;
+    const auto nbNonZero = static_cast<sofa::SignedIndex>(sparsity * static_cast<Real>(nbRows*nbCols)) / (NL * NC);
 
     sofa::testing::LinearCongruentialRandomGenerator lcg(46515387);
 
@@ -38,10 +40,19 @@ void generateMatrix(sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>& matr
 
     for (sofa::SignedIndex i = 0; i < nbNonZero; ++i)
     {
-        const auto value = static_cast<Real>(lcg.generateInUnitRange<Real>());
-        const auto row = lcg.generateInRange(0_sreal, static_cast<SReal>(nbRows));
-        const auto col = lcg.generateInRange(0_sreal, static_cast<SReal>(nbCols));
-        matrix.add(row, col, value);
+        TBlock b;
+        for (int j = 0; j < NL; ++j)
+        {
+            for(int k = 0; k < NC; ++k)
+            {
+                const auto value = static_cast<Real>(lcg.generateInUnitRange<Real>());
+                sofa::linearalgebra::CompressedRowSparseMatrix<TBlock>::traits::vset(b, j, k, value);
+            }
+        }
+
+        const auto row = lcg.generateInRange(0_sreal, static_cast<SReal>(nbRows) / NL);
+        const auto col = lcg.generateInRange(0_sreal, static_cast<SReal>(nbCols) / NC);
+        matrix.add(NL * static_cast<sofa::SignedIndex>(row), NC * static_cast<sofa::SignedIndex>(col), b);
     }
     matrix.compress();
 }
@@ -53,7 +64,7 @@ TEST(CSRMatrixBuilderFromOrderedRows, fromScalarToScalar)
     generateMatrix(initialMatrix, 1500, 1500, 0.05_sreal);
 
     InitialMatrixType builtMatrix;
-    sofa::component::linearsystem::CSRMatrixBuilderFromOrderedRows<InitialMatrixType::Block, InitialMatrixType::Policy> intermediateMatrix(&builtMatrix);
+    sofa::component::linearsystem::CSRMatrixBuilderFromOrderedRows intermediateMatrix(&builtMatrix);
 
     for (InitialMatrixType::Index xi = 0; xi < (InitialMatrixType::Index)initialMatrix.rowIndex.size(); ++xi)
     {
@@ -86,7 +97,7 @@ void foo()
     using Index = typename InitialMatrixType::Index;
 
     sofa::linearalgebra::CompressedRowSparseMatrix<SReal> builtMatrix;
-    sofa::component::linearsystem::CSRMatrixBuilderFromOrderedRows<SReal, typename InitialMatrixType::Policy> intermediateMatrix(&builtMatrix);
+    sofa::component::linearsystem::CSRMatrixBuilderFromOrderedRows intermediateMatrix(&builtMatrix);
 
     using Triplet = std::tuple<Index, Index, SReal >;
     sofa::type::vector<Triplet> initialMatrixTriplets;
@@ -99,12 +110,12 @@ void foo()
         {
             const auto& v = initialMatrix.colsValue[xj];
             const auto col = initialMatrix.colsIndex[xj];
-            for (Index bi = 0; bi < InitialMatrixType::NC; ++bi)
+            for (Index bi = 0; bi < InitialMatrixType::NL; ++bi)
             {
                 for (Index bj = 0; bj < InitialMatrixType::NC; ++bj)
                 {
-                    intermediateMatrix.add(row, col + bj, InitialMatrixType::traits::v(v, bi, bj));
-                    initialMatrixTriplets.emplace_back(row, col + bj, InitialMatrixType::traits::v(v, bi, bj));
+                    intermediateMatrix.add(row + bi, col + bj, InitialMatrixType::traits::v(v, bi, bj));
+                    initialMatrixTriplets.emplace_back(row + bi, col + bj, InitialMatrixType::traits::v(v, bi, bj));
                 }
             }
         }
