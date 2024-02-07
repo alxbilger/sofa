@@ -136,9 +136,8 @@ void ModifyObject::createDialog(core::objectmodel::Base* base)
         //Put first the Property Tab
         tabNames.push_back("Property");
 
-        for( sofa::core::objectmodel::Base::VecData::const_iterator it = fields.begin(); it!=fields.end(); ++it)
+        for(auto data : fields)
         {
-            core::objectmodel::BaseData* data=*it;
             if (!data)
             {
                 dmsg_error("ModifyObject") << "nullptr Data in '" << basenode->getName() << "'" ;
@@ -188,10 +187,8 @@ void ModifyObject::createDialog(core::objectmodel::Base* base)
             }
         }
 
-        for( sofa::core::objectmodel::Base::VecLink::const_iterator it = links.begin(); it!=links.end(); ++it)
+        for(auto link : links)
         {
-            core::objectmodel::BaseLink* link=*it;
-
             if (link->getName().empty()) continue; // ignore unnamed links
             if (!link->storePath() && link->getSize() == 0) continue; // ignore empty links
 
@@ -219,9 +216,8 @@ void ModifyObject::createDialog(core::objectmodel::Base* base)
             connect(currentTab, SIGNAL( TabDirty(bool) ), this, SIGNAL( componentDirty(bool) ) );
         }
 
-        for (std::vector<std::string>::const_iterator it = tabNames.begin(), itend = tabNames.end(); it != itend; ++it)
+        for (const auto & groupName : tabNames)
         {
-            const std::string& groupName = *it;
             std::vector<QTabulationModifyObject* > &tabs=groupTabulation[groupName];
 
             for (unsigned int i=0; i<tabs.size(); ++i)

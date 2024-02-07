@@ -99,8 +99,8 @@ bool PipeProcess::executeProcess(const std::string &command,  const std::vector<
 //    fderr = GetStdHandle(STD_ERROR_HANDLE);
 
     std::string newCommand(command);
-    for (unsigned int i=0 ; i< args.size() ; ++i)
-        newCommand += " " + args[i];
+    for (const auto & arg : args)
+        newCommand += " " + arg;
 
 #else
     fdin = 0;
@@ -184,8 +184,8 @@ bool PipeProcess::executeProcess(const std::string &command,  const std::vector<
         CloseHandle(fds[0][1]);
         CloseHandle(fds[1][1]);
         unsigned long exit = 0;
-        for (int i=0; i<2; ++i)
-            nfill[i] = 0;
+        for (int & i : nfill)
+            i = 0;
         while(true)
         {
             GetExitCodeProcess(piProcInfo.hProcess,&exit);      //while the process is running

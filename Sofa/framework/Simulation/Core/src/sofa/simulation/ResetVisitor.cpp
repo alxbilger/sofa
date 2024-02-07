@@ -36,9 +36,9 @@ void ResetVisitor::processObject(core::objectmodel::BaseObject* obj)
 
 Visitor::Result ResetVisitor::processNodeTopDown(simulation::Node* node)
 {
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        this->processObject(it->get());
+        this->processObject(it.get());
     }
 
     return RESULT_CONTINUE;
@@ -55,9 +55,9 @@ void StoreResetStateVisitor::processObject(core::objectmodel::BaseObject* obj)
 
 Visitor::Result StoreResetStateVisitor::processNodeTopDown(simulation::Node* node)
 {
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        this->processObject(it->get());
+        this->processObject(it.get());
     }
     return RESULT_CONTINUE;
 }

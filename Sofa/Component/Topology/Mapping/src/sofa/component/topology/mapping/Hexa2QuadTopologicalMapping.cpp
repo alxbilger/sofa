@@ -173,9 +173,9 @@ void Hexa2QuadTopologicalMapping::updateTopologicalMappingTopDown()
 
             unsigned int ind_real_last;
 
-            for (unsigned int i = 0; i <tab.size(); ++i)
+            for (unsigned int i : tab)
             {
-                unsigned int k = tab[i];
+                unsigned int k = i;
 
                 auto iter_1 = Glob2LocMap.find(k);
                 if(iter_1 != Glob2LocMap.end())
@@ -233,7 +233,7 @@ void Hexa2QuadTopologicalMapping::updateTopologicalMappingTopDown()
                 }
                 else
                 {
-                    msg_warning() << "Glob2LocMap should have the visible quad " << tab[i] << " - nb quads = " << ind_last;
+                    msg_warning() << "Glob2LocMap should have the visible quad " << i << " - nb quads = " << ind_last;
                 }
 
                 --last;
@@ -340,9 +340,9 @@ void Hexa2QuadTopologicalMapping::updateTopologicalMappingTopDown()
 
             Topology::SetIndices indices;
 
-            for(unsigned int i = 0; i < tab.size(); ++i)
+            for(unsigned int i : tab)
             {
-                indices.push_back(tab[i]);
+                indices.push_back(i);
             }
 
             Topology::SetIndices & tab_indices = indices;

@@ -32,9 +32,9 @@ Visitor::Result DeactivationVisitor::processNodeTopDown(simulation::Node* node)
 {
     if (active)
     {
-        for (simulation::Node::ChildIterator itChild = node->child.begin(); itChild != node->child.end(); ++itChild)
+        for (const auto & itChild : node->child)
         {
-            simulation::Node *child = itChild->get();
+            simulation::Node *child = itChild.get();
             child->setActive(active);
         }
 

@@ -107,9 +107,9 @@ void MeshGmsh::init (std::string filename)
 
 void MeshGmsh::addInGroup(type::vector< sofa::type::PrimitiveGroup>& group, int tag, std::size_t /*eid*/)
 {
-    for (std::size_t i = 0; i<group.size(); i++) {
-        if (tag == group[i].p0) {
-            group[i].nbp++;
+    for (auto & i : group) {
+        if (tag == i.p0) {
+            i.nbp++;
             return;
         }
     }
@@ -124,9 +124,9 @@ void MeshGmsh::addInGroup(type::vector< sofa::type::PrimitiveGroup>& group, int 
 void MeshGmsh::normalizeGroup(type::vector< sofa::type::PrimitiveGroup>& group)
 {
     int start = 0;
-    for (unsigned i = 0; i<group.size(); i++) {
-        group[i].p0 = start;
-        start += group[i].nbp;
+    for (auto & i : group) {
+        i.p0 = start;
+        start += i.nbp;
     }
 }
 

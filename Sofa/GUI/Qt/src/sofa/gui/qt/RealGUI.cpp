@@ -1302,8 +1302,8 @@ void RealGUI::eventNewStep()
     if ( m_frameCounter==0 )
     {
         const ctime_t t = CTime::getRefTime();
-        for ( int i=0; i<10; i++ )
-            beginTime[i] = t;
+        for (unsigned long long & i : beginTime)
+            i = t;
     }
 
     ++m_frameCounter;

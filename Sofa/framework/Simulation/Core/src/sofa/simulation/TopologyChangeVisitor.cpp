@@ -94,9 +94,9 @@ Visitor::Result TopologyChangeVisitor::processNodeTopDown(simulation::Node* node
 
 void TopologyChangeVisitor::processNodeBottomUp(simulation::Node* node)
 {
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        sofa::core::topology::TopologicalMapping* obj = dynamic_cast<sofa::core::topology::TopologicalMapping*>(it->get());
+        sofa::core::topology::TopologicalMapping* obj = dynamic_cast<sofa::core::topology::TopologicalMapping*>(it.get());
         if (obj != nullptr)  // find a TopologicalMapping node among the brothers (it must be the first one written)
         {
             if(obj->propagateFromOutputToInputModel() && obj->getTo() == m_source)  //node == root){

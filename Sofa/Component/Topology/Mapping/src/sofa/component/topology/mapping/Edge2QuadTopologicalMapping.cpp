@@ -346,10 +346,8 @@ void Edge2QuadTopologicalMapping::updateTopologicalMappingTopDown()
                         sofa::type::vector< Index > quadsIndexList;
                         sofa::Size nb_elems = toModel->getNbQuads();
 
-                        for (unsigned int i = 0; i < tab.size(); ++i)
+                        for (unsigned int k : tab)
                         {
-                            Index k = tab[i];
-
                             const Index p0 = edgeArray[k][0];
                             const Index p1 = edgeArray[k][1];
 
@@ -390,9 +388,8 @@ void Edge2QuadTopologicalMapping::updateTopologicalMappingTopDown()
                         sofa::type::vector<Index> ind_real_last;
                         Index ind_last = toModel->getNbQuads();
 
-                        for (unsigned int i = 0; i < tab.size(); ++i)
+                        for (unsigned int k : tab)
                         {
-                            const unsigned int k = tab[i];
                             sofa::type::vector<Index> ind_k;
 
                             const auto iter_1 = In2OutMap.find(k);
@@ -543,13 +540,13 @@ void Edge2QuadTopologicalMapping::updateTopologicalMappingTopDown()
                         for(unsigned int j =0; j < N; j++)
                         {
 
-                            for(unsigned int k = 0; k < ta->ancestorsList[i].size(); k++)
+                            for(unsigned int k : ta->ancestorsList[i])
                             {
-                                my_ancestors.push_back(ta->ancestorsList[i][k]*N + j);
+                                my_ancestors.push_back(k*N + j);
                             }
-                            for(unsigned int k = 0; k < ta->coefs[i].size(); k++)
+                            for(double k : ta->coefs[i])
                             {
-                                my_coefs.push_back(ta->coefs[i][k]*N + j);
+                                my_coefs.push_back(k*N + j);
                             }
 
                             to_ancestorsList.push_back(my_ancestors);

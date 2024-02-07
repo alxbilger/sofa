@@ -356,12 +356,12 @@ Plugin* PluginManager::getPlugin(const std::string& plugin, const std::string& /
 
 Plugin* PluginManager::getPluginByName(const std::string& pluginName)
 {
-    for (PluginMap::iterator itP = m_pluginMap.begin(); itP != m_pluginMap.end(); ++itP)
+    for (auto & itP : m_pluginMap)
     {
-        std::string name(itP->second.getModuleName());
+        std::string name(itP.second.getModuleName());
         if (name == pluginName)
         {
-            return &itP->second;
+            return &itP.second;
         }
     }
 
@@ -442,10 +442,8 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
         if(!recursive) maxRecursiveDepth = 0;
         const std::string downcaseLibName = Utils::downcaseString(libName);
 
-        for (std::vector<std::string>::iterator i = searchPaths.begin(); i!=searchPaths.end(); i++)
+        for (auto & dir : searchPaths)
         {
-            const std::string& dir = *i;
-
             fs::recursive_directory_iterator iter(dir);
             fs::recursive_directory_iterator end;
 

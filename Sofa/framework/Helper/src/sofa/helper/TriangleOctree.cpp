@@ -28,12 +28,12 @@ namespace sofa::helper
 
 TriangleOctree::~TriangleOctree()
 {
-    for(int i=0; i<8; i++)
+    for(auto & i : childVec)
     {
-        if(childVec[i])
+        if(i)
         {
-            delete childVec[i];
-            childVec[i]=nullptr;
+            delete i;
+            i=nullptr;
         }
     }
 }
@@ -53,10 +53,10 @@ void TriangleOctree::draw (sofa::helper::visual::DrawTool* drawTool)
 
         drawTool->setPolygonMode(0, true);
     }
-    for (int i = 0; i < 8; i++)
+    for (auto & i : childVec)
     {
-        if (childVec[i])
-            childVec[i]->draw(drawTool);
+        if (i)
+            i->draw(drawTool);
     }
 }
 
@@ -129,10 +129,10 @@ int TriangleOctree::nearestTriangle (int minIndex,
         minDist = 10e8;
         minIndex = -1;
     }
-    for (unsigned int i = 0; i < objects.size (); i++)
+    for (int object : objects)
     {
         //Triangle t2 (tm, objects[i]);
-        TriangleOctreeRoot::Tri t2 = (*tm->octreeTriangles)[objects[i]];
+        TriangleOctreeRoot::Tri t2 = (*tm->octreeTriangles)[object];
         if (!sofa::geometry::Triangle::rayIntersection(pos[t2[0]], pos[t2[1]], pos[t2[2]], origin, direction, t, u, v))
             continue;
 
@@ -141,7 +141,7 @@ int TriangleOctree::nearestTriangle (int minIndex,
             result.u = u;
             result.v = v;
             result.t = minDist = t;
-            result.tid = minIndex = objects[i];
+            result.tid = minIndex = object;
         }
     }
 
@@ -467,8 +467,8 @@ void TriangleOctree::allTriangles (const type::Vec3 & /*origin*/,
         const type::Vec3 & /*direction*/,
         std::set<int>& results)
 {
-    for (unsigned int i = 0; i < objects.size (); i++)
-        results.insert(objects[i]);
+    for (int object : objects)
+        results.insert(object);
 }
 
 void TriangleOctree::allTriangles (const type::Vec3 & origin,
@@ -477,16 +477,16 @@ void TriangleOctree::allTriangles (const type::Vec3 & origin,
 {
     const TriangleOctreeRoot::VecCoord& pos = *tm->octreePos;
     SReal t, u, v;
-    for (unsigned int i = 0; i < objects.size (); i++)
+    for (int object : objects)
     {
-        TriangleOctreeRoot::Tri t2 = (*tm->octreeTriangles)[objects[i]];
+        TriangleOctreeRoot::Tri t2 = (*tm->octreeTriangles)[object];
         if (sofa::geometry::Triangle::rayIntersection(pos[t2[0]], pos[t2[1]], pos[t2[2]], origin, direction, t, u, v))
         {
             traceResult result;
             result.u = u;
             result.v = v;
             result.t = t;
-            result.tid = objects[i];
+            result.tid = object;
             results.push_back(result);
         }
     }
@@ -760,9 +760,8 @@ void TriangleOctree::bbAllTriangles(const type::Vec3 & bbmin,
 {
     const TriangleOctreeRoot::VecCoord& pos = *tm->octreePos;
     const TriangleOctreeRoot::SeqTriangles& tri = *tm->octreeTriangles;
-    for (unsigned int i = 0; i < objects.size (); i++)
+    for (int t : objects)
     {
-        int t = objects[i];
         type::Vec3 tmin = pos[tri[t][0]];
         type::Vec3 tmax = tmin;
         for (int j=1; j<3; ++j)

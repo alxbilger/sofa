@@ -124,9 +124,9 @@ void PickHandler::init(core::objectmodel::BaseNode* root)
 
     typedef sofa::gui::component::performer::ComponentMouseInteraction::ComponentMouseInteractionFactory MouseFactory;
     const MouseFactory *factory = MouseFactory::getInstance();
-    for (MouseFactory::const_iterator it = factory->begin(); it != factory->end(); ++it)
+    for (const auto & it : *factory)
     {
-        instanceComponents.push_back(it->second->createInstance(nullptr));
+        instanceComponents.push_back(it.second->createInstance(nullptr));
     }
     interaction = instanceComponents.back();
 
@@ -143,7 +143,7 @@ void PickHandler::reset()
 {
     deactivateRay();
     mouseButton = NONE;
-    for (unsigned int i=0; i<instanceComponents.size(); ++i) instanceComponents[i]->reset();
+    for (auto & instanceComponent : instanceComponents) instanceComponent->reset();
 }
 
 void PickHandler::unload()
@@ -248,13 +248,13 @@ void PickHandler::setCompatibleInteractor()
     if (lastPicked.body)
     {
         if (interaction->isCompatible(lastPicked.body->getContext())) return;
-        for (unsigned int i=0; i<instanceComponents.size(); ++i)
+        for (auto & instanceComponent : instanceComponents)
         {
-            if (instanceComponents[i] != interaction &&
-                instanceComponents[i]->isCompatible(lastPicked.body->getContext()))
+            if (instanceComponent != interaction &&
+                instanceComponent->isCompatible(lastPicked.body->getContext()))
             {
                 interaction->detach();
-                interaction = instanceComponents[i];
+                interaction = instanceComponent;
                 if (mouseNode) 
                     interaction->attach(mouseNode.get());
             }
@@ -263,13 +263,13 @@ void PickHandler::setCompatibleInteractor()
     else
     {
         if (interaction->isCompatible(lastPicked.mstate->getContext())) return;
-        for (unsigned int i=0; i<instanceComponents.size(); ++i)
+        for (auto & instanceComponent : instanceComponents)
         {
-            if (instanceComponents[i] != interaction &&
-                instanceComponents[i]->isCompatible(lastPicked.mstate->getContext()))
+            if (instanceComponent != interaction &&
+                instanceComponent->isCompatible(lastPicked.mstate->getContext()))
             {
                 interaction->detach();
-                interaction = instanceComponents[i];
+                interaction = instanceComponent;
                 if (mouseNode) 
                     interaction->attach(mouseNode.get());
             }
@@ -294,9 +294,9 @@ void PickHandler::updateRay(const sofa::type::Vec3 &position,const sofa::type::V
         setCompatibleInteractor();
         interaction->mouseInteractor->setMouseRayModel(mouseCollision.get());
         interaction->mouseInteractor->setBodyPicked(lastPicked);
-        for (unsigned int i=0; i<callbacks.size(); ++i)
+        for (auto & callback : callbacks)
         {
-            callbacks[i]->execute(lastPicked);
+            callback->execute(lastPicked);
         }
     }
     
@@ -390,44 +390,44 @@ BodyPicked PickHandler::findCollisionUsingPipeline()
     const double& maxLength              = mouseCollision->getRay(0).l();
     
     const auto &contacts = mouseCollision->getContacts();
-    for (auto it=contacts.cbegin(); it != contacts.cend(); ++it)
+    for (auto contact : contacts)
     {
 
-        const sofa::type::vector<core::collision::DetectionOutput*>& output = (*it)->getDetectionOutputs();
+        const sofa::type::vector<core::collision::DetectionOutput*>& output = contact->getDetectionOutputs();
         sofa::core::CollisionModel *modelInCollision;
-        for (unsigned int i=0; i<output.size(); ++i)
+        for (auto i : output)
         {
 
-            if (output[i]->elem.first.getCollisionModel() == mouseCollision)
+            if (i->elem.first.getCollisionModel() == mouseCollision)
             {
-                modelInCollision = output[i]->elem.second.getCollisionModel();
+                modelInCollision = i->elem.second.getCollisionModel();
                 if (!modelInCollision->isSimulated()) continue;
 
 
-                const double d = (output[i]->point[1]-origin)*direction;
+                const double d = (i->point[1]-origin)*direction;
                 if (d<0.0 || d>maxLength) continue;
                 if (result.body == nullptr || d < result.rayLength)
                 {
                     result.body=modelInCollision;
-                    result.indexCollisionElement = output[i]->elem.second.getIndex();
-                    result.point = output[i]->point[1];
-                    result.dist  = (output[i]->point[1]-output[i]->point[0]).norm();
+                    result.indexCollisionElement = i->elem.second.getIndex();
+                    result.point = i->point[1];
+                    result.dist  = (i->point[1]-i->point[0]).norm();
                     result.rayLength  = d;
                 }
             }
-            else if (output[i]->elem.second.getCollisionModel() == mouseCollision)
+            else if (i->elem.second.getCollisionModel() == mouseCollision)
             {
-                modelInCollision = output[i]->elem.first.getCollisionModel();
+                modelInCollision = i->elem.first.getCollisionModel();
                 if (!modelInCollision->isSimulated()) continue;
 
-                const double d = (output[i]->point[0]-origin)*direction;
+                const double d = (i->point[0]-origin)*direction;
                 if (d<0.0 || d>maxLength) continue;
                 if (result.body == nullptr || d < result.rayLength)
                 {
                     result.body=modelInCollision;
-                    result.indexCollisionElement = output[i]->elem.first.getIndex();
-                    result.point = output[i]->point[0];
-                    result.dist  = (output[i]->point[1]-output[i]->point[0]).norm();
+                    result.indexCollisionElement = i->elem.first.getIndex();
+                    result.point = i->point[0];
+                    result.dist  = (i->point[1]-i->point[0]).norm();
                     result.rayLength  = d;
                 }
             }

@@ -56,24 +56,24 @@ bool MeshTopologyLoader::addMeshtoTopology()
     const auto& tetra = m_mesh->getTetrahedra();
     const auto& hexa = m_mesh->getHexahedra();
 
-    for (size_t i = 0; i < vertices.size(); ++i)
-        addPoint(vertices[i][0], vertices[i][1], vertices[i][2]);
+    for (const auto & vertice : vertices)
+        addPoint(vertice[0], vertice[1], vertice[2]);
 
-    for (size_t i = 0; i < edges.size(); ++i)
-        addLine(edges[i][0], edges[i][1]);
+    for (auto edge : edges)
+        addLine(edge[0], edge[1]);
 
-    for (size_t i = 0; i < triangles.size(); ++i)
-        addTriangle(triangles[i][0], triangles[i][1], triangles[i][2]);
+    for (auto triangle : triangles)
+        addTriangle(triangle[0], triangle[1], triangle[2]);
 
-    for (size_t i = 0; i < quads.size(); ++i)
-        addQuad(quads[i][0], quads[i][1], quads[i][2], quads[i][3]);
+    for (auto quad : quads)
+        addQuad(quad[0], quad[1], quad[2], quad[3]);
 
-    for (size_t i = 0; i < tetra.size(); ++i)
-        addTetra(tetra[i][0], tetra[i][1], tetra[i][2], tetra[i][3]);
+    for (auto i : tetra)
+        addTetra(i[0], i[1], i[2], i[3]);
 
-    for (size_t i = 0; i < hexa.size(); ++i)
-        addCube(hexa[i][0], hexa[i][1], hexa[i][2], hexa[i][3],
-            hexa[i][4], hexa[i][5], hexa[i][6], hexa[i][7]);
+    for (const auto & i : hexa)
+        addCube(i[0], i[1], i[2], i[3],
+            i[4], i[5], i[6], i[7]);
 
     return true;
 }
@@ -85,18 +85,18 @@ bool MeshTopologyLoader::loadObj(const char *filename)
         return false;
 
     setNbPoints((int)m_mesh->getVertices().size());
-    for (size_t i=0; i<m_mesh->getVertices().size(); i++)
+    for (auto & i : m_mesh->getVertices())
     {
-        addPoint((SReal)m_mesh->getVertices()[i][0],
-                (SReal)m_mesh->getVertices()[i][1],
-                (SReal)m_mesh->getVertices()[i][2]);
+        addPoint((SReal)i[0],
+                (SReal)i[1],
+                (SReal)i[2]);
     }
 
     const auto & facets = m_mesh->getFacets();
     std::set< std::pair<int,int> > edges;
-    for (size_t i=0; i<facets.size(); i++)
+    for (const auto & i : facets)
     {
-        const auto& facet = facets[i][0];
+        const auto& facet = i[0];
         if (facet.size()==2)
         {
             // Line

@@ -196,9 +196,9 @@ void QuadSetTopologyModifier::addQuadsProcess(const sofa::type::vector< Quad > &
     helper::WriteAccessor< Data< sofa::type::vector<Quad> > > m_quad = m_container->d_quad;
     m_quad.reserve(m_quad.size() + quads.size());
 
-    for(size_t i=0; i<quads.size(); ++i)
+    for(auto quad : quads)
     {
-        addQuadProcess(quads[i]);
+        addQuadProcess(quad);
     }
 }
 
@@ -385,9 +385,8 @@ void QuadSetTopologyModifier::removePointsProcess(const sofa::type::vector<Point
             // for all quads connected to the last point
 
             sofa::type::vector<QuadID> &shell = m_container->m_quadsAroundVertex[lastPoint];
-            for(size_t j=0; j<shell.size(); ++j)
+            for(unsigned int q : shell)
             {
-                const QuadID q = shell[j];
                 for(PointID k=0; k<4; ++k)
                 {
                     if(m_quad[q][k] == lastPoint)
@@ -457,12 +456,12 @@ void QuadSetTopologyModifier::renumberPointsProcess( const sofa::type::vector<Po
             }
         }
 
-        for(size_t i=0; i<m_quad.size(); ++i)
+        for(auto & i : m_quad)
         {
-            m_quad[i][0]  = inv_index[ m_quad[i][0]  ];
-            m_quad[i][1]  = inv_index[ m_quad[i][1]  ];
-            m_quad[i][2]  = inv_index[ m_quad[i][2]  ];
-            m_quad[i][3]  = inv_index[ m_quad[i][3]  ];
+            i[0]  = inv_index[ i[0]  ];
+            i[1]  = inv_index[ i[1]  ];
+            i[2]  = inv_index[ i[2]  ];
+            i[3]  = inv_index[ i[3]  ];
         }
     }
 
@@ -475,12 +474,12 @@ void QuadSetTopologyModifier::removeQuads(const sofa::type::vector< QuadID >& qu
         const bool removeIsolatedPoints)
 {
     sofa::type::vector<QuadID> quadIds_filtered;
-    for (size_t i = 0; i < quadIds.size(); i++)
+    for (unsigned int quadId : quadIds)
     {
-        if( quadIds[i] >= m_container->getNumberOfQuads())
-            dmsg_warning() << "Quad: "<< quadIds[i] <<" is out of bound and won't be removed.";
+        if( quadId >= m_container->getNumberOfQuads())
+            dmsg_warning() << "Quad: "<< quadId <<" is out of bound and won't be removed.";
         else
-            quadIds_filtered.push_back(quadIds[i]);
+            quadIds_filtered.push_back(quadId);
     }
 
     /// add the topological changes in the queue

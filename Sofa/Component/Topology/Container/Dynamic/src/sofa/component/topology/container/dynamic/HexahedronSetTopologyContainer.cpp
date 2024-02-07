@@ -72,11 +72,11 @@ void HexahedronSetTopologyContainer::init()
     if (!m_hexahedron.empty())
     {
         // Todo (epernod 2019-03-12): optimise by removing this loop or at least create tetrahedronAV at the same time.
-        for (size_t i=0; i<m_hexahedron.size(); ++i)
+        for (const auto & i : m_hexahedron)
         {
             for(PointID j=0; j<8; ++j)
             {
-                const HexahedronID a = m_hexahedron[i][j];
+                const HexahedronID a = i[j];
                 if (a >= getNbPoints()) setNbPoints(a+1);
             }
         }
@@ -126,13 +126,12 @@ void HexahedronSetTopologyContainer::createEdgeSetArray()
     const helper::ReadAccessor< Data< sofa::type::vector<Hexahedron> > > m_hexahedron = d_hexahedron;
 
     /// create the m_edge array at the same time than it fills the m_edgesInHexahedron array
-    for(size_t i=0; i<m_hexahedron.size(); ++i)
+    for(const auto & t : m_hexahedron)
     {
-        const Hexahedron &t = m_hexahedron[i];
-        for(PointID j=0; j<12; ++j)
+        for(auto j : edgesInHexahedronArray)
         {
-            PointID v1 = t[edgesInHexahedronArray[j][0]];
-            PointID v2 = t[edgesInHexahedronArray[j][1]];
+            PointID v1 = t[j[0]];
+            PointID v2 = t[j[1]];
             const Edge e((v1<v2) ? Edge(v1,v2) : Edge(v2,v1));
 
             if(edgeMap.find(e)==edgeMap.end())
@@ -192,10 +191,8 @@ void HexahedronSetTopologyContainer::createQuadSetArray()
     helper::WriteAccessor< Data< sofa::type::vector<Quad> > > m_quad = d_quad;
     const helper::ReadAccessor< Data< sofa::type::vector<Hexahedron> > > m_hexahedron = d_hexahedron;
 
-    for(size_t i=0; i<m_hexahedron.size(); ++i)
+    for(const auto & h : m_hexahedron)
     {
-        const Hexahedron &h = m_hexahedron[i];
-
         PointID v[4], val;
 
         // Quad 0 :
@@ -639,10 +636,10 @@ QuadSetTopologyContainer::QuadID HexahedronSetTopologyContainer::getNextAdjacent
     }
     else
     {
-        for (size_t i=0; i<QaroundE.size(); ++i)
+        for (unsigned int i : QaroundE)
         {
-            const int res = this->getQuadIndexInHexahedron(QinH, QaroundE[i]);
-            if (res != -1 && QaroundE[i] != the_quadID)
+            const int res = this->getQuadIndexInHexahedron(QinH, i);
+            if (res != -1 && i != the_quadID)
                 return (unsigned int)res;
         }
     }
@@ -986,13 +983,11 @@ const HexahedronSetTopologyContainer::VecHexaID HexahedronSetTopologyContainer::
         elemNextFront = this->getElementAroundElements(elemOnFront); // for each HexaID on the propagation front
 
         // Second Step - Avoid backward direction
-        for (size_t i = 0; i<elemNextFront.size(); ++i)
+        for (unsigned int id : elemNextFront)
         {
             bool find = false;
-            HexaID id = elemNextFront[i];
-
-            for (HexaID j = 0; j<elemAll.size(); ++j)
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll)
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -1039,16 +1034,14 @@ const HexahedronSetTopologyContainer::VecHexaID HexahedronSetTopologyContainer::
     {
         HexahedraAroundVertex hexaAV = this->getHexahedraAroundVertex(the_hexa[i]);
 
-        for (size_t j = 0; j<hexaAV.size(); ++j) // for each hexahedron around the node
+        for (unsigned int id : hexaAV) // for each hexahedron around the node
         {
             bool find = false;
-            HexaID id = hexaAV[j];
-
             if (id == elem)
                 continue;
 
-            for (size_t k = 0; k<elems.size(); ++k) // check no redundancy
-                if (id == elems[k])
+            for (unsigned int elem : elems) // check no redundancy
+                if (id == elem)
                 {
                     find = true;
                     break;
@@ -1073,20 +1066,18 @@ const HexahedronSetTopologyContainer::VecHexaID HexahedronSetTopologyContainer::
     }
 
     VecHexaID elemTmp;
-    for (size_t i = 0; i <elems.size(); ++i) // for each HexaID of input vector
+    for (unsigned int elem : elems) // for each HexaID of input vector
     {
-        VecHexaID elemTmp2 = this->getElementAroundElement(elems[i]);
+        VecHexaID elemTmp2 = this->getElementAroundElement(elem);
 
         elemTmp.insert(elemTmp.end(), elemTmp2.begin(), elemTmp2.end());
     }
 
-    for (size_t i = 0; i<elemTmp.size(); ++i) // for each hexahedron Id found
+    for (unsigned int id : elemTmp) // for each hexahedron Id found
     {
         bool find = false;
-        HexaID id = elemTmp[i];
-
-        for (size_t j = 0; j<elems.size(); ++j) // check no redundancy with input vector
-            if (id == elems[j])
+        for (unsigned int elem : elems) // check no redundancy with input vector
+            if (id == elem)
             {
                 find = true;
                 break;
@@ -1094,8 +1085,8 @@ const HexahedronSetTopologyContainer::VecHexaID HexahedronSetTopologyContainer::
 
         if (!find)
         {
-            for (size_t j = 0; j<elemAll.size(); ++j) // check no redundancy in output vector
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll) // check no redundancy in output vector
+                if (id == j)
                 {
                     find = true;
                     break;

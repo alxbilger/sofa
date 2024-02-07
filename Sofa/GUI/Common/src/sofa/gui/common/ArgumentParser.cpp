@@ -120,13 +120,13 @@ void ArgumentParser::showArgs()
 {
     const auto result = this->getMap();
 
-    for (auto it = result.cbegin(); it != result.cend(); it++)
+    for (const auto & it : result)
     {
-        std::cout << "> " << it->first;
-        if (it->second.empty()) {
+        std::cout << "> " << it.first;
+        if (it.second.empty()) {
             std::cout << "(empty)";
         }
-        std::cout << "=" << it->second << std::endl;
+        std::cout << "=" << it.second << std::endl;
     }
 }
 

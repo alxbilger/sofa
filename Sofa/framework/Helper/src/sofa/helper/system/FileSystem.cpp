@@ -238,8 +238,7 @@ bool FileSystem::listDirectory(const std::string& directoryPath,
         return true;
 
     // Filter files
-    for (std::size_t i=0 ; i!=files.size() ; i++) {
-        const std::string& filename = files[i];
+    for (const auto & filename : files) {
         if (filename.size() >= extension.size())
             if (filename.compare(filename.size()-extension.size(),
                                  std::string::npos, extension) == 0)
@@ -258,10 +257,10 @@ int FileSystem::findFiles(const std::string& directoryPath,
         return -1;
 
     // Filter files
-    for (std::size_t i=0 ; i!=files.size() ; i++)
+    for (const auto & file : files)
     {
-        const std::string& filename = files[i];
-        const std::string& filepath = directoryPath + "/" + files[i];
+        const std::string& filename = file;
+        const std::string& filepath = directoryPath + "/" + file;
 
         if ( isDirectory(filepath) && filename[0] != '.' && depth > 0 )
         {

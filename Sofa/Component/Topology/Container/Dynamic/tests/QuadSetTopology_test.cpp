@@ -202,9 +202,8 @@ bool QuadSetTopology_test::testEdgeBuffers()
     {
         QuadSetTopologyContainer::EdgeID edgeId = i;
         const QuadSetTopologyContainer::QuadsAroundEdge& _elemAEdge = elemAroundEdges[edgeId];
-        for (size_t j = 0; j < _elemAEdge.size(); ++j)
+        for (unsigned int triId : _elemAEdge)
         {
-            QuadSetTopologyContainer::QuadID triId = _elemAEdge[j];
             const QuadSetTopologyContainer::EdgesInQuad& _edgeInElem = edgeInQuads[triId];
             bool found = false;
             for (size_t k = 0; k < _edgeInElem.size(); ++k)

@@ -152,9 +152,9 @@ int PrimitivePositioning::computeRelativePosition(const Polygone *P,const Segmen
 
 	int res = Independent ;
 
-	for(unsigned int k=0;k<intersections.size();++k)
+	for(double intersection : intersections)
 	{
-		Vector3 v( (1-intersections[k])*S->vertex(0) + intersections[k]*S->vertex(1) ) ;
+		Vector3 v( (1-intersection)*S->vertex(0) + intersection*S->vertex(1) ) ;
 
 		if(P->equation(v) < -_EPS) res |= Lower ;
 		if(P->equation(v) >  _EPS) res |= Upper ;

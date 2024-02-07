@@ -143,8 +143,8 @@ void InciseAlongPathPerformer::PerformCompleteIncision()
     const auto& triAroundVertex = startBody.body->getCollisionTopology()->getTrianglesAroundVertex(initialNbPoints);
 
     // Check if point index and triangle index are consistent.
-    for (unsigned int j = 0; j<triAroundVertex.size(); ++j)
-        if (triAroundVertex[j] == initialNbTriangles)
+    for (unsigned int j : triAroundVertex)
+        if (j == initialNbTriangles)
         {
             findTri = true;
             break;

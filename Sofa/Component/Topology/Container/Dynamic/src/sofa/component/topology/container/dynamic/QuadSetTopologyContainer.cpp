@@ -61,11 +61,11 @@ void QuadSetTopologyContainer::init()
     } 
     else if (!m_quads.empty())
     {
-        for (size_t i=0; i<m_quads.size(); ++i)
+        for (auto m_quad : m_quads)
         {
             for(PointID j=0; j<4; ++j)
             {
-                const Index a = m_quads[i][j];
+                const Index a = m_quad[j];
                 if (a >= getNbPoints()) setNbPoints(a+1);
             }
         }
@@ -194,9 +194,8 @@ void QuadSetTopologyContainer::createEdgeSetArray()
     helper::WriteAccessor< Data< sofa::type::vector<Edge> > > m_edge = d_edge;
     const helper::ReadAccessor< Data< sofa::type::vector<Quad> > > m_quad = d_quad;
 
-    for (size_t i=0; i<m_quad.size(); ++i)
+    for (auto t : m_quad)
     {
-        const Quad &t = m_quad[i];
         for(size_t j=0; j<4; ++j)
         {
             const PointID v1 = t[(j+1)%4];
@@ -551,13 +550,11 @@ const QuadSetTopologyContainer::VecQuadID QuadSetTopologyContainer::getConnected
         elemNextFront = this->getElementAroundElements(elemOnFront); // for each QuadID on the propagation front
 
         // Second Step - Avoid backward direction
-        for (size_t i = 0; i<elemNextFront.size(); ++i)
+        for (unsigned int id : elemNextFront)
         {
             bool find = false;
-            QuadID id = elemNextFront[i];
-
-            for (size_t j = 0; j<elemAll.size(); ++j)
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll)
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -604,16 +601,14 @@ const QuadSetTopologyContainer::VecQuadID QuadSetTopologyContainer::getElementAr
     {
         QuadsAroundVertex quadAV = this->getQuadsAroundVertex(the_quad[i]);
 
-        for (size_t j = 0; j<quadAV.size(); ++j) // for each Quad around the node
+        for (unsigned int id : quadAV) // for each Quad around the node
         {
             bool find = false;
-            QuadID id = quadAV[j];
-
             if (id == elem)
                 continue;
 
-            for (size_t k = 0; k<elems.size(); ++k) // check no redundancy
-                if (id == elems[k])
+            for (unsigned int elem : elems) // check no redundancy
+                if (id == elem)
                 {
                     find = true;
                     break;
@@ -638,20 +633,18 @@ const QuadSetTopologyContainer::VecQuadID QuadSetTopologyContainer::getElementAr
     }
 
     VecQuadID elemTmp;
-    for (size_t i = 0; i <elems.size(); ++i) // for each QuadId of input vector
+    for (unsigned int elem : elems) // for each QuadId of input vector
     {
-        VecQuadID elemTmp2 = this->getElementAroundElement(elems[i]);
+        VecQuadID elemTmp2 = this->getElementAroundElement(elem);
 
         elemTmp.insert(elemTmp.end(), elemTmp2.begin(), elemTmp2.end());
     }
 
-    for (size_t i = 0; i<elemTmp.size(); ++i) // for each Quad Id found
+    for (unsigned int id : elemTmp) // for each Quad Id found
     {
         bool find = false;
-        QuadID id = elemTmp[i];
-
-        for (size_t j = 0; j<elems.size(); ++j) // check no redundancy with input vector
-            if (id == elems[j])
+        for (unsigned int elem : elems) // check no redundancy with input vector
+            if (id == elem)
             {
                 find = true;
                 break;
@@ -659,8 +652,8 @@ const QuadSetTopologyContainer::VecQuadID QuadSetTopologyContainer::getElementAr
 
         if (!find)
         {
-            for (size_t j = 0; j<elemAll.size(); ++j) // check no redundancy in output vector
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll) // check no redundancy in output vector
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -703,16 +696,16 @@ bool QuadSetTopologyContainer::hasQuadsAroundEdge() const
 
 void QuadSetTopologyContainer::clearQuadsAroundVertex()
 {
-    for(size_t i=0; i<m_quadsAroundVertex.size(); ++i)
-        m_quadsAroundVertex[i].clear();
+    for(auto & i : m_quadsAroundVertex)
+        i.clear();
 
     m_quadsAroundVertex.clear();
 }
 
 void QuadSetTopologyContainer::clearQuadsAroundEdge()
 {
-    for(size_t i=0; i<m_quadsAroundEdge.size(); ++i)
-        m_quadsAroundEdge[i].clear();
+    for(auto & i : m_quadsAroundEdge)
+        i.clear();
 
     m_quadsAroundEdge.clear();
 }

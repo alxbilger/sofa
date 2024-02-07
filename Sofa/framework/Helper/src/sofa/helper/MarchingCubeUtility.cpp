@@ -585,12 +585,12 @@ namespace sofa::helper
 
         type::Vec3i cubeCoord;
         stack<type::Vec3i> cubesToGenerate; // Stack of cubes to generate.
-        for( sofa::type::vector<type::Vec3i>::const_iterator it = coord.begin(); it != coord.end(); ++it)
+        for(auto it : coord)
         {
-            const type::Vec3i& voxel = *it;
+            const type::Vec3i& voxel = it;
             if ( ( voxel[0] >= bbox.min[0]-1 ) && ( voxel[1] >= bbox.min[1]-1 ) && ( voxel[2] >= bbox.min[2]-1 ) &&
                  ( voxel[0] <= bbox.max[0] ) && ( voxel[1] <= bbox.max[1] ) && ( voxel[2] <= bbox.max[2] ) )
-                cubesToGenerate.push ( *it ); // Adds the first non-trivial cube.
+                cubesToGenerate.push ( it ); // Adds the first non-trivial cube.
         }
 
         int cubeConf;
@@ -823,9 +823,9 @@ namespace sofa::helper
                                      1_sreal / dataVoxelSize[1]*cubeStep,
                                      1_sreal / dataVoxelSize[2]*cubeStep );
 
-        for ( vector<type::Vec3>::const_iterator it = realCoords.begin(); it != realCoords.end(); ++it )
+        for (const auto & realCoord : realCoords)
         {
-            const type::Vec3 seed = ( ( *it ) - verticesTranslation - ( dataVoxelSize/ 2_sreal ) ).linearProduct ( gridSize );
+            const type::Vec3 seed = ( realCoord - verticesTranslation - ( dataVoxelSize/ 2_sreal ) ).linearProduct ( gridSize );
             const type::Vec3i intSeed {static_cast<int>(seed.x()), static_cast<int>(seed.y()), static_cast<int>(seed.z())};
             mCubeCoords.push_back ( intSeed );
             assert ( intSeed[0] >= 0 );
@@ -981,8 +981,8 @@ namespace sofa::helper
                 }
 
         total = 1.0f/total;
-        for ( size_t i=0; i<convolutionKernel.size(); ++i )
-            convolutionKernel[i] *= total;
+        for (float & i : convolutionKernel)
+            i *= total;
     }
 
 } // namespace sofa::helper

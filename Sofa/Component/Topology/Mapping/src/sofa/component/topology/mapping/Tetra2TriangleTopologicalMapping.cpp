@@ -432,10 +432,10 @@ void Tetra2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
 
             sofa::type::vector<Index> indices;
 
-            for(unsigned int i = 0; i < pointRemoved.size(); ++i)
+            for(unsigned int i : pointRemoved)
             {
 
-                indices.push_back(pointRemoved[i]);
+                indices.push_back(i);
             }
 
             Topology::SetIndices & tab_indices = indices;

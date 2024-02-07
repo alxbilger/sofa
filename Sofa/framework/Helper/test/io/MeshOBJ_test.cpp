@@ -71,9 +71,8 @@ protected:
             const auto& facets = mesh.getFacets();
             unsigned int fileNbLines, fileNbTriangles, fileNbQuads;
             fileNbLines = fileNbTriangles = fileNbQuads = 0;
-            for (unsigned int i = 0; i < facets.size(); i++)
+            for (const auto & vtnFacet : facets)
             {
-                const auto& vtnFacet = facets[i];
                 if (vtnFacet[0].size() > 0)
                 {
                     const auto& facet = vtnFacet[0];

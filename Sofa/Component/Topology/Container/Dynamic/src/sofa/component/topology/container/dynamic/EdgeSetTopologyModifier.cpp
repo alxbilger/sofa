@@ -111,9 +111,9 @@ void EdgeSetTopologyModifier::addEdgeProcess(Edge e)
 
 void EdgeSetTopologyModifier::addEdgesProcess(const sofa::type::vector< Edge > &edges)
 {
-    for (sofa::Index i=0; i<edges.size(); ++i)
+    for (auto edge : edges)
     {
-        addEdgeProcess(edges[i]);
+        addEdgeProcess(edge);
     }
 }
 
@@ -347,10 +347,10 @@ void EdgeSetTopologyModifier::renumberPointsProcess( const sofa::type::vector<Po
             }
         }
 
-        for (size_t i=0; i<m_edge.size(); ++i)
+        for (auto & i : m_edge)
         {
-            const EdgeID p0 = inv_index[ m_edge[i][0]  ];
-            const EdgeID p1 = inv_index[ m_edge[i][1]  ];
+            const EdgeID p0 = inv_index[ i[0]  ];
+            const EdgeID p1 = inv_index[ i[1]  ];
 
             // FIXME : Edges should not be flipped during simulations as it will break code such as FEM storing a rest shape.
             // Commented by pierre-jean.bensoussan@digital-trainers.com
@@ -367,8 +367,8 @@ void EdgeSetTopologyModifier::renumberPointsProcess( const sofa::type::vector<Po
             }
             */
 
-            m_edge[i][0] = p0;
-            m_edge[i][1] = p1;
+            i[0] = p0;
+            i[1] = p1;
         }
     }
 
@@ -394,10 +394,10 @@ void EdgeSetTopologyModifier::swapEdgesProcess(const sofa::type::vector< sofa::t
 
     size_t nbEdges = m_container->getNumberOfEdges();
 
-    for (size_t i=0; i<edgesPairs.size(); ++i)
+    for (const auto & edgesPair : edgesPairs)
     {
-        const EdgeID i1 = edgesPairs[i][0];
-        const EdgeID i2 = edgesPairs[i][1];
+        const EdgeID i1 = edgesPair[0];
+        const EdgeID i2 = edgesPair[1];
 
         const EdgeID p11 = m_container->getEdge(i1)[0];
         const EdgeID p12 = m_container->getEdge(i1)[1];
@@ -426,10 +426,10 @@ void EdgeSetTopologyModifier::swapEdgesProcess(const sofa::type::vector< sofa::t
     // now warn about the destruction of the old edges
     sofa::type::vector< EdgeID > indices;
     indices.reserve(2*edgesPairs.size());
-    for (EdgeID i=0; i<edgesPairs.size(); ++i)
+    for (const auto & edgesPair : edgesPairs)
     {
-        indices.push_back( edgesPairs[i][0]  );
-        indices.push_back( edgesPairs[i][1] );
+        indices.push_back( edgesPair[0]  );
+        indices.push_back( edgesPair[1] );
     }
     removeEdgesWarning(indices );
 
@@ -459,10 +459,10 @@ void EdgeSetTopologyModifier::fuseEdgesProcess(const sofa::type::vector< sofa::t
 
     size_t nbEdges=m_container->getNumberOfEdges();
 
-    for (size_t i=0; i<edgesPairs.size(); ++i)
+    for (const auto & edgesPair : edgesPairs)
     {
-        const EdgeID i1 = edgesPairs[i][0];
-        const EdgeID i2 = edgesPairs[i][1];
+        const EdgeID i1 = edgesPair[0];
+        const EdgeID i2 = edgesPair[1];
 
         EdgeID p11 = m_container->getEdge(i1)[0];
         EdgeID p22 = m_container->getEdge(i2)[1];
@@ -493,10 +493,10 @@ void EdgeSetTopologyModifier::fuseEdgesProcess(const sofa::type::vector< sofa::t
     // now warn about the destruction of the old edges
     sofa::type::vector< EdgeID > indices;
     indices.reserve(2*edgesPairs.size());
-    for (size_t i=0; i<edgesPairs.size(); ++i)
+    for (const auto & edgesPair : edgesPairs)
     {
-        indices.push_back( edgesPairs[i][0] );
-        indices.push_back( edgesPairs[i][1] );
+        indices.push_back( edgesPair[0] );
+        indices.push_back( edgesPair[1] );
     }
 
     removeEdgesWarning( indices );
@@ -627,12 +627,12 @@ void EdgeSetTopologyModifier::removeEdges(const sofa::type::vector< EdgeID >& ed
     SCOPED_TIMER_VARNAME(removeEdgesTimer, "removeEdges");
 
     sofa::type::vector<EdgeID> edgeIds_filtered;
-    for (size_t i = 0; i < edgeIds.size(); i++)
+    for (unsigned int edgeId : edgeIds)
     {
-        if( edgeIds[i] >= m_container->getNumberOfEdges())
-            dmsg_warning() << "Unable to remoev and edges: "<< edgeIds[i] <<" is out of bound and won't be removed." ;
+        if( edgeId >= m_container->getNumberOfEdges())
+            dmsg_warning() << "Unable to remoev and edges: "<< edgeId <<" is out of bound and won't be removed." ;
         else
-            edgeIds_filtered.push_back(edgeIds[i]);
+            edgeIds_filtered.push_back(edgeId);
     }
 
     // add the topological changes in the queue
@@ -793,9 +793,9 @@ void EdgeSetTopologyModifier::resortCuthillMckee(sofa::type::vector<int>& invers
 
     const sofa::type::vector<Edge> &ea=m_container->getEdgeArray();
 
-    for (size_t k=0; k<ea.size(); ++k)
+    for (auto k : ea)
     {
-        add_edge(ea[k][0], ea[k][1], G);
+        add_edge(k[0], k[1], G);
     }
 
     inverse_permutation.resize(num_vertices(G));
@@ -809,10 +809,9 @@ void EdgeSetTopologyModifier::resortCuthillMckee(sofa::type::vector<int>& invers
     cuthill_mckee_ordering(G, inv_perm.rbegin());
 
     unsigned int ind_i = 0;
-    for (std::vector<Vertex>::const_iterator it = inv_perm.begin();
-            it != inv_perm.end(); ++it)
+    for (unsigned int it : inv_perm)
     {
-        inverse_permutation[ind_i++] = (int)index_map[*it];
+        inverse_permutation[ind_i++] = (int)index_map[it];
     }
 
     for (Size c=0; c!=inv_perm.size(); ++c)
@@ -842,13 +841,13 @@ void EdgeSetTopologyModifier::movePointsProcess (const sofa::type::vector<PointI
     {
         const sofa::type::vector<EdgeID>& edgesAroundVertex = m_container->getEdgesAroundVertexArray()[ id[i] ];
 
-        for (size_t j = 0; j<edgesAroundVertex.size(); ++j)
+        for (unsigned int j : edgesAroundVertex)
         {
             doublet = false;
 
-            for (size_t k =0; k<edgesAroundVertex2Move.size(); ++k) //Avoid double
+            for (unsigned int k : edgesAroundVertex2Move) //Avoid double
             {
-                if (edgesAroundVertex2Move[k] == edgesAroundVertex[j])
+                if (k == j)
                 {
                     doublet = true;
                     break;
@@ -856,7 +855,7 @@ void EdgeSetTopologyModifier::movePointsProcess (const sofa::type::vector<PointI
             }
 
             if(!doublet)
-                edgesAroundVertex2Move.push_back (edgesAroundVertex[j]);
+                edgesAroundVertex2Move.push_back (j);
 
         }
     }
@@ -876,8 +875,8 @@ void EdgeSetTopologyModifier::movePointsProcess (const sofa::type::vector<PointI
     // Step 4/4 - Create event to recompute all elements concerned by moving and propagate it:
 
     // Creating the corresponding array of Triangles for ancestors
-    for (size_t i = 0; i<edgesAroundVertex2Move.size(); i++)
-        edgeArray.push_back (m_container->getEdgeArray()[ edgesAroundVertex2Move[i] ]);
+    for (unsigned int i : edgesAroundVertex2Move)
+        edgeArray.push_back (m_container->getEdgeArray()[ i ]);
 
     const EdgesMoved_Adding *ev2 = new EdgesMoved_Adding (edgesAroundVertex2Move, edgeArray);
     this->addTopologyChange(ev2); // This event should be propagated with global workflow

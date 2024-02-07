@@ -224,9 +224,9 @@ void HexahedronSetTopologyModifier::addHexahedronProcess(Hexahedron t)
 
 void HexahedronSetTopologyModifier::addHexahedraProcess(const sofa::type::vector< Hexahedron > &hexahedra)
 {
-    for(size_t i = 0; i < hexahedra.size(); ++i)
+    for(const auto & i : hexahedra)
     {
-        addHexahedronProcess(hexahedra[i]);
+        addHexahedronProcess(i);
     }
 }
 
@@ -570,16 +570,16 @@ void HexahedronSetTopologyModifier::renumberPointsProcess( const sofa::type::vec
 
         helper::WriteAccessor< Data< sofa::type::vector<Hexahedron> > > m_hexahedron = m_container->d_hexahedron;
 
-        for(size_t i=0; i<m_hexahedron.size(); ++i)
+        for(auto & i : m_hexahedron)
         {
-            m_hexahedron[i][0]  = inv_index[ m_hexahedron[i][0]  ];
-            m_hexahedron[i][1]  = inv_index[ m_hexahedron[i][1]  ];
-            m_hexahedron[i][2]  = inv_index[ m_hexahedron[i][2]  ];
-            m_hexahedron[i][3]  = inv_index[ m_hexahedron[i][3]  ];
-            m_hexahedron[i][4]  = inv_index[ m_hexahedron[i][4]  ];
-            m_hexahedron[i][5]  = inv_index[ m_hexahedron[i][5]  ];
-            m_hexahedron[i][6]  = inv_index[ m_hexahedron[i][6]  ];
-            m_hexahedron[i][7]  = inv_index[ m_hexahedron[i][7]  ];
+            i[0]  = inv_index[ i[0]  ];
+            i[1]  = inv_index[ i[1]  ];
+            i[2]  = inv_index[ i[2]  ];
+            i[3]  = inv_index[ i[3]  ];
+            i[4]  = inv_index[ i[4]  ];
+            i[5]  = inv_index[ i[5]  ];
+            i[6]  = inv_index[ i[6]  ];
+            i[7]  = inv_index[ i[7]  ];
         }
     }
 
@@ -590,12 +590,12 @@ void HexahedronSetTopologyModifier::renumberPointsProcess( const sofa::type::vec
 void HexahedronSetTopologyModifier::removeHexahedra(const sofa::type::vector< HexahedronID >& hexahedraIds)
 {
     sofa::type::vector<HexahedronID> hexahedraIds_filtered;
-    for (size_t i = 0; i < hexahedraIds.size(); i++)
+    for (unsigned int hexahedraId : hexahedraIds)
     {
-        if( hexahedraIds[i] >= m_container->getNumberOfHexahedra())
-            msg_error() << "Unable to remove the hexahedra: "<< hexahedraIds[i] <<" its index is out of bound." ;
+        if( hexahedraId >= m_container->getNumberOfHexahedra())
+            msg_error() << "Unable to remove the hexahedra: "<< hexahedraId <<" its index is out of bound." ;
         else
-            hexahedraIds_filtered.push_back(hexahedraIds[i]);
+            hexahedraIds_filtered.push_back(hexahedraId);
     }
 
     // add the topological changes in the queue

@@ -70,8 +70,8 @@ void TriangleSetTopologyModifier::reinit()
         for (unsigned int j = 0; j<3; ++j)
         {
             const PointID the_point = the_tri[j];
-            for (size_t k = 0; k<vertexToBeRemoved.size(); ++k)
-                if (the_point == vertexToBeRemoved[k])
+            for (unsigned int k : vertexToBeRemoved)
+                if (the_point == k)
                 {
                     find = true;
                     break;
@@ -162,8 +162,8 @@ void TriangleSetTopologyModifier::addTriangles(const sofa::type::vector<Triangle
 
 void TriangleSetTopologyModifier::addTrianglesProcess(const sofa::type::vector< Triangle > &triangles)
 {
-    for(size_t i=0; i<triangles.size(); ++i)
-        addTriangleProcess(triangles[i]); //add triangle one by one.
+    for(auto triangle : triangles)
+        addTriangleProcess(triangle); //add triangle one by one.
 }
 
 
@@ -316,12 +316,12 @@ void TriangleSetTopologyModifier::removeTriangles(const sofa::type::vector<Trian
     SCOPED_TIMER_VARNAME(removeTrianglesTimer, "removeTriangles");
 
     sofa::type::vector<TriangleID> triangleIds_filtered;
-    for (size_t i = 0; i < triangleIds.size(); i++)
+    for (unsigned int triangleId : triangleIds)
     {
-        if( triangleIds[i] >= m_container->getNumberOfTriangles())
-            dmsg_warning() << "RemoveTriangles: Triangle: "<< triangleIds[i] <<" is out of bound and won't be removed.";
+        if( triangleId >= m_container->getNumberOfTriangles())
+            dmsg_warning() << "RemoveTriangles: Triangle: "<< triangleId <<" is out of bound and won't be removed.";
         else
-            triangleIds_filtered.push_back(triangleIds[i]);
+            triangleIds_filtered.push_back(triangleId);
     }
 
     if (removeTrianglesPreconditions(triangleIds_filtered)) // Test if the topology will still fulfill the conditions if these triangles are removed.
@@ -547,9 +547,8 @@ void TriangleSetTopologyModifier::removePointsProcess(const sofa::type::vector<P
             sofa::type::vector<TriangleID> &shell = m_container->m_trianglesAroundVertex[lastPoint];
 
 
-            for(size_t j=0; j<shell.size(); ++j)
+            for(unsigned int q : shell)
             {
-                const TriangleID q = shell[j];
                 for(unsigned int k=0; k<3; ++k)
                 {
                     if(m_triangle[q][k] == lastPoint)
@@ -587,11 +586,11 @@ void TriangleSetTopologyModifier::renumberPointsProcess( const sofa::type::vecto
         }
         helper::WriteAccessor< Data< sofa::type::vector<Triangle> > > m_triangle = m_container->d_triangle;
 
-        for(sofa::Index i=0; i<m_triangle.size(); ++i)
+        for(auto & i : m_triangle)
         {
-            m_triangle[i][0] = inv_index[ m_triangle[i][0] ];
-            m_triangle[i][1] = inv_index[ m_triangle[i][1] ];
-            m_triangle[i][2] = inv_index[ m_triangle[i][2] ];
+            i[0] = inv_index[ i[0] ];
+            i[1] = inv_index[ i[1] ];
+            i[2] = inv_index[ i[2] ];
         }
     }
 
@@ -642,13 +641,13 @@ void TriangleSetTopologyModifier::movePointsProcess (const sofa::type::vector<Po
     {
         const sofa::type::vector<TriangleID>& trianglesAroundVertex = m_container->getTrianglesAroundVertex( id[i] );
 
-        for (size_t j = 0; j<trianglesAroundVertex.size(); ++j)
+        for (unsigned int j : trianglesAroundVertex)
         {
             doublet = false;
 
-            for (size_t k =0; k<trianglesAroundVertex2Move.size(); ++k) //Avoid double
+            for (unsigned int k : trianglesAroundVertex2Move) //Avoid double
             {
-                if (trianglesAroundVertex2Move[k] == trianglesAroundVertex[j])
+                if (k == j)
                 {
                     doublet = true;
                     break;
@@ -656,7 +655,7 @@ void TriangleSetTopologyModifier::movePointsProcess (const sofa::type::vector<Po
             }
 
             if(!doublet)
-                trianglesAroundVertex2Move.push_back (trianglesAroundVertex[j]);
+                trianglesAroundVertex2Move.push_back (j);
 
         }
     }
@@ -678,8 +677,8 @@ void TriangleSetTopologyModifier::movePointsProcess (const sofa::type::vector<Po
     // Step 4/4 - Create event to recompute all elements concerned by moving and propagate it:
 
     // Creating the corresponding array of Triangles for ancestors
-    for (TriangleID i = 0; i<trianglesAroundVertex2Move.size(); i++)
-        trianglesArray.push_back (m_container->getTriangleArray()[ trianglesAroundVertex2Move[i] ]);
+    for (unsigned int i : trianglesAroundVertex2Move)
+        trianglesArray.push_back (m_container->getTriangleArray()[ i ]);
 
     const TrianglesMoved_Adding *ev2 = new TrianglesMoved_Adding (trianglesAroundVertex2Move, trianglesArray);
     this->addTopologyChange(ev2); // This event should be propagated with global workflow
@@ -857,9 +856,8 @@ int TriangleSetTopologyModifier::InciseAlongEdge(EdgeID ind_edge, int* createdPo
     // recreate list_tria iff pa is new
     if (new_pa != ind_pa)
     {
-        for (unsigned j = 0; j < list_tria.size(); j++)
+        for (unsigned int ind_tri : list_tria)
         {
-            unsigned ind_tri = list_tria[j];
             Triangle new_tri = m_container->getTriangle(ind_tri);
             for (unsigned i = 0; i < 3; i++)
                 if (new_tri[i] == ind_pa) new_tri[i] = new_pa;
@@ -875,9 +873,8 @@ int TriangleSetTopologyModifier::InciseAlongEdge(EdgeID ind_edge, int* createdPo
     // recreate list_trib iff pb is new
     if (new_pb != ind_pb)
     {
-        for (unsigned j = 0; j < list_trib.size(); j++)
+        for (unsigned int ind_tri : list_trib)
         {
-            unsigned ind_tri = list_trib[j];
             Triangle new_tri = m_container->getTriangle(ind_tri);
             for (unsigned i = 0; i < 3; i++)
                 if (new_tri[i] == ind_pb) new_tri[i] = new_pb;

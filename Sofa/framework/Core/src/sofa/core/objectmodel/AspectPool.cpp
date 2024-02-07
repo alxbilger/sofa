@@ -94,9 +94,9 @@ AspectPool::AspectPool()
  */
 AspectPool::~AspectPool()
 {
-    for(unsigned int i = 0; i < aspects.size(); ++i)
+    for(auto & aspect : aspects)
     {
-        delete aspects[i];
+        delete aspect;
     }
 }
 

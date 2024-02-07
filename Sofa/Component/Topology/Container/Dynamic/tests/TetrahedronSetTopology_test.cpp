@@ -216,9 +216,8 @@ bool TetrahedronSetTopology_test::testTriangleBuffers()
     {
         TetrahedronSetTopologyContainer::TriangleID triangleId = i;
         const TetrahedronSetTopologyContainer::TetrahedraAroundTriangle& _elemATriangle = elemAroundTriangles[triangleId];
-        for (size_t j = 0; j < _elemATriangle.size(); ++j)
+        for (unsigned int triId : _elemATriangle)
         {
-            TetrahedronSetTopologyContainer::TetrahedronID triId = _elemATriangle[j];
             const TetrahedronSetTopologyContainer::TrianglesInTetrahedron& _triangleInElem = triangleInTetrahedra[triId];
             bool found = false;
             for (size_t k = 0; k < _triangleInElem.size(); ++k)
@@ -313,9 +312,8 @@ bool TetrahedronSetTopology_test::testEdgeBuffers()
     {
         TetrahedronSetTopologyContainer::EdgeID edgeId = i;
         const TetrahedronSetTopologyContainer::TetrahedraAroundEdge& _elemAEdge = elemAroundEdges[edgeId];
-        for (size_t j = 0; j < _elemAEdge.size(); ++j)
+        for (unsigned int triId : _elemAEdge)
         {
-            TetrahedronSetTopologyContainer::TetrahedronID triId = _elemAEdge[j];
             const TetrahedronSetTopologyContainer::EdgesInTetrahedron& _edgeInElem = edgeInTetrahedra[triId];
             bool found = false;
             for (size_t k = 0; k < _edgeInElem.size(); ++k)

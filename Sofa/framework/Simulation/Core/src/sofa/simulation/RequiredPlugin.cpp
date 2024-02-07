@@ -84,11 +84,11 @@ bool RequiredPlugin::loadPlugin()
     if (!sMap.empty())
     {
         const std::string skey = (defaultSuffix.empty() ? std::string("!") : defaultSuffix);
-        for (std::size_t i = 0; i < sMap.size(); ++i)
+        for (const auto & i : sMap)
         {
-            if (sMap[i][0] == skey)
+            if (i[0] == skey)
             {
-                suffixVec.push_back(sMap[i][1] == std::string("!") ? std::string(""):sMap[i][1]);
+                suffixVec.push_back(i[1] == std::string("!") ? std::string(""):i[1]);
             }
         }
     }

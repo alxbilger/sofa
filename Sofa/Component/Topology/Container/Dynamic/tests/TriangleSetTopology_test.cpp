@@ -201,9 +201,8 @@ bool TriangleSetTopology_test::testEdgeBuffers()
     {
         TriangleSetTopologyContainer::EdgeID edgeId = i;
         const TriangleSetTopologyContainer::TrianglesAroundEdge& _triAEdge = triAroundEdges[edgeId];
-        for (size_t j = 0; j < _triAEdge.size(); ++j)
+        for (unsigned int triId : _triAEdge)
         {
-            TriangleSetTopologyContainer::TriangleID triId = _triAEdge[j];
             const TriangleSetTopologyContainer::EdgesInTriangle& _edgeInTri = edgeInTriangles[triId];
             bool found = false;
             for (size_t k = 0; k < _edgeInTri.size(); ++k)

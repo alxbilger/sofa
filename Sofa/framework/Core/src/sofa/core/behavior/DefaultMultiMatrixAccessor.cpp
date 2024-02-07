@@ -51,16 +51,16 @@ DefaultMultiMatrixAccessor::~DefaultMultiMatrixAccessor()
 void DefaultMultiMatrixAccessor::clear()
 {
     globalDim = 0;
-    for (auto it = realStateOffsets.begin(), itend = realStateOffsets.end(); it != itend; ++it)
-        it->second = -1;
+    for (auto & realStateOffset : realStateOffsets)
+        realStateOffset.second = -1;
 
-    for (std::map< const sofa::core::behavior::BaseMechanicalState*, linearalgebra::BaseMatrix* >::iterator it = mappedMatrices.begin(), itend = mappedMatrices.end(); it != itend; ++it)
-        if (it->second != nullptr) delete it->second;
+    for (auto & mappedMatrice : mappedMatrices)
+        if (mappedMatrice.second != nullptr) delete mappedMatrice.second;
     mappedMatrices.clear();
     diagonalStiffnessBloc.clear();
 
-    for (std::map< std::pair<const BaseMechanicalState*, const BaseMechanicalState*>, InteractionMatrixRef >::iterator it = interactionStiffnessBloc.begin(), itend = interactionStiffnessBloc.end(); it != itend; ++it)
-        if (it->second.matrix != nullptr && it->second.matrix != globalMatrix) delete it->second.matrix;
+    for (auto & it : interactionStiffnessBloc)
+        if (it.second.matrix != nullptr && it.second.matrix != globalMatrix) delete it.second.matrix;
 
     interactionStiffnessBloc.clear();
     mappingList.clear();
@@ -406,11 +406,11 @@ void DefaultMultiMatrixAccessor::computeGlobalMatrix()
         }
 
         std::vector<std::pair<const BaseMechanicalState*, const BaseMechanicalState*> > interactionList;
-        for (std::map< std::pair<const BaseMechanicalState*, const BaseMechanicalState*>, InteractionMatrixRef >::iterator it = interactionStiffnessBloc.begin(), itend = interactionStiffnessBloc.end(); it != itend; ++it)
+        for (auto & it : interactionStiffnessBloc)
         {
-            if(it->first.first == outstate || it->first.second == outstate )
+            if(it.first.first == outstate || it.first.second == outstate )
             {
-                interactionList.push_back(it->first);
+                interactionList.push_back(it.first);
             }
         }
 

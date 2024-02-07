@@ -60,9 +60,9 @@ void DDGNode::setDirtyOutputs()
     if (!dirtyOutputs)
     {
         dirtyOutputs = true;
-        for(DDGLinkIterator it=outputs.begin(), itend=outputs.end(); it != itend; ++it)
+        for(auto output : outputs)
         {
-            (*it)->setDirtyValue();
+            output->setDirtyValue();
         }
     }
 }

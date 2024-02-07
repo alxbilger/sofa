@@ -438,16 +438,16 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
     }
     bool ok = true;
 
-    for (unsigned int d=0; d<dataVec.size(); ++d)
+    for (auto & d : dataVec)
     {
         /// test if data is a link and can be linked
-        if (value.length() > 0 && value[0] == '@' && dataVec[d]->canBeLinked())
+        if (value.length() > 0 && value[0] == '@' && d->canBeLinked())
         {
-            if (!dataVec[d]->setParent(value))
+            if (!d->setParent(value))
             {
                 BaseData* data = nullptr;
 
-                PathResolver::FindBaseDataFromPath(dataVec[d] , value);
+                PathResolver::FindBaseDataFromPath(d , value);
 
                 if (data != nullptr && dynamic_cast<EmptyData*>(data) != nullptr)
                 {
@@ -455,12 +455,12 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
                     DDGNode* o = dynamic_cast<DDGNode*>(owner);
                     o->delOutput(data);
                     owner->removeData(data);
-                    BaseData* newBD = dataVec[d]->getNewInstance();
+                    BaseData* newBD = d->getNewInstance();
                     newBD->setName(data->getName());
                     owner->addData(newBD);
                     newBD->setGroup("Outputs");
                     o->addOutput(newBD);
-                    dataVec[d]->setParent(newBD);
+                    d->setParent(newBD);
                     ok = true;
                     continue;
                 }
@@ -470,39 +470,39 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
             }
             else
             {
-                if (BaseData* parentData = dataVec[d]->getParent())
+                if (BaseData* parentData = d->getParent())
                 {
                     msg_info() << "Link from parent Data "
                                << value << " (" << parentData->getValueTypeInfo()->name() << ") "
                                << "to Data "
-                               << attribute << " (" << dataVec[d]->getValueTypeInfo()->name() << ") "
+                               << attribute << " (" << d->getValueTypeInfo()->name() << ") "
                                << "OK";
                 }
             }
             /* children Data cannot be modified changing the parent Data value */
-            dataVec[d]->setReadOnly(true);
+            d->setReadOnly(true);
             continue;
         }
-        if( !(dataVec[d]->read( value )) && !value.empty())
+        if( !(d->read( value )) && !value.empty())
         {
             msg_warning()<<"Could not read value for data field "<< attribute <<": " << value ;
             ok = false;
         }
     }
-    for (unsigned int l=0; l<linkVec.size(); ++l)
+    for (auto & l : linkVec)
     {
-        if( !(linkVec[l]->read( value )) && !value.empty())
+        if( !(l->read( value )) && !value.empty())
         {
             msg_warning()<<"Could not read value for link "<< attribute <<": " << value;
             ok = false;
         }
-        msg_info() << "Link " << linkVec[l]->getName() << " = " << linkVec[l]->getValueString();
-        unsigned int s = unsigned(linkVec[l]->getSize());
+        msg_info() << "Link " << l->getName() << " = " << l->getValueString();
+        unsigned int s = unsigned(l->getSize());
         for (unsigned int i=0; i<s; ++i)
         {
             std::stringstream tmp;
-            tmp << "  " << linkVec[l]->getLinkedPath(i) << " = ";
-            Base* b = linkVec[l]->getLinkedBase(i);
+            tmp << "  " << l->getLinkedPath(i) << " = ";
+            Base* b = l->getLinkedBase(i);
             if (b) tmp << b->getTypeName() << " " << b->getName();
             msg_info() << tmp.str();
         }
@@ -528,12 +528,12 @@ void  Base::parseFields ( const std::list<std::string>& str )
 void  Base::parseFields ( const std::map<std::string,std::string*>& args )
 {
     std::string key,val;
-    for( std::map<string,string*>::const_iterator i=args.begin(), iend=args.end(); i!=iend; ++i )
+    for(const auto & arg : args)
     {
-        if( (*i).second!=nullptr )
+        if( arg.second!=nullptr )
         {
-            key=(*i).first;
-            val=*(*i).second;
+            key=arg.first;
+            val=*arg.second;
             parseField(key, val);
         }
     }
@@ -582,30 +582,28 @@ void  Base::parse ( BaseObjectDescription* arg )
 void Base::updateLinks(bool logErrors)
 {
     // update links
-    for(VecLink::const_iterator iLink = m_vecLink.begin(); iLink != m_vecLink.end(); ++iLink)
+    for(auto iLink : m_vecLink)
     {
-        const bool ok = (*iLink)->updateLinks();
-        if (!ok && (*iLink)->storePath() && logErrors)
+        const bool ok = iLink->updateLinks();
+        if (!ok && iLink->storePath() && logErrors)
         {
-            msg_warning() << "Link update failed for " << (*iLink)->getName() << " = " << (*iLink)->getValueString() ;
+            msg_warning() << "Link update failed for " << iLink->getName() << " = " << iLink->getValueString() ;
         }
     }
 }
 
 void  Base::writeDatas ( std::map<std::string,std::string*>& args )
 {
-    for(VecData::const_iterator iData = m_vecData.begin(); iData != m_vecData.end(); ++iData)
+    for(auto field : m_vecData)
     {
-        const BaseData* field = *iData;
         std::string name = field->getName();
         if( args[name] != nullptr )
             *args[name] = field->getValueString();
         else
             args[name] =  new string(field->getValueString());
     }
-    for(VecLink::const_iterator iLink = m_vecLink.begin(); iLink != m_vecLink.end(); ++iLink)
+    for(auto link : m_vecLink)
     {
-        const BaseLink* link = *iLink;
         std::string name = link->getName();
         if( args[name] != nullptr )
             *args[name] = link->getValueString();
@@ -617,16 +615,16 @@ void  Base::writeDatas ( std::map<std::string,std::string*>& args )
 static std::string xmlencode(const std::string& str)
 {
     std::string res;
-    for (unsigned int i=0; i<str.length(); ++i)
+    for (char i : str)
     {
-        switch(str[i])
+        switch(i)
         {
         case '<': res += "&lt;"; break;
         case '>': res += "&gt;"; break;
         case '&': res += "&amp;"; break;
         case '"': res += "&quot;"; break;
         case '\'': res += "&apos;"; break;
-        default:  res += str[i];
+        default:  res += i;
         }
     }
     return res;
@@ -634,9 +632,8 @@ static std::string xmlencode(const std::string& str)
 
 void  Base::writeDatas (std::ostream& out, const std::string& separator)
 {
-    for(VecData::const_iterator iData = m_vecData.begin(); iData != m_vecData.end(); ++iData)
+    for(auto field : m_vecData)
     {
-        const BaseData* field = *iData;
         if (!field->getLinkPath().empty() )
         {
             out << separator << field->getName() << "=\""<< xmlencode(field->getLinkPath()) << "\" ";
@@ -651,9 +648,8 @@ void  Base::writeDatas (std::ostream& out, const std::string& separator)
             }
         }
     }
-    for(VecLink::const_iterator iLink = m_vecLink.begin(); iLink != m_vecLink.end(); ++iLink)
+    for(auto link : m_vecLink)
     {
-        const BaseLink* link = *iLink;
         if(link->storePath())
         {
             std::string val = link->getValueString();

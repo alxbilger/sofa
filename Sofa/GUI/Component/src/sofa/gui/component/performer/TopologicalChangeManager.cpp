@@ -74,14 +74,14 @@ Index TopologicalChangeManager::removeItemsFromTriangleModel(TriangleCollisionMo
     if (topo_curr->getNbTetrahedra() > 0)
     {
         // get the index of the tetra linked to each triangle
-        for (unsigned int i=0; i<indices.size(); ++i)
-            items.insert(topo_curr->getTetrahedraAroundTriangle(indices[i])[0]);
+        for (unsigned int indice : indices)
+            items.insert(topo_curr->getTetrahedraAroundTriangle(indice)[0]);
     }
     else if (topo_curr->getNbHexahedra() > 0)
     {
         // get the index of the hexa linked to each quad
-        for (unsigned int i=0; i<indices.size(); ++i)
-            items.insert(topo_curr->getHexahedraAroundQuad(indices[i]/2)[0]);
+        for (unsigned int indice : indices)
+            items.insert(topo_curr->getHexahedraAroundQuad(indice/2)[0]);
     }
     else
     {
@@ -95,9 +95,9 @@ Index TopologicalChangeManager::removeItemsFromTriangleModel(TriangleCollisionMo
         }
 
         const auto nbt = topo_curr->getNbTriangles();
-        for (unsigned int i=0; i<indices.size(); ++i)
+        for (unsigned int indice : indices)
         {
-            items.insert(indices[i] < nbt ? indices[i] : (indices[i]+nbt)/2);
+            items.insert(indice < nbt ? indice : (indice+nbt)/2);
         }
     }
 
@@ -108,9 +108,9 @@ Index TopologicalChangeManager::removeItemsFromTriangleModel(TriangleCollisionMo
         is_topoMap = false;
         std::vector< core::objectmodel::BaseObject * > listObject;
         node_curr->get<core::objectmodel::BaseObject>(&listObject, core::objectmodel::BaseContext::Local);
-        for(unsigned int i=0; i<listObject.size(); ++i)
+        for(auto & i : listObject)
         {
-            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(listObject[i]);
+            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(i);
             if(topoMap != nullptr && !topoMap->propagateFromOutputToInputModel())
             {
                 is_topoMap = true;
@@ -120,22 +120,22 @@ Index TopologicalChangeManager::removeItemsFromTriangleModel(TriangleCollisionMo
                 items.clear();
                 if( topoMap->isTheOutputTopologySubdividingTheInputOne())
                 {
-                    for (std::set< unsigned int >::const_iterator it=loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
-                        const unsigned int ind_glob = topoMap->getGlobIndex(*it);
+                        const unsigned int ind_glob = topoMap->getGlobIndex(loc_item);
                         unsigned int ind = topoMap->getFromIndex(ind_glob);
                         items.insert(ind);
                     }
                 }
                 else
                 {
-                    for (std::set< unsigned int >::const_iterator it=loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
                         vector<Index> indices;
-                        topoMap->getFromIndex( indices, *it);
-                        for( auto itIndices = indices.begin(); itIndices != indices.end(); ++itIndices)
+                        topoMap->getFromIndex( indices, loc_item);
+                        for(unsigned int & indice : indices)
                         {
-                            items.insert( *itIndices );
+                            items.insert( indice );
                         }
                     }
                 }
@@ -203,14 +203,14 @@ Index TopologicalChangeManager::removeItemsFromPointModel(PointCollisionModel<so
     if (topo_curr->getNbTetrahedra() > 0)
     {
         // get the index of the tetra linked to each triangle
-        for (unsigned int i = 0; i<tItems.size(); ++i)
-            items.insert(topo_curr->getTetrahedraAroundTriangle(tItems[i])[0]);
+        for (unsigned int tItem : tItems)
+            items.insert(topo_curr->getTetrahedraAroundTriangle(tItem)[0]);
     }
     else if (topo_curr->getNbHexahedra() > 0)
     {
         // get the index of the hexa linked to each quad
-        for (unsigned int i = 0; i<tItems.size(); ++i)
-            items.insert(topo_curr->getHexahedraAroundQuad(tItems[i] / 2)[0]);
+        for (unsigned int tItem : tItems)
+            items.insert(topo_curr->getHexahedraAroundQuad(tItem / 2)[0]);
     }
     else
     {
@@ -224,9 +224,9 @@ Index TopologicalChangeManager::removeItemsFromPointModel(PointCollisionModel<so
         }
 
         const size_t nbt = topo_curr->getNbTriangles();
-        for (unsigned int i = 0; i<tItems.size(); ++i)
+        for (unsigned int tItem : tItems)
         {
-            items.insert(tItems[i] < nbt ? tItems[i] : (tItems[i] + nbt) / 2);
+            items.insert(tItem < nbt ? tItem : (tItem + nbt) / 2);
         }
     }
 
@@ -237,9 +237,9 @@ Index TopologicalChangeManager::removeItemsFromPointModel(PointCollisionModel<so
         is_topoMap = false;
         std::vector< core::objectmodel::BaseObject * > listObject;
         node_curr->get<core::objectmodel::BaseObject>(&listObject, core::objectmodel::BaseContext::Local);
-        for (unsigned int i = 0; i<listObject.size(); ++i)
+        for (auto & i : listObject)
         {
-            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(listObject[i]);
+            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(i);
             if (topoMap != nullptr && !topoMap->propagateFromOutputToInputModel())
             {
                 is_topoMap = true;
@@ -247,22 +247,22 @@ Index TopologicalChangeManager::removeItemsFromPointModel(PointCollisionModel<so
                 items.clear();
                 if (topoMap->isTheOutputTopologySubdividingTheInputOne())
                 {
-                    for (std::set< unsigned int >::const_iterator it = loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
-                        const unsigned int ind_glob = topoMap->getGlobIndex(*it);
+                        const unsigned int ind_glob = topoMap->getGlobIndex(loc_item);
                         unsigned int ind = topoMap->getFromIndex(ind_glob);
                         items.insert(ind);
                     }
                 }
                 else
                 {
-                    for (auto it = loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
                         vector<Index> indices;
-                        topoMap->getFromIndex(indices, *it);
-                        for (auto itIndices = indices.begin(); itIndices != indices.end(); ++itIndices)
+                        topoMap->getFromIndex(indices, loc_item);
+                        for (unsigned int & indice : indices)
                         {
-                            items.insert(*itIndices);
+                            items.insert(indice);
                         }
                     }
                 }
@@ -333,8 +333,8 @@ Index TopologicalChangeManager::removeItemsFromSphereModel(SphereCollisionModel<
 
     const simulation::Node *node_curr = dynamic_cast<simulation::Node*>(topo_curr->getContext());
 
-    for (unsigned int i=0; i<indices.size(); ++i)
-        items.insert(indices[i]);
+    for (unsigned int indice : indices)
+        items.insert(indice);
 
     bool is_topoMap = true;
 
@@ -344,9 +344,9 @@ Index TopologicalChangeManager::removeItemsFromSphereModel(SphereCollisionModel<
 
         std::vector< core::objectmodel::BaseObject * > listObject;
         node_curr->get<core::objectmodel::BaseObject>(&listObject, core::objectmodel::BaseContext::Local);
-        for(unsigned int i=0; i<listObject.size(); ++i)
+        for(auto & i : listObject)
         {
-            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(listObject[i]);
+            sofa::core::topology::TopologicalMapping *topoMap = dynamic_cast<sofa::core::topology::TopologicalMapping *>(i);
             if(topoMap != nullptr && !topoMap->propagateFromOutputToInputModel())
             {
                 is_topoMap = true;
@@ -354,22 +354,22 @@ Index TopologicalChangeManager::removeItemsFromSphereModel(SphereCollisionModel<
                 items.clear();
                 if( topoMap->isTheOutputTopologySubdividingTheInputOne())
                 {
-                    for (std::set< unsigned int >::const_iterator it=loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
-                        const unsigned int ind_glob = topoMap->getGlobIndex(*it);
+                        const unsigned int ind_glob = topoMap->getGlobIndex(loc_item);
                         unsigned int ind = topoMap->getFromIndex(ind_glob);
                         items.insert(ind);
                     }
                 }
                 else
                 {
-                    for (auto it=loc_items.begin(); it != loc_items.end(); ++it)
+                    for (unsigned int loc_item : loc_items)
                     {
                         vector<Index> tmpindices;
-                        topoMap->getFromIndex( tmpindices, *it);
-                        for(auto itIndices = tmpindices.begin(); itIndices != tmpindices.end(); ++itIndices)
+                        topoMap->getFromIndex( tmpindices, loc_item);
+                        for(unsigned int & tmpindice : tmpindices)
                         {
-                            items.insert( *itIndices );
+                            items.insert( tmpindice );
                         }
                     }
                 }

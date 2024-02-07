@@ -67,19 +67,15 @@ const char* TypedTestSuitePState::VerifyRegisteredTestNames(
   Message errors;
 
   std::set<std::string> tests;
-  for (std::vector<std::string>::const_iterator name_it = name_vec.begin();
-       name_it != name_vec.end(); ++name_it) {
-    const std::string& name = *name_it;
+  for (const auto & name : name_vec) {
     if (tests.count(name) != 0) {
       errors << "Test " << name << " is listed more than once.\n";
       continue;
     }
 
     bool found = false;
-    for (RegisteredTestIter it = registered_tests_.begin();
-         it != registered_tests_.end();
-         ++it) {
-      if (name == it->first) {
+    for (const auto & registered_test : registered_tests_) {
+      if (name == registered_test.first) {
         found = true;
         break;
       }
@@ -93,11 +89,9 @@ const char* TypedTestSuitePState::VerifyRegisteredTestNames(
     }
   }
 
-  for (RegisteredTestIter it = registered_tests_.begin();
-       it != registered_tests_.end();
-       ++it) {
-    if (tests.count(it->first) == 0) {
-      errors << "You forgot to list test " << it->first << ".\n";
+  for (const auto & registered_test : registered_tests_) {
+    if (tests.count(registered_test.first) == 0) {
+      errors << "You forgot to list test " << registered_test.first << ".\n";
     }
   }
 

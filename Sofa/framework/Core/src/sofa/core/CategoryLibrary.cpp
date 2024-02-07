@@ -96,8 +96,8 @@ ComponentLibrary *CategoryLibrary::addComponent(const std::string &componentName
         else
             templates.push_back(templateName);
     }
-    for (std::list<std::string>::const_iterator it = templates.begin(); it != templates.end(); ++it)
-        component->addTemplate(*it);
+    for (const auto & it : templates)
+        component->addTemplate(it);
     component->endConstruction();
 
     //If no constructor is available, we delete the component
@@ -119,10 +119,10 @@ void CategoryLibrary::endConstruction()
 
 const ComponentLibrary *CategoryLibrary::getComponent( const std::string &categoryName) const
 {
-    for (VecComponentIterator it=components.begin(); it != components.end(); ++it)
+    for (auto component : components)
     {
-        if ((*it)->getName().find(categoryName) != std::string::npos)
-            return *it;
+        if (component->getName().find(categoryName) != std::string::npos)
+            return component;
     }
     return nullptr;
 }

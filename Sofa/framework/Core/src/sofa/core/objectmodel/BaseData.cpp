@@ -158,9 +158,9 @@ void BaseData::doDelInput(DDGNode* n)
 void BaseData::update()
 {
     cleanDirty();
-    for(DDGLinkIterator it=inputs.begin(); it!=inputs.end(); ++it)
+    for(auto input : inputs)
     {
-        (*it)->updateIfDirty();
+        input->updateIfDirty();
     }
 
     /// Check if there is a parent (so a predecessor in the DDG), if so

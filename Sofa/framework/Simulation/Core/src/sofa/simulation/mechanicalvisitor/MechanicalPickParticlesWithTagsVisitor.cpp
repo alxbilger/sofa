@@ -71,9 +71,9 @@ Visitor::Result MechanicalPickParticlesWithTagsVisitor::fwdMechanicalMapping(sim
 bool MechanicalPickParticlesWithTagsVisitor::isComponentTagIncluded(const core::behavior::BaseMechanicalState *mm)
 {
     bool tagOk = mustContainAllTags || tags.empty();
-    for(std::list<sofa::core::objectmodel::Tag>::const_iterator tagIt = tags.begin(); tags.end() != tagIt; ++tagIt)
+    for(auto tag : tags)
     {
-        if (!mm->hasTag(*tagIt)) // picking disabled for this model
+        if (!mm->hasTag(tag)) // picking disabled for this model
         {
             if(mustContainAllTags)
             {
@@ -81,7 +81,7 @@ bool MechanicalPickParticlesWithTagsVisitor::isComponentTagIncluded(const core::
                 break;
             }
         }
-        else if (mm->hasTag(*tagIt)) // picking disabled for this model
+        else if (mm->hasTag(tag)) // picking disabled for this model
         {
             tagOk = true;
 
@@ -110,13 +110,13 @@ void MechanicalPickParticlesWithTagsVisitor::getClosestParticle( core::behavior:
     // threshold for valid particles is the shortest distance + small tolerance relative to ray length
     const SReal dmax = particles.begin()->first + radius0*1e-10;
 
-    for( Particles::const_iterator it=particles.begin(), itend=particles.end() ; it!=itend ; ++it )
+    for(const auto & particle : particles)
     {
-        if( it->first > dmax ) break; // from now on, particles are too far from the ray
+        if( particle.first > dmax ) break; // from now on, particles are too far from the ray
 
         // get current valid particle
-        mstatei = it->second.first;
-        indexCollisionElementi = it->second.second;
+        mstatei = particle.second.first;
+        indexCollisionElementi = particle.second.second;
         pointi[0] = mstatei->getPX(indexCollisionElementi);
         pointi[1] = mstatei->getPY(indexCollisionElementi);
         pointi[2] = mstatei->getPZ(indexCollisionElementi);

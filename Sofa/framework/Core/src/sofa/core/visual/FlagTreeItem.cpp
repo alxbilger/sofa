@@ -96,9 +96,8 @@ void FlagTreeItem::propagateStateUp(FlagTreeItem* origin)
     if(!parent) return;
 
     tristate flag = origin->m_state;
-    for( unsigned int i = 0 ; i < parent->m_child.size(); ++i)
+    for(auto current : parent->m_child)
     {
-        const FlagTreeItem* current = parent->m_child[i];
         flag = fusion_tristate(current->m_state,flag);
     }
 

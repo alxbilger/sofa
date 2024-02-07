@@ -354,9 +354,8 @@ void recursiveMergeNode(BaseElement* destNode, BaseElement* srcNode)
     // copy all attributes
     std::vector<std::string> attrs;
     srcNode->getAttributeList(attrs);
-    for (std::vector<std::string>::const_iterator it = attrs.begin(); it != attrs.end(); ++it)
+    for (auto aname : attrs)
     {
-        std::string aname = *it;
         if (aname == "name") continue;
         const char* aval = srcNode->getAttribute(aname);
         if (!aval) continue;

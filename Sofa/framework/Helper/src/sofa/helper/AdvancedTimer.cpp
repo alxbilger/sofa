@@ -579,9 +579,8 @@ void TimerData::process()
     const ctime_t t0 = records[0].time;
     //ctime_t last_t = 0;
     int level = 0;
-    for (unsigned int ri = 0; ri < records.size(); ++ri)
+    for (const auto & r : records)
     {
-        const Record& r = records[ri];
         const ctime_t t = r.time - t0;
         //last_t = r.time;
         if (r.type == Record::REND || r.type == Record::RSTEP_END) --level;
@@ -669,9 +668,8 @@ void TimerData::process()
         if (r.type == Record::RBEGIN || r.type == Record::RSTEP_BEGIN) ++level;
     }
 
-    for (unsigned int vi=0; vi < vals.size(); ++vi)
+    for (auto id : vals)
     {
-        AdvancedTimer::IdVal id = vals[vi];
         ValData& data = valData[id];
         if (data.num > 0)
         {
@@ -897,9 +895,9 @@ void TimerData::print()
     {
         out << "\nValues Statistics :\n";
         out << " NUM\t  MIN\t  MAX\t MEAN\t  DEV\t TOTAL\tID\n";
-        for (unsigned int s=0; s<vals.size(); ++s)
+        for (auto val : vals)
         {
-            const ValData& data = valData[vals[s]];
+            const ValData& data = valData[val];
             printVal(out, data.num, nbIter);
             out << '\t';
             printVal(out, data.vmin);
@@ -913,7 +911,7 @@ void TimerData::print()
             out << '\t';
             printVal(out, data.vtotal, nbIter);
             out << '\t';
-            out << vals[s];
+            out << val;
             out << std::endl;
         }
     }
@@ -1134,9 +1132,9 @@ void TimerData::print(std::ostream& result)
     {
         out << "\nValues Statistics :\n";
         out << " NUM\t  MIN\t  MAX\t MEAN\t  DEV\t TOTAL\tID\n";
-        for (unsigned int s=0; s<vals.size(); ++s)
+        for (auto val : vals)
         {
-            const ValData& data = valData[vals[s]];
+            const ValData& data = valData[val];
             printVal(out, data.num, nbIter);
             out << '\t';
             printVal(out, data.vmin);
@@ -1150,7 +1148,7 @@ void TimerData::print(std::ostream& result)
             out << '\t';
             printVal(out, data.vtotal, nbIter);
             out << '\t';
-            out << vals[s];
+            out << val;
             out << std::endl;
         }
     }
@@ -1268,10 +1266,10 @@ json TimerData::getJson(std::string stepNumber)
                     deepthTree.pop_back();
                     jsonPointer = &jsonOutput[jsonObjectName];
                     temp = *jsonPointer;
-                    for(unsigned int i = 0; i < deepthTree.size(); i++)
+                    for(const auto & i : deepthTree)
                     {
-                        temp = temp.at(deepthTree.at(i));
-                        jsonPointer = &jsonPointer->at(deepthTree.at(i));
+                        temp = temp.at(i);
+                        jsonPointer = &jsonPointer->at(i);
                     }
 
                     ComposantId << steps[s];

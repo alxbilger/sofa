@@ -142,39 +142,39 @@ void SparseGridTopology::init()
 
     const auto& hexahedra = seqHexahedra.getValue();
 
-    for(unsigned i=0; i<hexahedra.size(); ++i)
+    for(const auto & i : hexahedra)
     {
-        _nodeAdjacency[ hexahedra[i][0] ][RIGHT] = hexahedra[i][1];
-        _nodeAdjacency[ hexahedra[i][0] ][UP] = hexahedra[i][2];
-        _nodeAdjacency[ hexahedra[i][0] ][BEHIND] = hexahedra[i][4];
+        _nodeAdjacency[ i[0] ][RIGHT] = i[1];
+        _nodeAdjacency[ i[0] ][UP] = i[2];
+        _nodeAdjacency[ i[0] ][BEHIND] = i[4];
 
-        _nodeAdjacency[ hexahedra[i][1] ][LEFT] = hexahedra[i][0];
-        _nodeAdjacency[ hexahedra[i][1] ][UP] = hexahedra[i][3];
-        _nodeAdjacency[ hexahedra[i][1] ][BEHIND] = hexahedra[i][5];
+        _nodeAdjacency[ i[1] ][LEFT] = i[0];
+        _nodeAdjacency[ i[1] ][UP] = i[3];
+        _nodeAdjacency[ i[1] ][BEHIND] = i[5];
 
-        _nodeAdjacency[ hexahedra[i][2] ][RIGHT] = hexahedra[i][3];
-        _nodeAdjacency[ hexahedra[i][2] ][DOWN] = hexahedra[i][0];
-        _nodeAdjacency[ hexahedra[i][2] ][BEHIND] = hexahedra[i][6];
+        _nodeAdjacency[ i[2] ][RIGHT] = i[3];
+        _nodeAdjacency[ i[2] ][DOWN] = i[0];
+        _nodeAdjacency[ i[2] ][BEHIND] = i[6];
 
-        _nodeAdjacency[ hexahedra[i][3] ][LEFT] = hexahedra[i][2];
-        _nodeAdjacency[ hexahedra[i][3] ][DOWN] = hexahedra[i][1];
-        _nodeAdjacency[ hexahedra[i][3] ][BEHIND] = hexahedra[i][7];
+        _nodeAdjacency[ i[3] ][LEFT] = i[2];
+        _nodeAdjacency[ i[3] ][DOWN] = i[1];
+        _nodeAdjacency[ i[3] ][BEHIND] = i[7];
 
-        _nodeAdjacency[ hexahedra[i][4] ][RIGHT] = hexahedra[i][5];
-        _nodeAdjacency[ hexahedra[i][4] ][UP] = hexahedra[i][6];
-        _nodeAdjacency[ hexahedra[i][4] ][BEFORE] = hexahedra[i][0];
+        _nodeAdjacency[ i[4] ][RIGHT] = i[5];
+        _nodeAdjacency[ i[4] ][UP] = i[6];
+        _nodeAdjacency[ i[4] ][BEFORE] = i[0];
 
-        _nodeAdjacency[ hexahedra[i][5] ][LEFT] = hexahedra[i][4];
-        _nodeAdjacency[ hexahedra[i][5] ][UP] = hexahedra[i][7];
-        _nodeAdjacency[ hexahedra[i][5] ][BEFORE] = hexahedra[i][1];
+        _nodeAdjacency[ i[5] ][LEFT] = i[4];
+        _nodeAdjacency[ i[5] ][UP] = i[7];
+        _nodeAdjacency[ i[5] ][BEFORE] = i[1];
 
-        _nodeAdjacency[ hexahedra[i][6] ][RIGHT] = hexahedra[i][7];
-        _nodeAdjacency[ hexahedra[i][6] ][DOWN] = hexahedra[i][4];
-        _nodeAdjacency[ hexahedra[i][6] ][BEFORE] = hexahedra[i][2];
+        _nodeAdjacency[ i[6] ][RIGHT] = i[7];
+        _nodeAdjacency[ i[6] ][DOWN] = i[4];
+        _nodeAdjacency[ i[6] ][BEFORE] = i[2];
 
-        _nodeAdjacency[ hexahedra[i][7] ][LEFT] = hexahedra[i][6];
-        _nodeAdjacency[ hexahedra[i][7] ][DOWN] = hexahedra[i][5];
-        _nodeAdjacency[ hexahedra[i][7] ][BEFORE] = hexahedra[i][3];
+        _nodeAdjacency[ i[7] ][LEFT] = i[6];
+        _nodeAdjacency[ i[7] ][DOWN] = i[5];
+        _nodeAdjacency[ i[7] ][BEFORE] = i[3];
     }
 
 
@@ -229,8 +229,8 @@ void SparseGridTopology::buildAsFinest(  )
                 if (_filename.empty())
                 {
                     mesh = new sofa::helper::io::Mesh();
-                    for (unsigned int i = 0; i < seqPoints.getValue().size(); ++i)
-                        mesh->getVertices().push_back(seqPoints.getValue()[i]);
+                    for (const auto & i : seqPoints.getValue())
+                        mesh->getVertices().push_back(i);
                     const auto& facets = this->facets.getValue();
                     const SeqTriangles& triangles = this->seqTriangles.getValue();
                     const SeqQuads& quads = this->seqQuads.getValue();
@@ -591,9 +591,9 @@ void SparseGridTopology::updateMesh()
     this->getContext()->get< sofa::core::topology::BaseMeshTopology >(&m_temp, sofa::core::objectmodel::BaseContext::SearchDown);
 
     sofa::core::topology::BaseMeshTopology* collisionTopology=nullptr;
-    for (unsigned int i=0; i<m_temp.size(); ++i)
+    for (auto & i : m_temp)
     {
-        if (m_temp[i] != this) {collisionTopology = m_temp[i]; break;}
+        if (i != this) {collisionTopology = i; break;}
     }
 
     if ( collisionTopology != nullptr && collisionTopology->getNbTriangles() == 0)
@@ -664,9 +664,9 @@ void SparseGridTopology::constructCollisionModels(const sofa::type::vector< sofa
     //Fill the facets
     for (unsigned int id_vertex=0; id_vertex<triangles.size(); id_vertex+=3)
     {
-        for (unsigned int j=0; j<list_mesh.size(); ++j)
+        for (auto j : list_mesh)
         {
-            list_mesh[j]->addTriangle(triangles[id_vertex],triangles[id_vertex+1], triangles[id_vertex+2]);
+            j->addTriangle(triangles[id_vertex],triangles[id_vertex+1], triangles[id_vertex+2]);
         }
     }
 }
@@ -765,9 +765,9 @@ void SparseGridTopology::voxelizeTriangleMesh(helper::io::Mesh* mesh,
     // For each triangle, compute BBox and test each element in bb if needed
     const auto& facets = mesh->getFacets();
 
-    for (unsigned int f=0; f<facets.size(); f++)
+    for (const auto & f : facets)
     {
-        const auto& facet = facets[f][0];
+        const auto& facet = f[0];
         for (unsigned int j=2; j<facet.size(); j++) // Triangularize
         {
             const Index c0 = verticesHexa[facet[0]];
@@ -956,11 +956,11 @@ void SparseGridTopology::buildFromRegularGridTypes(sofa::core::sptr<RegularGridT
 
     SeqHexahedra& hexahedra = *seqHexahedra.beginEdit();
 
-    for( unsigned w=0; w<cubeCorners.size(); ++w)
+    for(auto & cubeCorner : cubeCorners)
     {
         Hexa c;
         for(int j=0; j<8; ++j)
-            c[j] = cubeCornerPositionIndiceMap[cubeCorners[w][j]];
+            c[j] = cubeCornerPositionIndiceMap[cubeCorner[j]];
 
         hexahedra.push_back(c);
     }
@@ -1114,11 +1114,11 @@ void SparseGridTopology::buildFromFiner()
     nbPoints = (int)cubeCornerPositionIndiceMap.size();
 
     SeqHexahedra& hexahedra = *seqHexahedra.beginEdit();
-    for( unsigned w=0; w<cubeCorners.size(); ++w)
+    for(auto & cubeCorner : cubeCorners)
     {
         Hexa c;
         for(int j=0; j<8; ++j)
-            c[j] = cubeCornerPositionIndiceMap[cubeCorners[w][j]];
+            c[j] = cubeCornerPositionIndiceMap[cubeCorner[j]];
 
         hexahedra.push_back(c);
     }
@@ -1371,10 +1371,8 @@ void SparseGridTopology::updateEdges()
 {
     using IndexPair = pair<Index, Index>;
     std::map<IndexPair,bool> edgesMap;
-    for(unsigned i=0; i<seqHexahedra.getValue().size(); ++i)
+    for(auto c : seqHexahedra.getValue())
     {
-        Hexa c = seqHexahedra.getValue()[i];
-
         // horizontal
         edgesMap[IndexPair(c[0],c[1])]=0;
         edgesMap[IndexPair(c[3],c[2])]=0;
@@ -1395,8 +1393,8 @@ void SparseGridTopology::updateEdges()
     SeqEdges& edges = *seqEdges.beginEdit();
     edges.clear();
     edges.reserve(edgesMap.size());
-    for( auto it=edgesMap.cbegin(); it!=edgesMap.cend(); ++it)
-        edges.push_back( Edge( (*it).first.first,  (*it).first.second ));
+    for(auto it : edgesMap)
+        edges.push_back( Edge( it.first.first,  it.first.second ));
     seqEdges.endEdit();
 }
 
@@ -1404,9 +1402,8 @@ void SparseGridTopology::updateEdges()
 void SparseGridTopology::updateQuads()
 {
     std::map<fixed_array<Index,4>,bool> quadsMap;
-    for(unsigned i=0; i<seqHexahedra.getValue().size(); ++i)
+    for(auto c : seqHexahedra.getValue())
     {
-        Hexa c = seqHexahedra.getValue()[i];
         fixed_array<Index,4> v;
 
         v[0]=c[0]; v[1]=c[1]; v[2]=c[2]; v[3]=c[3];
@@ -1425,8 +1422,8 @@ void SparseGridTopology::updateQuads()
     SeqQuads& quads = *seqQuads.beginEdit();
     quads.clear();
     quads.reserve(quadsMap.size());
-    for( auto it=quadsMap.cbegin(); it!=quadsMap.cend(); ++it)
-        quads.push_back( Quad( (*it).first[0],  (*it).first[1],(*it).first[2],(*it).first[3] ));
+    for(const auto & it : quadsMap)
+        quads.push_back( Quad( it.first[0],  it.first[1],it.first[2],it.first[3] ));
     seqQuads.endEdit();
 }
 

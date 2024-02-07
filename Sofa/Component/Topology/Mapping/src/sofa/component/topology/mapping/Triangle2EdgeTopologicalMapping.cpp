@@ -164,9 +164,9 @@ void Triangle2EdgeTopologicalMapping::updateTopologicalMappingTopDown()
             unsigned int ind_tmp;
             unsigned int ind_real_last;
 
-            for (unsigned int i = 0; i <tab.size(); ++i)
+            for (unsigned int i : tab)
             {
-                unsigned int k = tab[i];
+                unsigned int k = i;
 
                 auto iter_1 = Glob2LocMap.find(k);
                 if(iter_1 != Glob2LocMap.end())
@@ -220,7 +220,7 @@ void Triangle2EdgeTopologicalMapping::updateTopologicalMappingTopDown()
                 }
                 else
                 {
-                    msg_warning() << "Glob2LocMap should have the visible edge " << tab[i];
+                    msg_warning() << "Glob2LocMap should have the visible edge " << i;
                     msg_warning() << "INFO_print : Triangle2EdgeTopologicalMapping - nb edges = " << ind_last;
                 }
 
@@ -309,10 +309,10 @@ void Triangle2EdgeTopologicalMapping::updateTopologicalMappingTopDown()
 
             sofa::type::vector<Index> indices;
 
-            for(unsigned int i = 0; i < tab.size(); ++i)
+            for(unsigned int i : tab)
             {
 
-                indices.push_back(tab[i]);
+                indices.push_back(i);
             }
 
             auto& tab_indices = indices;

@@ -29,9 +29,9 @@ using namespace sofa::defaulttype;
 
 IntersectorMap::~IntersectorMap()
 {
-    for(InternalMap::const_iterator it = intersectorsMap.begin(), itEnd = intersectorsMap.end(); it != itEnd; ++it)
+    for(auto it : intersectorsMap)
     {
-        delete it->second;
+        delete it.second;
     }
 }
 
@@ -42,11 +42,11 @@ helper::TypeInfo IntersectorMap::getType(core::CollisionModel* model)
     if (it == castMap.end())
     {
         helper::TypeInfo t2 = t;
-        for (std::set<const objectmodel::ClassInfo* >::iterator it = classes.begin(); it != classes.end(); ++it)
+        for (auto classe : classes)
         {
-            if ((*it)->isInstance(model))
+            if (classe->isInstance(model))
             {
-                t2 = (*it)->type();
+                t2 = classe->type();
                 break;
             }
         }
@@ -76,14 +76,14 @@ ElementIntersector* IntersectorMap::get(core::CollisionModel* model1, core::Coll
 
 
     std::stringstream tmp;
-    for(InternalMap::const_iterator it = intersectorsMap.begin(), itEnd = intersectorsMap.end(); it != itEnd; ++it)
+    for(auto it : intersectorsMap)
     {
-        helper::TypeInfo t1 = it->first.first;
-        helper::TypeInfo t2 = it->first.second;
+        helper::TypeInfo t1 = it.first.first;
+        helper::TypeInfo t2 = it.first.second;
         tmp << "  "
                 << gettypename(t1) << "-"
                 << gettypename(t2);
-        const ElementIntersector* i = it->second;
+        const ElementIntersector* i = it.second;
         if (!i)
             tmp << "  nullptr";
         else
@@ -108,9 +108,9 @@ void IntersectorMap::add_impl(const objectmodel::ClassInfo& c1,
     classes.insert(&c2);
     castMap.clear();
     // rebuild castMap
-    for (std::set<const objectmodel::ClassInfo* >::iterator it = classes.begin(); it != classes.end(); ++it)
+    for (auto classe : classes)
     {
-        castMap.insert(std::make_pair((*it)->type(),(*it)->type()));
+        castMap.insert(std::make_pair(classe->type(),classe->type()));
     }
 
     insert(c1.type(), c2.type(), intersector);

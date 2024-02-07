@@ -216,9 +216,8 @@ bool HexahedronSetTopology_test::testQuadBuffers()
     {
         HexahedronSetTopologyContainer::QuadID quadId = i;
         const HexahedronSetTopologyContainer::HexahedraAroundQuad& _elemAQuad = elemAroundQuads[quadId];
-        for (size_t j = 0; j < _elemAQuad.size(); ++j)
+        for (unsigned int triId : _elemAQuad)
         {
-            HexahedronSetTopologyContainer::HexahedronID triId = _elemAQuad[j];
             const HexahedronSetTopologyContainer::QuadsInHexahedron& _quadInElem = quadInHexahedra[triId];
             bool found = false;
             for (size_t k = 0; k < _quadInElem.size(); ++k)
@@ -311,9 +310,8 @@ bool HexahedronSetTopology_test::testEdgeBuffers()
     {
         HexahedronSetTopologyContainer::EdgeID edgeId = i;
         const HexahedronSetTopologyContainer::HexahedraAroundEdge& _elemAEdge = elemAroundEdges[edgeId];
-        for (size_t j = 0; j < _elemAEdge.size(); ++j)
+        for (unsigned int triId : _elemAEdge)
         {
-            HexahedronSetTopologyContainer::HexahedronID triId = _elemAEdge[j];
             const HexahedronSetTopologyContainer::EdgesInHexahedron& _edgeInElem = edgeInHexahedra[triId];
             bool found = false;
             for (size_t k = 0; k < _edgeInElem.size(); ++k)

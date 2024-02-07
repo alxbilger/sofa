@@ -120,9 +120,9 @@ protected:
     }
     void waitCompletion()
     {
-        for(int i = 0; i < ProducerCount; ++i) prod[i]->join();
+        for(const auto & i : prod) i->join();
         for(int i = 0; i < ConsumerCount; ++i) queue.push(ExitToken);
-        for(int i = 0; i < ConsumerCount; ++i) cons[i]->join();
+        for(const auto & con : cons) con->join();
     }
     void check()
     {

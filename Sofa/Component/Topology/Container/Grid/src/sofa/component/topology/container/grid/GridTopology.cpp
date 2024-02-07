@@ -112,9 +112,8 @@ void GridTopology::GridUpdate::updateEdges()
         // Similar algo as createEdgeSetArray in TriangleSetTopologyContainer
         // create a temporary map to find redundant edges
         std::map<Edge, EdgeID> edgeMap;
-        for (size_t i = 0; i<triangles.size(); ++i)
+        for (auto t : triangles)
         {
-            const Triangle &t = triangles[i];
             for (unsigned int j = 0; j<3; ++j)
             {
                 const PointID v1 = t[(j + 1) % 3];
@@ -150,10 +149,10 @@ void GridTopology::GridUpdate::updateTriangles()
     triangles.clear();
     triangles.reserve(quads.size()*2);
 
-    for (unsigned int i=0; i<quads.size(); ++i)
+    for (auto quad : quads)
     {
-        triangles.push_back(Triangle(quads[i][0], quads[i][1], quads[i][2]));
-        triangles.push_back(Triangle(quads[i][0], quads[i][2], quads[i][3]));
+        triangles.push_back(Triangle(quad[0], quad[1], quad[2]));
+        triangles.push_back(Triangle(quad[0], quad[2], quad[3]));
     }
 
     m_topology->seqTriangles.endEdit();

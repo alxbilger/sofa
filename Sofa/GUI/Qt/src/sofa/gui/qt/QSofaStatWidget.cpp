@@ -80,10 +80,10 @@ void QSofaStatWidget::CreateStats(Node* root)
 void QSofaStatWidget::addCollisionModelsStat(const sofa::type::vector< sofa::core::CollisionModel* >& v)
 {
     std::map< BaseContext*, QTreeWidgetItem* > listStats;
-    for (unsigned int i=0; i<v.size(); i++)
+    for (auto i : v)
     {
-        if ( !v[i]->isActive()) continue;
-        std::map< BaseContext*, QTreeWidgetItem* >::iterator it = listStats.find(v[i]->getContext());
+        if ( !i->isActive()) continue;
+        std::map< BaseContext*, QTreeWidgetItem* >::iterator it = listStats.find(i->getContext());
         QTreeWidgetItem *item;
         if (it != listStats.end())
         {
@@ -92,26 +92,26 @@ void QSofaStatWidget::addCollisionModelsStat(const sofa::type::vector< sofa::cor
         else
         {
             QTreeWidgetItem *node = new QTreeWidgetItem(statsCounter);
-            node->setText(0,QString(v[i]->getContext()->getName().c_str()));
-            const QPixmap* pix = getPixmap(v[i]->getContext(), false,false,false);
+            node->setText(0,QString(i->getContext()->getName().c_str()));
+            const QPixmap* pix = getPixmap(i->getContext(), false,false,false);
             if (pix) node->setIcon(0, QIcon(*pix));
-            listStats.insert(std::make_pair(v[i]->getContext(), node));
+            listStats.insert(std::make_pair(i->getContext(), node));
             item = new QTreeWidgetItem(node);
             node->setExpanded(true);
         }
         assert(item);
-        item->setText(0,v[i]->getName().c_str());
-        item->setText(1,QString(v[i]->getClassName().c_str()));
-        item->setText(0,v[i]->getName().c_str());
-        item->setText(2,QString::number(v[i]->getSize()));
+        item->setText(0,i->getName().c_str());
+        item->setText(1,QString(i->getClassName().c_str()));
+        item->setText(0,i->getName().c_str());
+        item->setText(2,QString::number(i->getSize()));
         {
-        const std::set<int>& groups = v[i]->getGroups();
+        const std::set<int>& groups = i->getGroups();
         QString groupString;
         std::set<int>::const_iterator it = groups.begin(), itend = groups.end();
         for( ; it != itend ; ++it ) groupString += QString::number(*it) + ", ";
         item->setText(3,groupString);
         }
-        items_stats.push_back(std::make_pair(v[i], item));
+        items_stats.push_back(std::make_pair(i, item));
     }
 }
 
@@ -119,12 +119,12 @@ void QSofaStatWidget::addSummary()
 {
     std::set< std::string > nameElement;
     std::map< std::string, int > mapElement;
-    for (unsigned int i=0; i < items_stats.size(); i++)
-        nameElement.insert(items_stats[i].first->getClassName());
+    for (auto & items_stat : items_stats)
+        nameElement.insert(items_stat.first->getClassName());
 
 
-    for (unsigned int i=0; i < items_stats.size(); i++)
-        mapElement[items_stats[i].first->getClassName()] += (items_stats[i].second->text(2).toInt());
+    for (auto & items_stat : items_stats)
+        mapElement[items_stat.first->getClassName()] += (items_stat.second->text(2).toInt());
 
 
     std::string textStats("<hr>Collision Elements present: <ul>");

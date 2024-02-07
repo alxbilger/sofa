@@ -244,9 +244,9 @@ void TetrahedronSetTopologyModifier::addTetrahedronProcess(Tetrahedron t)
 
 void TetrahedronSetTopologyModifier::addTetrahedraProcess(const sofa::type::vector< Tetrahedron > &tetrahedra)
 {
-    for (size_t i = 0; i < tetrahedra.size(); ++i)
+    for (auto i : tetrahedra)
     {
-        addTetrahedronProcess(tetrahedra[i]);
+        addTetrahedronProcess(i);
     }
 }
 
@@ -590,12 +590,12 @@ void TetrahedronSetTopologyModifier::renumberPointsProcess( const sofa::type::ve
             }
         }
 
-        for (size_t i=0; i<m_tetrahedron.size(); ++i)
+        for (auto & i : m_tetrahedron)
         {
-            m_tetrahedron[i][0]  = inv_index[ m_tetrahedron[i][0]  ];
-            m_tetrahedron[i][1]  = inv_index[ m_tetrahedron[i][1]  ];
-            m_tetrahedron[i][2]  = inv_index[ m_tetrahedron[i][2]  ];
-            m_tetrahedron[i][3]  = inv_index[ m_tetrahedron[i][3]  ];
+            i[0]  = inv_index[ i[0]  ];
+            i[1]  = inv_index[ i[1]  ];
+            i[2]  = inv_index[ i[2]  ];
+            i[3]  = inv_index[ i[3]  ];
         }
     }
 
@@ -606,12 +606,12 @@ void TetrahedronSetTopologyModifier::renumberPointsProcess( const sofa::type::ve
 void TetrahedronSetTopologyModifier::removeTetrahedra(const sofa::type::vector<TetrahedronID> &tetrahedraIds, const bool removeIsolatedItems)
 {
     sofa::type::vector<TetrahedronID> tetrahedraIds_filtered;
-    for (size_t i = 0; i < tetrahedraIds.size(); i++)
+    for (unsigned int tetrahedraId : tetrahedraIds)
     {
-        if( tetrahedraIds[i] >= m_container->getNumberOfTetrahedra())
-            dmsg_warning() << "Tetrahedra: " << tetrahedraIds[i] << " is out of bound and won't be removed.";
+        if( tetrahedraId >= m_container->getNumberOfTetrahedra())
+            dmsg_warning() << "Tetrahedra: " << tetrahedraId << " is out of bound and won't be removed.";
         else
-            tetrahedraIds_filtered.push_back(tetrahedraIds[i]);
+            tetrahedraIds_filtered.push_back(tetrahedraId);
     }
 
     /// add the topological changes in the queue

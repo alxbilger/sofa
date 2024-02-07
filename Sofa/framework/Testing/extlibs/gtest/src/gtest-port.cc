@@ -571,11 +571,8 @@ class ThreadLocalRegistryImpl {
       MutexLock lock(&mutex_);
       ThreadIdToThreadLocals* const thread_to_thread_locals =
           GetThreadLocalsMapLocked();
-      for (ThreadIdToThreadLocals::iterator it =
-          thread_to_thread_locals->begin();
-          it != thread_to_thread_locals->end();
-          ++it) {
-        ThreadLocalValues& thread_local_values = it->second;
+      for (auto & thread_to_thread_local : *thread_to_thread_locals) {
+        ThreadLocalValues& thread_local_values = thread_to_thread_local.second;
         ThreadLocalValues::iterator value_pos =
             thread_local_values.find(thread_local_instance);
         if (value_pos != thread_local_values.end()) {
@@ -603,11 +600,8 @@ class ThreadLocalRegistryImpl {
           thread_to_thread_locals->find(thread_id);
       if (thread_local_pos != thread_to_thread_locals->end()) {
         ThreadLocalValues& thread_local_values = thread_local_pos->second;
-        for (ThreadLocalValues::iterator value_pos =
-            thread_local_values.begin();
-            value_pos != thread_local_values.end();
-            ++value_pos) {
-          value_holders.push_back(value_pos->second);
+        for (auto & thread_local_value : thread_local_values) {
+          value_holders.push_back(thread_local_value.second);
         }
         thread_to_thread_locals->erase(thread_local_pos);
       }

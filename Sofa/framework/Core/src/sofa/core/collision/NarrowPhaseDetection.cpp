@@ -41,9 +41,9 @@ NarrowPhaseDetection::~NarrowPhaseDetection()
 
 void NarrowPhaseDetection::beginNarrowPhase()
 {
-    for (DetectionOutputMap::iterator it = m_outputsMap.begin(); it != m_outputsMap.end(); it++)
+    for (auto & it : m_outputsMap)
     {
-        DetectionOutputVector *do_vec = (it->second);
+        DetectionOutputVector *do_vec = (it.second);
 
         if (do_vec != nullptr)
             do_vec->clear();
@@ -56,12 +56,12 @@ void NarrowPhaseDetection::draw(const core::visual::VisualParams* vparams)
 
     std::vector<type::Vec3> points;
 
-    for (auto mapIt = m_outputsMap.begin(); mapIt!=m_outputsMap.end() ; ++mapIt)
+    for (auto & mapIt : m_outputsMap)
     {
-        for (unsigned idx = 0; idx != (*mapIt).second->size(); ++idx)
+        for (unsigned idx = 0; idx != mapIt.second->size(); ++idx)
         {
-            points.push_back((*mapIt).second->getFirstPosition(idx));
-            points.push_back((*mapIt).second->getSecondPosition(idx));
+            points.push_back(mapIt.second->getFirstPosition(idx));
+            points.push_back(mapIt.second->getSecondPosition(idx));
         }
     }
     vparams->drawTool()->drawLines(points,5, type::g_red);
@@ -71,8 +71,8 @@ void NarrowPhaseDetection::draw(const core::visual::VisualParams* vparams)
 
 void NarrowPhaseDetection::addCollisionPairs(const sofa::type::vector< std::pair<core::CollisionModel*, core::CollisionModel*> >& v)
 {
-    for (sofa::type::vector< std::pair<core::CollisionModel*, core::CollisionModel*> >::const_iterator it = v.begin(); it!=v.end(); it++)
-        addCollisionPair(*it);
+    for (auto it : v)
+        addCollisionPair(it);
 
     // m_outputsMap should just be filled in addCollisionPair function
     m_primitiveTestCount = m_outputsMap.size();

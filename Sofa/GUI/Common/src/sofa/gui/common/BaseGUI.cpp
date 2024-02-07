@@ -110,7 +110,7 @@ void BaseGUI::configureGUI(sofa::simulation::Node::SPtr groot)
     sofa::type::vector< sofa::component::setting::MouseButtonSetting*> mouseConfiguration;
     groot->get<sofa::component::setting::MouseButtonSetting>(&mouseConfiguration, sofa::core::objectmodel::BaseContext::SearchRoot);
 
-    for (unsigned int i=0; i<mouseConfiguration.size(); ++i)  setMouseButtonConfiguration(mouseConfiguration[i]);
+    for (auto & i : mouseConfiguration)  setMouseButtonConfiguration(i);
 
 }
 

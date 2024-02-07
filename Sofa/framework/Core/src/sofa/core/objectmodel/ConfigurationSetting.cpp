@@ -47,9 +47,8 @@ ConfigurationSetting::~ConfigurationSetting()
 void ConfigurationSetting::init()
 {
     //Set all the Data in read only mode:
-    for (VecData::const_iterator it = m_vecData.begin(); it!=m_vecData.end(); ++it)
+    for (auto data : m_vecData)
     {
-        BaseData* data=*it;
         data->setReadOnly(true);
     }
 }

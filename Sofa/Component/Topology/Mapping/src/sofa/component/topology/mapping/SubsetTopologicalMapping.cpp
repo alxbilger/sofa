@@ -555,9 +555,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
             {
                 sofa::type::vector<Index> tab2;
                 tab2.reserve(tab.size());
-                for (unsigned int pi=0; pi<tab.size(); ++pi)
+                for (unsigned int ps : tab)
                 {
-                    Index ps = tab[pi];
                     Index pd = pS2D[ps];
                     if (pd == sofa::InvalidID)
                         continue;
@@ -567,9 +566,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
                 // apply removals in pS2D
                 {
                     size_t last = pS2D.size() -1;
-                    for (unsigned int i = 0; i < tab.size(); ++i)
+                    for (unsigned int ps : tab)
                     {
-                        Index ps = tab[i];
                         Index pd = pS2D[ps];
                         if (pd != sofa::InvalidID)
                             pD2S[pd] = sofa::InvalidID;
@@ -587,9 +585,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
                     // apply removals in pD2S
                     {
                         size_t last = pD2S.size() -1;
-                        for (unsigned int i = 0; i < tab2.size(); ++i)
+                        for (unsigned int pd : tab2)
                         {
-                            Index pd = tab2[i];
                             Index ps = pD2S[pd];
                             if (ps != sofa::InvalidID)
                                 msg_error() << "Invalid Point Remove";
@@ -731,9 +728,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
             //toEdgeMod->removeEdgesProcess(tab, false);
             sofa::type::vector<Index> tab2;
             tab2.reserve(tab.size());
-            for (unsigned int ei=0; ei<tab.size(); ++ei)
+            for (unsigned int es : tab)
             {
-                Index es = tab[ei];
                 Index ed = eS2D[es];
                 if (ed == sofa::InvalidID)
                     continue;
@@ -743,9 +739,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
             // apply removals in eS2D
             {
                 size_t last = eS2D.size() -1;
-                for (unsigned int i = 0; i < tab.size(); ++i)
+                for (unsigned int es : tab)
                 {
-                    Index es = tab[i];
                     Index ed = eS2D[es];
                     if (ed != sofa::InvalidID)
                         eD2S[ed] = sofa::InvalidID;
@@ -763,9 +758,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
                 // apply removals in eD2S
                 {
                     size_t last = eD2S.size() -1;
-                    for (unsigned int i = 0; i < tab2.size(); ++i)
+                    for (unsigned int ed : tab2)
                     {
-                        Index ed = tab2[i];
                         Index es = eD2S[ed];
                         if (es != sofa::InvalidID)
                             msg_error() << "Invalid Edge Remove";
@@ -875,9 +869,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
             //toTriangleMod->removeTrianglesProcess(tab, false);
             sofa::type::vector<Index> tab2;
             tab2.reserve(tab.size());
-            for (unsigned int ti=0; ti<tab.size(); ++ti)
+            for (unsigned int ts : tab)
             {
-                Index ts = tab[ti];
                 Index td = tS2D[ts];
                 if (td == sofa::InvalidID)
                     continue;
@@ -887,9 +880,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
             // apply removals in tS2D
             {
                 size_t last = tS2D.size() -1;
-                for (unsigned int i = 0; i < tab.size(); ++i)
+                for (unsigned int ts : tab)
                 {
-                    Index ts = tab[i];
                     Index td = tS2D[ts];
                     if (td != sofa::InvalidID)
                         tD2S[td] = sofa::InvalidID;
@@ -907,9 +899,8 @@ void SubsetTopologicalMapping::updateTopologicalMappingTopDown()
                 // apply removals in tD2S
                 {
                     size_t last = tD2S.size() -1;
-                    for (unsigned int i = 0; i < tab2.size(); ++i)
+                    for (unsigned int td : tab2)
                     {
-                        Index td = tab2[i];
                         Index ts = tD2S[td];
                         if (ts != sofa::InvalidID)
                             msg_error() << "Invalid Triangle Remove";

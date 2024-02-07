@@ -60,11 +60,11 @@ void EdgeSetTopologyContainer::init()
     }
     else if (!m_edge.empty())
     {
-        for (size_t i=0; i<m_edge.size(); ++i)
+        for (auto i : m_edge)
         {
             for(sofa::Index j=0; j<2; ++j)
             {
-                const EdgeID a = m_edge[i][j];
+                const EdgeID a = i[j];
                 if (a >= getNbPoints()) setNbPoints(a+1);
             }
         }
@@ -203,9 +203,9 @@ int EdgeSetTopologyContainer::getNumberConnectedComponents(sofa::type::vector<Ed
     Graph G;
     const helper::ReadAccessor< Data< sofa::type::vector<Edge> > > m_edge = d_edge;
 
-    for (size_t k=0; k<m_edge.size(); ++k)
+    for (auto k : m_edge)
     {
-        add_edge(m_edge[k][0], m_edge[k][1], G);
+        add_edge(k[0], k[1], G);
     }
 
     components.resize(num_vertices(G));
@@ -230,17 +230,17 @@ bool EdgeSetTopologyContainer::checkTopology() const
         for (size_t i = 0; i < m_edgesAroundVertex.size(); ++i)
         {
             const sofa::type::vector<EdgeID> &es = m_edgesAroundVertex[i];
-            for (size_t j = 0; j < es.size(); ++j)
+            for (unsigned int e : es)
             {
-                const Edge& edge = m_edge[es[j]];
+                const Edge& edge = m_edge[e];
                 if (!(edge[0] == i || edge[1] == i))
                 {
-                    msg_error() << "EdgeSetTopologyContainer::checkTopology() failed: edge " << es[j] << ": [" << edge << "] not around vertex: " << i;
+                    msg_error() << "EdgeSetTopologyContainer::checkTopology() failed: edge " << e << ": [" << edge << "] not around vertex: " << i;
                     ret = false;
                 }
 
                 // count number of edge
-                edgeSet.insert(es[j]);
+                edgeSet.insert(e);
             }
         }
 
@@ -340,13 +340,11 @@ const EdgeSetTopologyContainer::VecEdgeID EdgeSetTopologyContainer::getConnected
         elemNextFront = this->getElementAroundElements(elemOnFront); // for each edgeId on the propagation front
 
         // Second Step - Avoid backward direction
-        for (size_t i = 0; i<elemNextFront.size(); ++i)
+        for (unsigned int id : elemNextFront)
         {
             bool find = false;
-            EdgeID id = elemNextFront[i];
-
-            for (size_t j = 0; j<elemAll.size(); ++j)
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll)
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -397,16 +395,14 @@ const EdgeSetTopologyContainer::VecEdgeID EdgeSetTopologyContainer::getElementAr
             continue;
         }
 
-        for (size_t j = 0; j<edgeAV.size(); ++j) // for each edge around the node
+        for (unsigned int id : edgeAV) // for each edge around the node
         {
             bool find = false;
-            EdgeID id = edgeAV[j];
-
             if (id == elem)
                 continue;
 
-            for (size_t k = 0; k<elems.size(); ++k) // check no redundancy
-                if (id == elems[k])
+            for (unsigned int elem : elems) // check no redundancy
+                if (id == elem)
                 {
                     find = true;
                     break;
@@ -431,20 +427,18 @@ const EdgeSetTopologyContainer::VecEdgeID EdgeSetTopologyContainer::getElementAr
     }
 
     VecEdgeID elemTmp;
-    for (size_t i = 0; i <elems.size(); ++i) // for each edgeId of input vector
+    for (unsigned int elem : elems) // for each edgeId of input vector
     {
-        VecEdgeID elemTmp2 = this->getElementAroundElement(elems[i]);
+        VecEdgeID elemTmp2 = this->getElementAroundElement(elem);
 
         elemTmp.insert(elemTmp.end(), elemTmp2.begin(), elemTmp2.end());
     }
 
-    for (size_t i = 0; i<elemTmp.size(); ++i) // for each edge Id found
+    for (unsigned int id : elemTmp) // for each edge Id found
     {
         bool find = false;
-        EdgeID id = elemTmp[i];
-
-        for (size_t j = 0; j<elems.size(); ++j) // check no redundancy with input vector
-            if (id == elems[j])
+        for (unsigned int elem : elems) // check no redundancy with input vector
+            if (id == elem)
             {
                 find = true;
                 break;
@@ -452,8 +446,8 @@ const EdgeSetTopologyContainer::VecEdgeID EdgeSetTopologyContainer::getElementAr
 
         if (!find)
         {
-            for (size_t j = 0; j<elemAll.size(); ++j) // check no redundancy in output vector
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll) // check no redundancy in output vector
+                if (id == j)
                 {
                     find = true;
                     break;

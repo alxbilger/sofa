@@ -53,8 +53,8 @@ void ParallelVisitorScheduler::recursiveClone(Node* node)
 {
     node->addObject( this->clone() );
 
-    for(Node::ChildIterator it = node->child.begin(); it != node->child.end(); ++it)
-        recursiveClone(it->get());
+    for(const auto & it : node->child)
+        recursiveClone(it.get());
 
 }
 

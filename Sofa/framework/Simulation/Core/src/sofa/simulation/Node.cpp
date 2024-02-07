@@ -350,8 +350,8 @@ void Node::notifyEndRemoveSlave(core::objectmodel::BaseObject* master, core::obj
 void Node::notifySleepChanged(Node* node) const
 {
     if (this->getFirstParent() == nullptr) {
-        for (type::vector<MutationListener*>::const_iterator it = listener.begin(); it != listener.end(); ++it)
-            (*it)->sleepChanged(node);
+        for (auto it : listener)
+            it->sleepChanged(node);
     }
     else {
         dynamic_cast<Node*>(this->getFirstParent())->notifySleepChanged(node);
@@ -381,9 +381,9 @@ void Node::removeListener(MutationListener* obj)
 /// Find an object given its name
 core::objectmodel::BaseObject* Node::getObject(const std::string& name) const
 {
-    for (ObjectIterator it = object.begin(), itend = object.end(); it != itend; ++it)
-        if ((*it)->getName() == name)
-            return it->get();
+    for (const auto & it : object)
+        if (it->getName() == name)
+            return it.get();
     return nullptr;
 }
 
@@ -560,9 +560,9 @@ sofa::core::objectmodel::Base* Node::findLinkDestClass(const core::objectmodel::
                 dmsg_info()  << "  found node " << node->getName() << "." ;
             return r;
         }
-        for (ObjectIterator it = node->object.begin(), itend = node->object.end(); it != itend; ++it)
+        for (const auto & it : node->object)
         {
-            BaseObject* obj = it->get();
+            BaseObject* obj = it.get();
             Base *o = destType->dynamicCast(obj);
             if (!o) continue;
             if(DEBUG_LINK)
@@ -685,10 +685,10 @@ core::visual::Shader* Node::getShader(const sofa::core::objectmodel::TagSet& t) 
         return getShader();
     else // if getShader is Tag filtered
     {
-        for(NodeSequence<core::visual::Shader>::iterator it = shaders.begin(), iend=shaders.end(); it!=iend; ++it)
+        for(auto shader : shaders)
         {
-            if ( (*it)->getTags().includes(t) )
-                return (*it);
+            if ( shader->getTags().includes(t) )
+                return shader;
         }
         return get<core::visual::Shader>(t,SearchParents);
     }
@@ -729,10 +729,10 @@ core::visual::VisualLoop* Node::getVisualLoop() const
 /// Find a child node given its name
 Node* Node::getChild(const std::string& name) const
 {
-    for (ChildIterator it = child.begin(), itend = child.end(); it != itend; ++it)
+    for (const auto & it : child)
     {
-        if ((*it)->getName() == name)
-            return it->get();
+        if (it->getName() == name)
+            return it.get();
     }
     return nullptr;
 }
@@ -780,8 +780,8 @@ sofa::core::objectmodel::BaseNode::Children Node::getChildren() const
 {
     Children list_children;
     list_children.reserve(child.size());
-    for (ChildIterator it = child.begin(), itend = child.end(); it != itend; ++it)
-        list_children.push_back(it->get());
+    for (const auto & it : child)
+        list_children.push_back(it.get());
     return list_children;
 }
 
@@ -801,8 +801,8 @@ void Node::removeControllers()
     removeObject(*animationManager.begin());
     typedef NodeSequence<core::behavior::OdeSolver> Solvers;
     const Solvers solverRemove = solver;
-    for ( Solvers::iterator i=solverRemove.begin(), iend=solverRemove.end(); i!=iend; ++i )
-        removeObject( *i );
+    for (auto i : solverRemove)
+        removeObject( i );
 }
 
 core::objectmodel::BaseContext* Node::getContext()
@@ -851,20 +851,20 @@ void Node::updateContext()
 
 void Node::updateSimulationContext()
 {
-    for ( unsigned i=0; i<contextObject.size(); ++i )
+    for (auto i : contextObject)
     {
-        contextObject[i]->init();
-        contextObject[i]->apply();
+        i->init();
+        i->apply();
     }
 }
 
 void Node::updateVisualContext()
 {
     // Apply local modifications to the context
-    for ( unsigned i=0; i<contextObject.size(); ++i )
+    for (auto i : contextObject)
     {
-        contextObject[i]->init();
-        contextObject[i]->apply();
+        i->init();
+        i->apply();
     }
 
     if ( debug_ )
@@ -934,68 +934,68 @@ void Node::printComponents()
     std::stringstream sstream;
 
     sstream << "BaseAnimationLoop: ";
-    for (NodeSingle<BaseAnimationLoop>::iterator i = animationManager.begin(), iend = animationManager.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : animationManager)
+        sstream << i->getName() << " ";
     sstream << "\n" << "OdeSolver: ";
-    for (NodeSequence<OdeSolver>::iterator i = solver.begin(), iend = solver.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : solver)
+        sstream << i->getName() << " ";
     sstream << "\n" << "LinearSolver: ";
-    for (NodeSequence<BaseLinearSolver>::iterator i = linearSolver.begin(), iend = linearSolver.end(); i != iend; i++)
-        sstream << (*i)->getName() << " ";
+    for (auto i : linearSolver)
+        sstream << i->getName() << " ";
     sstream << "\n" << "ConstraintSolver: ";
-    for (NodeSequence<ConstraintSolver>::iterator i = constraintSolver.begin(), iend = constraintSolver.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : constraintSolver)
+        sstream << i->getName() << " ";
     sstream << "VisualLoop: ";
-    for (NodeSingle<VisualLoop>::iterator i = visualLoop.begin(), iend = visualLoop.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : visualLoop)
+        sstream << i->getName() << " ";
     sstream << "\n" << "InteractionForceField: ";
-    for (NodeSequence<BaseInteractionForceField>::iterator i = interactionForceField.begin(), iend = interactionForceField.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : interactionForceField)
+        sstream << i->getName() << " ";
     sstream << "\n" << "ForceField: ";
-    for (NodeSequence<BaseForceField>::iterator i = forceField.begin(), iend = forceField.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : forceField)
+        sstream << i->getName() << " ";
     sstream << "\n" << "State: ";
-    for (NodeSingle<BaseState>::iterator i = state.begin(), iend = state.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : state)
+        sstream << i->getName() << " ";
     sstream << "\n" << "MechanicalState: ";
-    for (NodeSingle<BaseMechanicalState>::iterator i = mechanicalState.begin(), iend = mechanicalState.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : mechanicalState)
+        sstream << i->getName() << " ";
     sstream << "\n" << "Mechanical Mapping: ";
-    for (NodeSingle<BaseMapping>::iterator i = mechanicalMapping.begin(), iend = mechanicalMapping.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : mechanicalMapping)
+        sstream << i->getName() << " ";
     sstream << "\n" << "Mapping: ";
-    for (NodeSequence<BaseMapping>::iterator i = mapping.begin(), iend = mapping.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : mapping)
+        sstream << i->getName() << " ";
     sstream << "\n" << "Topology: ";
-    for (NodeSingle<Topology>::iterator i = topology.begin(), iend = topology.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : topology)
+        sstream << i->getName() << " ";
     sstream << "\n" << "MeshTopology: ";
-    for (NodeSingle<BaseMeshTopology>::iterator i = meshTopology.begin(), iend = meshTopology.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : meshTopology)
+        sstream << i->getName() << " ";
     sstream << "\n" << "Shader: ";
-    for (NodeSequence<Shader>::iterator i = shaders.begin(), iend = shaders.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto shader : shaders)
+        sstream << shader->getName() << " ";
     sstream << "\n" << "ProjectiveConstraintSet: ";
-    for (NodeSequence<BaseProjectiveConstraintSet>::iterator i = projectiveConstraintSet.begin(), iend = projectiveConstraintSet.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : projectiveConstraintSet)
+        sstream << i->getName() << " ";
     sstream << "\n" << "ConstraintSet: ";
-    for (NodeSequence<BaseConstraintSet>::iterator i = constraintSet.begin(), iend = constraintSet.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : constraintSet)
+        sstream << i->getName() << " ";
     sstream << "\n" << "BehaviorModel: ";
-    for (NodeSequence<BehaviorModel>::iterator i = behaviorModel.begin(), iend = behaviorModel.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : behaviorModel)
+        sstream << i->getName() << " ";
     sstream << "\n" << "VisualModel: ";
-    for (NodeSequence<VisualModel>::iterator i = visualModel.begin(), iend = visualModel.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : visualModel)
+        sstream << i->getName() << " ";
     sstream << "\n" << "CollisionModel: ";
-    for (NodeSequence<CollisionModel>::iterator i = collisionModel.begin(), iend = collisionModel.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : collisionModel)
+        sstream << i->getName() << " ";
     sstream << "\n" << "ContextObject: ";
-    for (NodeSequence<ContextObject>::iterator i = contextObject.begin(), iend = contextObject.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : contextObject)
+        sstream << i->getName() << " ";
     sstream << "\n" << "Pipeline: ";
-    for (NodeSingle<Pipeline>::iterator i = collisionPipeline.begin(), iend = collisionPipeline.end(); i != iend; ++i)
-        sstream << (*i)->getName() << " ";
+    for (auto i : collisionPipeline)
+        sstream << i->getName() << " ";
     sstream << "\n";
 
     msg_info() << sstream.str();

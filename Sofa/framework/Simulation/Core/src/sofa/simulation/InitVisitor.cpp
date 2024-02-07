@@ -42,11 +42,11 @@ Visitor::Result InitVisitor::processNodeTopDown(simulation::Node* node)
     if(!node->f_bbox.isSet())
         nodeBBox->invalidate();
 
-    for(unsigned int i=0; i<node->object.size(); ++i)
+    for(auto && i : node->object)
     {
-        node->object[i]->init();
-        node->object[i]->computeBBox(params, true);
-        nodeBBox->include(node->object[i]->f_bbox.getValue());
+        i->init();
+        i->computeBBox(params, true);
+        nodeBBox->include(i->f_bbox.getValue());
     }
     node->f_bbox.endEdit();
     return RESULT_CONTINUE;

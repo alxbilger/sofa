@@ -156,8 +156,8 @@ void OglCylinderModel::exportOBJ(std::string name, std::ostream* out, std::ostre
     for( int i=0 ; i<nbv; i++ )
         *out << "v "<< std::fixed << x[i][0]<<' '<< std::fixed <<x[i][1]<<' '<< std::fixed <<x[i][2]<<'\n';
 
-    for( size_t i = 0 ; i < edges.size() ; i++ )
-        *out << "f " << edges[i][0]+vindex+1 << " " << edges[i][1]+vindex+1 << '\n';
+    for(auto edge : edges)
+        *out << "f " << edge[0]+vindex+1 << " " << edge[1]+vindex+1 << '\n';
 
     *out << std::endl;
 

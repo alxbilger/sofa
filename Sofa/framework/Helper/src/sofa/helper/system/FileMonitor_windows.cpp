@@ -143,8 +143,8 @@ int FileMonitor::addFile(const std::string& filepath, FileEventListener* listene
     if (!FileSystem::exists(filepath))
         return -1;
 
-    for (ListOfMonitors::iterator it_monitor = monitors.begin(); it_monitor != monitors.end(); it_monitor++)
-        if (it_monitor->m_listener == listener && it_monitor->m_filename == filepath)
+    for (auto & monitor : monitors)
+        if (monitor.m_listener == listener && monitor.m_filename == filepath)
             return 1;
 
     monitors.push_back(MonitoredFile(filepath, listener));
@@ -163,11 +163,11 @@ int FileMonitor::updates(int timeout)
     const ctime_t t = CTime::getTime() ;
 
     while(!hadEvent && CTime::toSecond(CTime::getRefTime()-t) < 1.0*timeout ){
-        for (ListOfMonitors::iterator it_monitor = monitors.begin(); it_monitor != monitors.end(); it_monitor++)
+        for (auto & monitor : monitors)
         {
-            if (!it_monitor->update())
+            if (!monitor.update())
             {
-                it_monitor->m_listener->fileHasChanged(it_monitor->m_filename);
+                monitor.m_listener->fileHasChanged(monitor.m_filename);
                 hadEvent = true ;
             }
         }

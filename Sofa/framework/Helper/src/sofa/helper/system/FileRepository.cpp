@@ -232,10 +232,9 @@ void FileRepository::removePath(const std::string& path)
         p0 = p1+1;
     }
 
-    for(std::vector<std::string>::iterator it=entries.begin();
-        it!=entries.end(); ++it)
+    for(auto & entrie : entries)
     {
-        vpath.erase( find(vpath.begin(), vpath.end(), *it) );
+        vpath.erase( find(vpath.begin(), vpath.end(), entrie) );
     }
 }
 
@@ -286,8 +285,8 @@ bool FileRepository::findFile(std::string& filename, const std::string& basedir,
         filename = SetDirectory::GetRelativeFromDir(filename.c_str(), currentDir.c_str());
         return false; // local file path
     }
-    for (std::vector<std::string>::const_iterator it = vpath.begin(); it != vpath.end(); ++it)
-        if (findFileIn(filename, *it)) return true;
+    for (const auto & it : vpath)
+        if (findFileIn(filename, it)) return true;
     if (errlog)
     {
         // hack to use logging rather than directly writing in std::cerr/std::cout
@@ -295,8 +294,8 @@ bool FileRepository::findFile(std::string& filename, const std::string& basedir,
 
         std::stringstream tmplog;
         tmplog << "File "<<filename<<" NOT FOUND in "<<basedir;
-        for (std::vector<std::string>::const_iterator it = vpath.begin(); it != vpath.end(); ++it)
-            tmplog << ':'<<*it;
+        for (const auto & it : vpath)
+            tmplog << ':'<<it;
         if( errlog==&std::cerr || errlog==&std::cout)
             msg_error("FileRepository") << tmplog.str();
         else
@@ -312,8 +311,8 @@ bool FileRepository::findFileFromFile(std::string& filename, const std::string& 
 
 void FileRepository::print()
 {
-    for (std::vector<std::string>::const_iterator it = vpath.begin(); it != vpath.end(); ++it)
-        std::cout << *it << std::endl;
+    for (const auto & it : vpath)
+        std::cout << it << std::endl;
 }
 
 const std::string FileRepository::getPathsJoined()

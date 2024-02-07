@@ -60,7 +60,7 @@ void FilesRecentlyOpenedManager::setPath(const std::string &path)
 void FilesRecentlyOpenedManager::writeFiles() const
 {
     std::ofstream out(path.c_str(),std::ios::out);
-    for (unsigned int i=0; i<files.size(); ++i) out << files[i] << "\n";
+    for (const auto & file : files) out << file << "\n";
     out.close();
 }
 

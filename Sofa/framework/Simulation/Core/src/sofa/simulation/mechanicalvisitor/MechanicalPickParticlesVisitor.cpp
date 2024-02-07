@@ -82,13 +82,13 @@ void MechanicalPickParticlesVisitor::getClosestParticle( core::behavior::BaseMec
     // threshold for valid particles is the shortest distance + small tolerance relative to ray length
     const SReal dmax = particles.begin()->first + radius0*1e-10;
 
-    for( Particles::const_iterator it=particles.begin(), itend=particles.end() ; it!=itend ; ++it )
+    for(const auto & particle : particles)
     {
-        if( it->first > dmax ) break; // from now on, particles are too far from the ray
+        if( particle.first > dmax ) break; // from now on, particles are too far from the ray
 
         // get current valid particle
-        mstatei = it->second.first;
-        indexCollisionElementi = it->second.second;
+        mstatei = particle.second.first;
+        indexCollisionElementi = particle.second.second;
         pointi[0] = mstatei->getPX(indexCollisionElementi);
         pointi[1] = mstatei->getPY(indexCollisionElementi);
         pointi[2] = mstatei->getPZ(indexCollisionElementi);

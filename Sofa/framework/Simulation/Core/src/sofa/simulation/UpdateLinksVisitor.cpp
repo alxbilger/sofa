@@ -36,9 +36,9 @@ void UpdateLinksVisitor::processObject(core::objectmodel::BaseObject* obj)
 
 Visitor::Result UpdateLinksVisitor::processNodeTopDown(simulation::Node* node)
 {
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        this->processObject(it->get());
+        this->processObject(it.get());
     }
 
     //TODO(dmarchal): why do we clear the messsage logs when we update the links ?

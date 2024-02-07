@@ -214,10 +214,8 @@ void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
             sofa::type::vector< Index > trianglesIndexList;
             auto nb_elems = toModel->getNbTriangles();
 
-            for (unsigned int i = 0; i < tab.size(); ++i)
+            for (unsigned int k : tab)
             {
-                unsigned int k = tab[i];
-
                 const auto & p0 = quadArray[k][0];
                 const auto & p1 = quadArray[k][1];
                 const auto & p2 = quadArray[k][2];
@@ -254,9 +252,8 @@ void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
             sofa::type::vector<Index> ind_real_last;
             auto ind_last = toModel->getNbTriangles();
 
-            for (unsigned int i = 0; i < tab.size(); ++i)
+            for (unsigned int k : tab)
             {
-                unsigned int k = tab[i];
                 sofa::type::vector<Index> ind_k;
 
                 auto iter_1 = In2OutMap.find(k);
@@ -358,9 +355,9 @@ void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
 
             sofa::type::vector<Index> indices;
 
-            for(unsigned int i = 0; i < tab.size(); ++i)
+            for(unsigned int i : tab)
             {
-                indices.push_back(tab[i]);
+                indices.push_back(i);
             }
 
             sofa::type::vector<Index>& tab_indices = indices;

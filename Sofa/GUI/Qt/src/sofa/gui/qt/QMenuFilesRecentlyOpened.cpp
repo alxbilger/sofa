@@ -37,8 +37,8 @@ void QMenuFilesRecentlyOpened::updateWidget()
     //while (menuRecentlyOpenedFiles->actions().count())
     //    menuRecentlyOpenedFiles->removeAction(menuRecentlyOpenedFiles->actions()[0]);
     //Add the content of files
-    for (unsigned int i=0; i<files.size(); ++i)
-        menuRecentlyOpenedFiles->addAction(QString(files[i].c_str()));
+    for (const auto & file : files)
+        menuRecentlyOpenedFiles->addAction(QString(file.c_str()));
 }
 
 QMenu *QMenuFilesRecentlyOpened::createWidget(QWidget *parent, const std::string &name)

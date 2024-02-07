@@ -62,11 +62,11 @@ void TriangleSetTopologyContainer::init()
     else if (!m_triangle.empty())
     {
         // Todo (epernod 2019-03-12): optimise by removing this loop or at least create AroundVertex buffer at the same time.
-        for (size_t i=0; i<m_triangle.size(); ++i)
+        for (auto i : m_triangle)
         {
             for(PointID j=0; j<3; ++j)
             {
-                const Index a = m_triangle[i][j];
+                const Index a = i[j];
                 if (a >= getNbPoints()) setNbPoints(a+1);
             }
         }
@@ -212,9 +212,8 @@ void TriangleSetTopologyContainer::createEdgeSetArray()
     helper::WriteAccessor< Data< sofa::type::vector<Edge> > > m_edge = d_edge;
     const helper::ReadAccessor< Data< sofa::type::vector<Triangle> > > m_triangle = d_triangle;
 
-    for (size_t i=0; i<m_triangle.size(); ++i)
+    for (auto t : m_triangle)
     {
-        const Triangle &t = m_triangle[i];
         for(unsigned int j=0; j<3; ++j)
         {
             const PointID v1 = t[(j+1)%3];
@@ -376,9 +375,9 @@ void TriangleSetTopologyContainer::createElementsOnBorder()
         {
 
             // --- Triangle case ---
-            for (size_t j = 0; j < m_trianglesOnBorder.size(); j++) // Loop to avoid duplicated indices
+            for (unsigned int j : m_trianglesOnBorder) // Loop to avoid duplicated indices
             {
-                if (m_trianglesOnBorder[j] == m_trianglesAroundEdge[i][0])
+                if (j == m_trianglesAroundEdge[i][0])
                 {
                     newTriangle = false;
                     break;
@@ -392,9 +391,9 @@ void TriangleSetTopologyContainer::createElementsOnBorder()
 
 
             // --- Edge case ---
-            for (size_t j = 0; j < m_edgesOnBorder.size(); j++) // Loop to avoid duplicated indices
+            for (unsigned int j : m_edgesOnBorder) // Loop to avoid duplicated indices
             {
-                if (m_edgesOnBorder[j] == i)
+                if (j == i)
                 {
                     newEdge = false;
                     break;
@@ -409,9 +408,9 @@ void TriangleSetTopologyContainer::createElementsOnBorder()
 
             // --- Point case ---
             PointID firstVertex = m_edge[i][0];
-            for (size_t j = 0; j < m_pointsOnBorder.size(); j++) // Loop to avoid duplicated indices
+            for (unsigned int j : m_pointsOnBorder) // Loop to avoid duplicated indices
             {
-                if (m_pointsOnBorder[j] == firstVertex)
+                if (j == firstVertex)
                 {
                     newPoint = false;
                     break;
@@ -656,17 +655,17 @@ bool TriangleSetTopologyContainer::checkTopology() const
         for (size_t i = 0; i < m_trianglesAroundVertex.size(); ++i)
         {
             const sofa::type::vector<TriangleID> &tvs = m_trianglesAroundVertex[i];
-            for (size_t j = 0; j < tvs.size(); ++j)
+            for (unsigned int tv : tvs)
             {
-                const Triangle& triangle = m_triangle[tvs[j]];
+                const Triangle& triangle = m_triangle[tv];
                 const bool check_triangle_vertex_shell = (triangle[0] == i) || (triangle[1] == i) || (triangle[2] == i);
                 if (!check_triangle_vertex_shell)
                 {
-                    msg_error() << "TriangleSetTopologyContainer::checkTopology() failed: triangle " << tvs[j] << ": [" << triangle << "] not around vertex: " << i;
+                    msg_error() << "TriangleSetTopologyContainer::checkTopology() failed: triangle " << tv << ": [" << triangle << "] not around vertex: " << i;
                     ret = false;
                 }
 
-                triangleSet.insert(tvs[j]);
+                triangleSet.insert(tv);
             }
         }
 
@@ -715,19 +714,19 @@ bool TriangleSetTopologyContainer::checkTopology() const
         for (size_t i = 0; i < m_trianglesAroundEdge.size(); ++i)
         {
             const sofa::type::vector<TriangleID> &tes = m_trianglesAroundEdge[i];
-            for (size_t j = 0; j < tes.size(); ++j)
+            for (unsigned int te : tes)
             {
-                const EdgesInTriangle& eInTri = m_edgesInTriangle[tes[j]];
+                const EdgesInTriangle& eInTri = m_edgesInTriangle[te];
                 const bool check_triangle_edge_shell = (eInTri[0] == i)
                     || (eInTri[1] == i)
                     || (eInTri[2] == i);
                 if (!check_triangle_edge_shell)
                 {
-                    msg_error() << "TriangleSetTopologyContainer::checkTopology() failed: triangle: " << tes[j] << " with edges: [" << eInTri << "] not found around edge: " << i;
+                    msg_error() << "TriangleSetTopologyContainer::checkTopology() failed: triangle: " << te << " with edges: [" << eInTri << "] not found around edge: " << i;
                     ret = false;
                 }
 
-                triangleSet.insert(tes[j]);
+                triangleSet.insert(te);
             }
         }
 
@@ -826,13 +825,11 @@ const TriangleSetTopologyContainer::VecTriangleID TriangleSetTopologyContainer::
         // First Step - Create new region
         elemNextFront = this->getElementAroundElements(elemOnFront); // for each triangleID on the propagation front
         // Second Step - Avoid backward direction
-        for (size_t i = 0; i<elemNextFront.size(); ++i)
+        for (unsigned int id : elemNextFront)
         {
             bool find = false;
-            TriangleID id = elemNextFront[i];
-
-            for (size_t j = 0; j<elemAll.size(); ++j)
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll)
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -877,16 +874,14 @@ const TriangleSetTopologyContainer::VecTriangleID TriangleSetTopologyContainer::
     {
         TrianglesAroundVertex triAV = this->getTrianglesAroundVertex(the_tri[i]);
 
-        for (size_t j = 0; j<triAV.size(); ++j) // for each triangle around the node
+        for (unsigned int id : triAV) // for each triangle around the node
         {
             bool find = false;
-            TriangleID id = triAV[j];
-
             if (id == elem)
                 continue;
 
-            for (size_t k = 0; k<elems.size(); ++k) // check no redundancy
-                if (id == elems[k])
+            for (unsigned int elem : elems) // check no redundancy
+                if (id == elem)
                 {
                     find = true;
                     break;
@@ -910,20 +905,18 @@ const TriangleSetTopologyContainer::VecTriangleID TriangleSetTopologyContainer::
     }
 
     VecTriangleID elemTmp;
-    for (size_t i = 0; i <elems.size(); ++i) // for each triangleId of input vector
+    for (unsigned int elem : elems) // for each triangleId of input vector
     {
-        VecTriangleID elemTmp2 = this->getElementAroundElement(elems[i]);
+        VecTriangleID elemTmp2 = this->getElementAroundElement(elem);
 
         elemTmp.insert(elemTmp.end(), elemTmp2.begin(), elemTmp2.end());
     }
 
-    for (size_t i = 0; i<elemTmp.size(); ++i) // for each Triangle Id found
+    for (unsigned int id : elemTmp) // for each Triangle Id found
     {
         bool find = false;
-        TriangleID id = elemTmp[i];
-
-        for (size_t j = 0; j<elems.size(); ++j) // check no redundancy with input vector
-            if (id == elems[j])
+        for (unsigned int elem : elems) // check no redundancy with input vector
+            if (id == elem)
             {
                 find = true;
                 break;
@@ -931,8 +924,8 @@ const TriangleSetTopologyContainer::VecTriangleID TriangleSetTopologyContainer::
 
         if (!find)
         {
-            for (size_t j = 0; j<elemAll.size(); ++j) // check no redundancy in output vector
-                if (id == elemAll[j])
+            for (unsigned int j : elemAll) // check no redundancy in output vector
+                if (id == j)
                 {
                     find = true;
                     break;
@@ -979,16 +972,16 @@ bool TriangleSetTopologyContainer::hasBorderElementLists() const
 
 void TriangleSetTopologyContainer::clearTrianglesAroundVertex()
 {
-    for(size_t i=0; i<m_trianglesAroundVertex.size(); ++i)
-        m_trianglesAroundVertex[i].clear();
+    for(auto & i : m_trianglesAroundVertex)
+        i.clear();
 
     m_trianglesAroundVertex.clear();
 }
 
 void TriangleSetTopologyContainer::clearTrianglesAroundEdge()
 {
-    for(size_t i=0; i<m_trianglesAroundEdge.size(); ++i)
-        m_trianglesAroundEdge[i].clear();
+    for(auto & i : m_trianglesAroundEdge)
+        i.clear();
 
     m_trianglesAroundEdge.clear();
 }

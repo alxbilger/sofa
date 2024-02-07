@@ -33,16 +33,16 @@ namespace simulation
 static std::string xmlencode(const std::string& str)
 {
     std::string res;
-    for (unsigned int i=0; i<str.length(); ++i)
+    for (char i : str)
     {
-        switch(str[i])
+        switch(i)
         {
         case '<': res += "&lt;"; break;
         case '>': res += "&gt;"; break;
         case '&': res += "&amp;"; break;
         case '"': res += "&quot;"; break;
         case '\'': res += "&apos;"; break;
-        default:  res += str[i];
+        default:  res += i;
         }
     }
     return res;
@@ -100,9 +100,9 @@ Visitor::Result XMLPrintVisitor::processNodeTopDown(simulation::Node* node)
 
     //processObjects(node->object);
     // BUGFIX(Jeremie A.): filter objects to output interactions classes after the children nodes to resolve dependencies at creation time
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        sofa::core::objectmodel::BaseObject* obj = it->get();
+        sofa::core::objectmodel::BaseObject* obj = it.get();
         if (    obj->toBaseInteractionForceField() == nullptr
             &&  obj->toBaseInteractionConstraint() == nullptr
             &&  obj->toBaseInteractionProjectiveConstraintSet() == nullptr
@@ -115,9 +115,9 @@ Visitor::Result XMLPrintVisitor::processNodeTopDown(simulation::Node* node)
 
 void XMLPrintVisitor::processNodeBottomUp(simulation::Node* node)
 {
-    for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
+    for (const auto & it : node->object)
     {
-        sofa::core::objectmodel::BaseObject* obj = it->get();
+        sofa::core::objectmodel::BaseObject* obj = it.get();
         if (    obj->toBaseInteractionForceField() != nullptr
             ||  obj->toBaseInteractionConstraint() != nullptr
             ||  obj->toBaseInteractionProjectiveConstraintSet() != nullptr

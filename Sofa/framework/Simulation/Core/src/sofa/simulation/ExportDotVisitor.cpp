@@ -215,9 +215,8 @@ std::string ExportDotVisitor::getName(core::objectmodel::Base* o, std::string pr
         return names[o];
     const std::string oname = o->getName();
     std::string name = prefix;
-    for (unsigned i = 0; i<oname.length(); i++)
+    for (char c : oname)
     {
-        const char c = oname[i];
         static const char *chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         if (strchr(chars, c))
             name += c;

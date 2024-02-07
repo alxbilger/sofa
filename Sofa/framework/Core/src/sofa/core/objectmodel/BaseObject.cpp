@@ -150,9 +150,9 @@ void BaseObject::setSrc(const std::string &valueString, const BaseObject *loader
 
     if (attributeList != nullptr)
     {
-        for (std::size_t j = 0; j<attributeList->size(); ++j)
+        for (const auto & j : *attributeList)
         {
-            it_map = dataLoaderMap.find ((*attributeList)[j]);
+            it_map = dataLoaderMap.find (j);
             if (it_map != dataLoaderMap.end())
                 dataLoaderMap.erase (it_map);
         }

@@ -69,20 +69,20 @@ void SofaMouseManager::updateContent()
         const OperationFactory::RegisterStorage &registry = OperationFactory::getInstance()->registry;
 
         int idx=0;
-        for (OperationFactory::RegisterStorage::const_iterator it=registry.begin(); it!=registry.end(); ++it)
+        for (const auto & it : registry)
         {
-            gui->LeftOperationCombo  ->addItem(QString(OperationFactory::GetDescription(it->first).c_str()));
-            gui->MiddleOperationCombo->addItem(QString(OperationFactory::GetDescription(it->first).c_str()));
-            gui->RightOperationCombo ->addItem(QString(OperationFactory::GetDescription(it->first).c_str()));
+            gui->LeftOperationCombo  ->addItem(QString(OperationFactory::GetDescription(it.first).c_str()));
+            gui->MiddleOperationCombo->addItem(QString(OperationFactory::GetDescription(it.first).c_str()));
+            gui->RightOperationCombo ->addItem(QString(OperationFactory::GetDescription(it.first).c_str()));
 
-            if (OperationFactory::GetDescription(it->first) == OperationFactory::GetDescription(usedOperations[LEFT]))
+            if (OperationFactory::GetDescription(it.first) == OperationFactory::GetDescription(usedOperations[LEFT]))
                 gui->LeftOperationCombo->setCurrentIndex(idx);
-            if (OperationFactory::GetDescription(it->first) == OperationFactory::GetDescription(usedOperations[MIDDLE]))
+            if (OperationFactory::GetDescription(it.first) == OperationFactory::GetDescription(usedOperations[MIDDLE]))
                 gui->MiddleOperationCombo->setCurrentIndex(idx);
-            if (OperationFactory::GetDescription(it->first) == OperationFactory::GetDescription(usedOperations[RIGHT]))
+            if (OperationFactory::GetDescription(it.first) == OperationFactory::GetDescription(usedOperations[RIGHT]))
                 gui->RightOperationCombo->setCurrentIndex(idx);
 
-            mapIndexOperation.insert(std::make_pair(idx++, it->first));
+            mapIndexOperation.insert(std::make_pair(idx++, it.first));
         }
     }
 }
