@@ -11,6 +11,7 @@ set(SOURCE_FILES
     StringUtils_test.cpp
     TagFactory_test.cpp
     Utils_test.cpp
+    YoungModulus_test.cpp
     accessor/ReadAccessor.cpp
     accessor/WriteAccessor.cpp
     io/MeshOBJ_test.cpp

@@ -18,6 +18,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/config.h.in
     ${SRC_ROOT}/AdvancedTimer.h
     ${SRC_ROOT}/BackTrace.h
+    ${SRC_ROOT}/BoundedScalar.h
     ${SRC_ROOT}/cast.h
     ${SRC_ROOT}/ColorMap.h
     ${SRC_ROOT}/ComponentChange.h
@@ -47,6 +48,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/TagFactory.h
     ${SRC_ROOT}/TriangleOctree.h
     ${SRC_ROOT}/Utils.h
+    ${SRC_ROOT}/YoungModulus.h
     ${SRC_ROOT}/accessor.h
     ${SRC_ROOT}/decompose.h
     ${SRC_ROOT}/decompose.inl

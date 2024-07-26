@@ -128,8 +128,6 @@ TetrahedronFEMForceField<DataTypes>::TetrahedronFEMForceField()
 
     _initialPoints.setOriginalData(&d_initialPoints);
     f_method.setOriginalData(&d_method);
-    _poissonRatio.setOriginalData(&this->d_poissonRatio);
-    _youngModulus.setOriginalData(&this->d_youngModulus);
     _localStiffnessFactor.setOriginalData(&d_localStiffnessFactor);
     _updateStiffnessMatrix.setOriginalData(&d_updateStiffnessMatrix);
     _assembling.setOriginalData(&d_assembling);
@@ -1293,7 +1291,7 @@ void TetrahedronFEMForceField<DataTypes>::init()
 {
     this->d_componentState.setValue(ComponentState::Invalid) ;
 
-    const VecReal& youngModulus = this->d_youngModulus.getValue();
+    const auto& youngModulus = this->d_youngModulus.getValue();
     assert(!youngModulus.empty());
     minYoung=youngModulus[0];
     maxYoung=youngModulus[0];
@@ -1301,13 +1299,6 @@ void TetrahedronFEMForceField<DataTypes>::init()
     {
         if (youngModulus[i]<minYoung) minYoung=youngModulus[i];
         if (youngModulus[i]>maxYoung) maxYoung=youngModulus[i];
-    }
-
-    const Real& poissonRatio = this->d_poissonRatio.getValue();
-    if (poissonRatio < 0 || poissonRatio >= 0.5)
-    {
-        this->d_poissonRatio.setValue((poissonRatio < 0) ? 0.0 : 0.499);
-        msg_warning() << "FEM Poisson's Ratio in Hooke's law should be in [0,0.5[. Clamping the value to " << poissonRatio << ".";
     }
 
     if (d_updateStiffness.getValue() || isComputeVonMisesStressMethodSet())
@@ -1872,7 +1863,7 @@ void TetrahedronFEMForceField<DataTypes>::draw(const core::visual::VisualParams*
     vparams->drawTool()->disableLighting();
 
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
-    const VecReal& youngModulus = this->d_youngModulus.getValue();
+    const auto& youngModulus = this->d_youngModulus.getValue();
 
     const bool heterogeneous = [this, drawVonMisesStress]()
     {
