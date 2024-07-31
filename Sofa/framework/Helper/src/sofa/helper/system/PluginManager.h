@@ -40,7 +40,7 @@ class SOFA_HELPER_API Plugin
 {
     friend class PluginManager;
 public:
-    typedef struct InitExternalModule
+    typedef struct SOFA_HELPER_API InitExternalModule
     {
         static const char* symbol;
         typedef void (*FuncPtr) ();
@@ -52,7 +52,7 @@ public:
         InitExternalModule():func(nullptr) {}
     } InitExternalModule;
 
-    typedef struct GetModuleName
+    typedef struct SOFA_HELPER_API GetModuleName
     {
         static const char* symbol;
         typedef const char* (*FuncPtr) ();
@@ -65,7 +65,7 @@ public:
         GetModuleName():func(nullptr) {}
     } GetModuleName;
 
-    typedef struct GetModuleDescription
+    typedef struct SOFA_HELPER_API GetModuleDescription
     {
         static const char* symbol;
         typedef const char* (*FuncPtr) ();
@@ -78,7 +78,7 @@ public:
         GetModuleDescription():func(nullptr) {}
     } GetModuleDescription;
 
-    typedef struct GetModuleLicense
+    typedef struct SOFA_HELPER_API GetModuleLicense
     {
         static const char* symbol;
         typedef const char* (*FuncPtr) ();
@@ -92,7 +92,7 @@ public:
         GetModuleLicense():func(nullptr) {}
     } GetModuleLicense;
 
-    typedef struct GetModuleComponentList
+    typedef struct SOFA_HELPER_API GetModuleComponentList
     {
         static  const char* symbol;
         typedef const char* (*FuncPtr) ();
@@ -111,7 +111,7 @@ public:
         GetModuleComponentList():func(nullptr) {}
     } GetModuleComponentList;
 
-    typedef struct GetModuleVersion
+    typedef struct SOFA_HELPER_API GetModuleVersion
     {
         static const char* symbol;
         typedef const char* (*FuncPtr) ();
@@ -124,7 +124,7 @@ public:
         GetModuleVersion():func(nullptr) {}
     } GetModuleVersion;
 
-    struct ModuleIsInitialized
+    struct SOFA_HELPER_API ModuleIsInitialized
     {
         static const char* symbol;
         typedef bool (*FuncPtr) ();

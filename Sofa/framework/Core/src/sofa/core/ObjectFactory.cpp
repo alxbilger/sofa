@@ -715,14 +715,23 @@ bool ObjectFactory::registerObjectsFromPlugin(const std::string& pluginName)
     ObjectRegistrationEntry registerObjects;
     if (pluginManager.getEntryFromPlugin(plugin, registerObjects))
     {
+        if (helper::system::Plugin::ModuleIsInitialized moduleIsInitialized;
+            pluginManager.getEntryFromPlugin(plugin, moduleIsInitialized))
+        {
+            if (!moduleIsInitialized())
+            {
+                //don't register objects when module is not initialized
+                //properly (an error may have appeared). Only if module
+                //implements the function `moduleIsInitialized`
+                return false;
+            }
+        }
+
         registerObjects(this);
         m_registeredPluginSet.insert(pluginName);
         return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 RegisterObject::RegisterObject(const std::string& description)

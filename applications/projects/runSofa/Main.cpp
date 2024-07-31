@@ -429,7 +429,7 @@ int main(int argc, char** argv)
     }
 
     sofa::core::ObjectFactory* objectFactory = sofa::core::ObjectFactory::getInstance();
-    // calling explicitely registerObjects from loadedPlugins
+    // calling explicitly registerObjects from loadedPlugins
     for (const auto& [pluginPath, plugin] : pluginManager.getPluginMap())
     {
         const auto& pluginName = plugin.getModuleName();
