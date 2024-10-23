@@ -255,7 +255,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
 
         /// Updated to parentNew
         sofa::testing::copyToData(xin,parentNew);
-        mapping->apply(&mparams, core::VecCoordId::position(), core::VecCoordId::position());
+        mapping->apply(&mparams, core::vec_id::write_access::position, core::vec_id::write_access::position);
         mapping->applyJ(&mparams, core::VecDerivId::velocity(), core::VecDerivId::velocity());
 
         /// test apply: check if the child positions are the expected ones
@@ -398,7 +398,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         WriteInVecCoord pin (inDofs->writePositions());
         sofa::testing::copyToData( pin, xp1 );
 
-        mapping->apply ( &mparams, core::VecCoordId::position(), core::VecCoordId::position() );
+        mapping->apply ( &mparams, core::vec_id::write_access::position, core::vec_id::write_access::position );
         ReadOutVecCoord pout = outDofs->readPositions();
         sofa::testing::copyFromData( xc1, pout );
 
