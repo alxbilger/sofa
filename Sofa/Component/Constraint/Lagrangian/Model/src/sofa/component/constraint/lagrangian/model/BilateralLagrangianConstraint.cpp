@@ -54,8 +54,8 @@ public:
 
         const unsigned minp = std::min(m1Indices.size(),m2Indices.size());
 
-        const typename BilateralLagrangianConstraint<T>::DataVecCoord &d_x1 = *self.mstate1->read(core::ConstVecCoordId::position());
-        const typename BilateralLagrangianConstraint<T>::DataVecCoord &d_x2 = *self.mstate2->read(core::ConstVecCoordId::position());
+        const typename BilateralLagrangianConstraint<T>::DataVecCoord &d_x1 = *self.mstate1->read(core::vec_id::read_access::position);
+        const typename BilateralLagrangianConstraint<T>::DataVecCoord &d_x2 = *self.mstate2->read(core::vec_id::read_access::position);
 
         const typename BilateralLagrangianConstraint<T>::VecCoord &x1 = d_x1.getValue();
         const typename BilateralLagrangianConstraint<T>::VecCoord &x2 = d_x2.getValue();

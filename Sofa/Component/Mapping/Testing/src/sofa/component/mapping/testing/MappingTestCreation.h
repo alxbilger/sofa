@@ -256,7 +256,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         /// Updated to parentNew
         sofa::testing::copyToData(xin,parentNew);
         mapping->apply(&mparams, core::vec_id::write_access::position, core::vec_id::write_access::position);
-        mapping->applyJ(&mparams, core::VecDerivId::velocity(), core::VecDerivId::velocity());
+        mapping->applyJ(&mparams, core::vec_id::write_access::velocity, core::vec_id::write_access::velocity);
 
         /// test apply: check if the child positions are the expected ones
         bool succeed=true;
@@ -299,7 +299,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
 
         WriteOutVecDeriv fout = outDofs->writeForces();
         sofa::testing::copyToData( fout, fc );
-        mapping->applyJT( &mparams, core::VecDerivId::force(), core::VecDerivId::force() );
+        mapping->applyJT( &mparams, core::vec_id::write_access::force, core::vec_id::write_access::force );
         sofa::testing::copyFromData( fp, inDofs->readForces() );
 
         // set small parent velocities and use them to update the child
@@ -314,12 +314,12 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         // propagate small velocity
         WriteInVecDeriv vin = inDofs->writeVelocities();
         sofa::testing::copyToData( vin, vp );
-        mapping->applyJ( &mparams, core::VecDerivId::velocity(), core::VecDerivId::velocity() );
+        mapping->applyJ( &mparams, core::vec_id::write_access::velocity, core::vec_id::write_access::velocity );
         ReadOutVecDeriv vout = outDofs->readVelocities();
         sofa::testing::copyFromData( vc, vout);
 
         // apply geometric stiffness
-        inDofs->vRealloc( &mparams, core::VecDerivId::dx() ); // dx is not allocated by default
+        inDofs->vRealloc( &mparams, core::vec_id::write_access::dx ); // dx is not allocated by default
         WriteInVecDeriv dxin = inDofs->writeDx();
         sofa::testing::copyToData( dxin, vp );
         dfp_a.fill( InDeriv() );
@@ -328,13 +328,13 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         sofa::testing::copyToData( fin, dfp_b );
 
         //calling applyDJT without updateK before
-        mapping->applyDJT( &mparams, core::VecDerivId::force(), core::VecDerivId::force() );
+        mapping->applyDJT( &mparams, core::vec_id::write_access::force, core::vec_id::write_access::force );
         sofa::testing::copyFromData( dfp_a, inDofs->readForces() ); // fp + df due to geometric stiffness
         sofa::testing::copyToData( fin, fp2 ); //reset forces
 
         //calling applyDJT after updateK
-        mapping->updateK( &mparams, core::ConstVecDerivId::force() ); // updating stiffness matrix for the current state and force
-        mapping->applyDJT( &mparams, core::VecDerivId::force(), core::VecDerivId::force() );
+        mapping->updateK( &mparams, core::vec_id::read_access::force ); // updating stiffness matrix for the current state and force
+        mapping->applyDJT( &mparams, core::vec_id::write_access::force, core::vec_id::write_access::force );
         sofa::testing::copyFromData( dfp_b, inDofs->readForces() ); // fp + df due to geometric stiffness
 
         // Jacobian will be obsolete after applying new positions
@@ -372,11 +372,11 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
             // then compare results
 
 //            OutMatrixDeriv outMatrices(  ); // how to build that, what size?
-//            /*WriteInMatrixDeriv min = */inDofs->write( MatrixDerivId::constraintJacobian() );
-//            WriteOutMatrixDeriv mout = outDofs->write( MatrixDerivId::constraintJacobian() );
+//            /*WriteInMatrixDeriv min = */inDofs->write( vec_id::write_access::constraintJacobian );
+//            WriteOutMatrixDeriv mout = outDofs->write( vec_id::write_access::constraintJacobian );
 //            copyToData(mout,outMatrices);
 
-//            mapping->applyJt(  ConstraintParams*, MatrixDerivId::constraintJacobian(), MatrixDerivId::constraintJacobian() );
+//            mapping->applyJt(  ConstraintParams*, vec_id::write_access::constraintJacobian, vec_id::write_access::constraintJacobian );
 
 
         }
@@ -386,7 +386,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         fp.fill( InDeriv() );
         sofa::testing::copyToData( fin, fp );  // reset parent forces before accumulating child forces
         sofa::testing::copyToData( fout, preTreatment(fc) );
-        mapping->applyJT( &mparams, core::VecDerivId::force(), core::VecDerivId::force() );
+        mapping->applyJT( &mparams, core::vec_id::write_access::force, core::vec_id::write_access::force );
         sofa::testing::copyFromData( fp, inDofs->readForces() );
 
 
@@ -421,7 +421,7 @@ struct Mapping_test: public BaseSimulationTest, NumericTest<typename _Mapping::I
         fp2.fill( InDeriv() );
         sofa::testing::copyToData( fin, fp2 );  // reset parent forces before accumulating child forces
         sofa::testing::copyToData( fout, preTreatment(fc) );
-        mapping->applyJT( &mparams, core::VecDerivId::force(), core::VecDerivId::force() );
+        mapping->applyJT( &mparams, core::vec_id::write_access::force, core::vec_id::write_access::force );
         sofa::testing::copyFromData( fp2, inDofs->readForces() );
 
         InVecDeriv fp12(Np);
