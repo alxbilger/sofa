@@ -212,7 +212,7 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     core::objectmodel::RenamedData<bool> _assembling;
 
-    Data<std::string> d_method; ///< "small", "large" (by QR), "polar" or "svd" displacements
+    Data<helper::OptionsGroup> d_method; ///< "small", "large" (by QR), "polar" or "svd" displacements
 
     Data<VecReal> d_localStiffnessFactor; ///< Allow specification of different stiffness per element. If there are N element and M values are specified, the youngModulus factor for element i would be localStiffnessFactor[i*M/N]
     Data<bool> d_updateStiffnessMatrix;

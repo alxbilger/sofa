@@ -44,8 +44,7 @@ template <class DataTypes>
 TriangularFEMForceField<DataTypes>::TriangularFEMForceField()
     : d_triangleInfo(initData(&d_triangleInfo, "triangleInfo", "Internal triangle data"))
     , d_vertexInfo(initData(&d_vertexInfo, "vertexInfo", "Internal point data"))
-    , method(LARGE)
-    , d_method(initData(&d_method, std::string("large"), "method", "large: large displacements, small: small displacements"))
+    , d_method(initData(&d_method, {"large", "small"}, "method", "Method used to compute the rotations"))
     , d_rotatedInitialElements(initData(&d_rotatedInitialElements, "rotatedInitialElements", "Flag activating rendering of stress directions within each triangle"))
     , d_initialTransformation(initData(&d_initialTransformation, "initialTransformation", "Flag activating rendering of stress directions within each triangle"))
     , d_hosfordExponant(initData(&d_hosfordExponant, (Real)1.0, "hosfordExponant", "Exponant in the Hosford yield criteria"))
@@ -73,7 +72,6 @@ TriangularFEMForceField<DataTypes>::TriangularFEMForceField()
 
     triangleInfo.setOriginalData(&d_triangleInfo);
     vertexInfo.setOriginalData(&d_vertexInfo);
-    f_method.setOriginalData(&d_method);
     m_rotatedInitialElements.setOriginalData(&d_rotatedInitialElements);
     m_initialTransformation.setOriginalData(&d_initialTransformation);
     hosfordExponant.setOriginalData(&d_hosfordExponant);
@@ -135,12 +133,6 @@ void TriangularFEMForceField<DataTypes>::init()
     {
         createTriangleInformation(triangleIndex, triInfo, triangle, ancestors, coefs);
     });
-
-
-    if (d_method.getValue() == "small")
-        method = SMALL;
-    else if (d_method.getValue() == "large")
-        method = LARGE;
 
     reinit();
 }
@@ -262,11 +254,6 @@ void TriangularFEMForceField<DataTypes>::initLarge(int i, Index& a, Index& b, In
 template <class DataTypes>
 void TriangularFEMForceField<DataTypes>::reinit()
 {
-    if (d_method.getValue() == "small")
-        method = SMALL;
-    else if (d_method.getValue() == "large")
-        method = LARGE;
-
     unsigned int nbPoints = this->l_topology->getNbPoints();
     type::vector<VertexInformation>& vi = *(d_vertexInfo.beginWriteOnly());
     vi.resize(nbPoints);
@@ -281,10 +268,6 @@ void TriangularFEMForceField<DataTypes>::reinit()
         createTriangleInformation(i, triangleInf[i], this->l_topology->getTriangle(i), (const sofa::type::vector< Index >)0, (const sofa::type::vector< Real >)0);
     }
     d_triangleInfo.endEdit();
-
-
-    // checking inputs using setter
-    setMethod(d_method.getValue());
 
 #ifdef PLOT_CURVE
     std::map<std::string, sofa::type::vector<double> >& stress = *(f_graphStress.beginEdit());
@@ -439,24 +422,18 @@ void TriangularFEMForceField<DataTypes>::setMethod(int val)
     if (val != 0 && val != 1)
     {
         msg_warning() << "Input Method is not possible: " << val << ", should be 0 (Large) or 1 (Small). Setting default value: Large";
-        method = LARGE;
+        helper::WriteAccessor(d_method)->setSelectedItem("large");
     }
     else
-        method = val;
+    {
+        helper::WriteAccessor(d_method)->setSelectedItem(val);
+    }
 }
 
 template <class DataTypes>
 void TriangularFEMForceField<DataTypes>::setMethod(const std::string& methodName)
 {
-    if (methodName == "small")
-        method = SMALL;
-    else if (methodName == "large")
-        method = LARGE;
-    else
-    {
-        msg_warning() << "Input Method is not possible: " << methodName << ", should be 0 (Large) or 1 (Small). Setting default value: Large";
-        method = LARGE;
-    }
+    helper::WriteAccessor(d_method)->setSelectedItem(methodName);
 }
 
 

@@ -69,7 +69,7 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::createTetrahedronInformati
 template< class DataTypes>
 TetrahedralCorotationalFEMForceField<DataTypes>::TetrahedralCorotationalFEMForceField()
     : d_tetrahedronInfo(initData(&d_tetrahedronInfo, "tetrahedronInfo", "Internal tetrahedron data"))
-    , d_method(initData(&d_method, std::string("large"), "method", "\"small\", \"large\" (by QR) or \"polar\" displacements"))
+    , d_method(initData(&d_method, {"large", "polar", "small"}, "method", "Method used to compute the rotations"))
     , d_localStiffnessFactor(core::objectmodel::BaseObject::initData(&d_localStiffnessFactor, "localStiffnessFactor", "Allow specification of different stiffness per element. If there are N element and M values are specified, the youngModulus factor for element i would be localStiffnessFactor[i*M/N]"))
     , d_updateStiffnessMatrix(core::objectmodel::BaseObject::initData(&d_updateStiffnessMatrix, false, "updateStiffnessMatrix", ""))
     , d_assembling(core::objectmodel::BaseObject::initData(&d_assembling, false, "computeGlobalMatrix", ""))
@@ -82,7 +82,6 @@ TetrahedralCorotationalFEMForceField<DataTypes>::TetrahedralCorotationalFEMForce
     this->addAlias(&d_assembling, "assembling");
 
     tetrahedronInfo.setOriginalData(&d_tetrahedronInfo);
-    f_method.setOriginalData(&d_method);
     _localStiffnessFactor.setOriginalData(&d_localStiffnessFactor);
     _updateStiffnessMatrix.setOriginalData(&d_updateStiffnessMatrix);
     _assembling.setOriginalData(&d_assembling);
@@ -117,13 +116,6 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::init()
 template <class DataTypes>
 void TetrahedralCorotationalFEMForceField<DataTypes>::reinit()
 {
-
-    if (d_method.getValue() == "small")
-        this->setMethod(SMALL);
-    else if (d_method.getValue() == "polar")
-        this->setMethod(POLAR);
-    else this->setMethod(LARGE);
-
     // Need to initialize the _stiffnesses vector before using it
     const std::size_t sizeMO=this->mstate->getSize();
     if(d_assembling.getValue())

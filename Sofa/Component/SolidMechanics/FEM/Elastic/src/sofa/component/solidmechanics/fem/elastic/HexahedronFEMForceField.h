@@ -114,8 +114,6 @@ public:
 public:
     typedef Mat33 Transformation; ///< matrix for rigid transformations like rotations
 
-    int method;
-
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<std::string> f_method;
 
@@ -141,7 +139,7 @@ public:
 
 
 
-    Data<std::string> d_method; ///< "large" or "polar" or "small" displacements
+    Data<helper::OptionsGroup> d_method; ///< "large" or "polar" or "small" displacements
     Data<bool> d_updateStiffnessMatrix;
     Data< sofa::helper::OptionsGroup > d_gatherPt; ///< number of dof accumulated per threads during the gather operation (Only use in GPU version)
     Data< sofa::helper::OptionsGroup > d_gatherBsize; ///< number of dof accumulated per threads during the gather operation (Only use in GPU version)

@@ -31,6 +31,7 @@
 #include <sofa/helper/map.h>
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
 
 // corotational tetrahedron from
 // @InProceedings{NPF05,
@@ -181,7 +182,7 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<sofa::type::RGBAColor> drawColor4;
 
-    Data<std::string> d_method; ///< "small", "large" (by QR) or "polar" displacements
+    Data<helper::OptionsGroup> d_method; ///< "small", "large" (by QR) or "polar" displacements
     Data<VecReal> d_localStiffnessFactor; ///< Allow specification of different stiffness per element. If there are N element and M values are specified, the youngModulus factor for element i would be localStiffnessFactor[i*M/N]
     Data<bool> d_updateStiffnessMatrix;
     Data<bool> d_assembling;

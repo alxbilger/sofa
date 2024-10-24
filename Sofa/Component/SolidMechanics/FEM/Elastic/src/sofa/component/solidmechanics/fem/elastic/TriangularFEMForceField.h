@@ -34,6 +34,8 @@
 #endif
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
+
 
 namespace sofa::helper
 {
@@ -206,7 +208,7 @@ public:
 
     /// Get/Set methods
 
-    int  getMethod() { return method; }
+    unsigned int getMethod() const { return d_method.getValue().getSelectedId(); }
     void setMethod(int val);
     void setMethod(const std::string& methodName);
 
@@ -253,7 +255,6 @@ protected :
 public:
 
     /// Forcefield intern paramaters
-    int method;
 
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<std::string> f_method;
@@ -288,7 +289,7 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<bool> f_computePrincipalStress;
 
-    Data<std::string> d_method; ///< large: large displacements, small: small displacements
+    Data<helper::OptionsGroup> d_method; ///< large: large displacements, small: small displacements
 
     /// Initial strain parameters (if FEM is initialised with predefine values)
     Data< sofa::type::vector<type::fixed_array<Coord,3> > > d_rotatedInitialElements;

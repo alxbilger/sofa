@@ -29,6 +29,7 @@
 #include <sofa/type/Mat.h>
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
 
 // corotational triangle from
 // @InProceedings{NPF05,
@@ -118,7 +119,6 @@ public:
     void computeBBox(const core::ExecParams* params, bool onlyVisible) override;
     void draw(const core::visual::VisualParams* vparams) override;
 
-    int method;
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<std::string> f_method;
 
@@ -134,13 +134,13 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<bool> f_planeStrain;
 
-    Data<std::string> d_method; ///< large: large displacements, small: small displacements
+    Data<helper::OptionsGroup> d_method; ///< large: large displacements, small: small displacements
     Data<Real> d_thickness; ///< Thickness of the elements
     Data<bool> d_planeStrain; ///< Plane strain or plane stress assumption
 
-    int  getMethod() { return method; }
+    unsigned int getMethod() const { return d_method.getValue().getSelectedId(); }
     void setMethod(int val);
-    void setMethod(std::string val);
+    void setMethod(const std::string& val);
 
     /// Public methods to access FEM information per element. Those method should not be used internally as they add check on element id.
     const type::fixed_array <Coord, 3>& getRotatedInitialElement(Index elemId);

@@ -126,10 +126,10 @@ void FastTetrahedralCorotationalForceField<DataTypes>::createTetrahedronRestInfo
             }
         }
     }
-    if (m_decompositionMethod ==QR_DECOMPOSITION) {
+    if (d_method.getValue().getSelectedItem() == "qr") {
         // compute the rotation matrix of the initial tetrahedron for the QR decomposition
         computeQRRotation(my_tinfo.restRotation,my_tinfo.restEdgeVector);
-    } else 	if (m_decompositionMethod ==POLAR_DECOMPOSITION_MODIFIED) {
+    } else if (d_method.getValue().getSelectedItem() == "polar2") {
         Mat3x3NoInit Transformation;
         Transformation[0]=point[1]-point[0];
         Transformation[1]=point[2]-point[0];
@@ -144,7 +144,7 @@ FastTetrahedralCorotationalForceField<DataTypes>::FastTetrahedralCorotationalFor
     , d_edgeInfo(initData(&d_edgeInfo, "edgeInfo", "Internal edge data"))
     , d_tetrahedronInfo(initData(&d_tetrahedronInfo, "tetrahedronInfo", "Internal tetrahedron data"))
     , _initialPoints(0)
-    , d_method(initData(&d_method, std::string("qr"), "method", " method for rotation computation :\"qr\" (by QR) or \"polar\" or \"polar2\" or \"none\" (Linear elastic) "))
+    , d_method(initData(&d_method, {"qr", "polar", "polar2", "none"}, "method", "Method used to compute the rotations"))
     , d_drawing(initData(&d_drawing, true, "drawing", " draw the forcefield if true"))
     , d_drawColor1(initData(&d_drawColor1, sofa::type::RGBAColor(0.0f, 0.0f, 1.0f, 1.0f), "drawColor1", " draw color for faces 1"))
     , d_drawColor2(initData(&d_drawColor2, sofa::type::RGBAColor(0.0f, 0.5f, 1.0f, 1.0f), "drawColor2", " draw color for faces 2"))
@@ -155,7 +155,6 @@ FastTetrahedralCorotationalForceField<DataTypes>::FastTetrahedralCorotationalFor
     pointInfo.setOriginalData(&d_pointInfo);
     edgeInfo.setOriginalData(&d_edgeInfo);
     tetrahedronInfo.setOriginalData(&d_tetrahedronInfo);
-    f_method.setOriginalData(&d_method);
     f_drawing.setOriginalData(&d_drawing);
     drawColor1.setOriginalData(&d_drawColor1);
     drawColor2.setOriginalData(&d_drawColor2);
@@ -188,19 +187,7 @@ void FastTetrahedralCorotationalForceField<DataTypes>::init()
         msg_error() << "No tetrahedra found in linked Topology.";
     }
 
-    const std::string& method = d_method.getValue();
-    if (method == "polar")
-        m_decompositionMethod = POLAR_DECOMPOSITION;
-    else if ((method == "qr") || (method == "large"))
-        m_decompositionMethod = QR_DECOMPOSITION;
-    else if (method == "polar2")
-        m_decompositionMethod = POLAR_DECOMPOSITION_MODIFIED;
-    else if ((method == "none") || (method == "linear") || (method == "small"))
-        m_decompositionMethod = LINEAR_ELASTIC;
-    else
-    {
-        msg_error() << "cannot recognize method " << method << ". Must be either qr, polar, polar2 or none";
-    }
+    const std::string& method = d_method.getValue().getSelectedItem();
 
     /// prepare to store info in the edge array
     helper::WriteOnlyAccessor< Data< VecMat3x3 > > edgeInf = d_edgeInfo;
@@ -331,7 +318,7 @@ void FastTetrahedralCorotationalForceField<DataTypes>::addForce(const sofa::core
             displ[j] = tetraVertex[edgesInTetrahedronArray[j][1]] - tetraVertex[edgesInTetrahedronArray[j][0]];
         }
 
-        if (m_decompositionMethod == POLAR_DECOMPOSITION)
+        if (d_method.getValue().getSelectedItem() == "polar")
         {
             // compute the deformation gradient
             // deformation gradient = sum of tensor product between vertex position and shape vector
@@ -358,13 +345,13 @@ void FastTetrahedralCorotationalForceField<DataTypes>::addForce(const sofa::core
             // polar decomposition of the transformation
             helper::Decompose<Real>::polarDecomposition(deformationGradient,R);
         }
-        else if (m_decompositionMethod == QR_DECOMPOSITION)
+        else if (d_method.getValue().getSelectedItem() == "qr")
         {
             /// perform QR decomposition
             computeQRRotation(S, displ);
             R=S.multTranspose(tetraInfo.restRotation);
         } 
-        else if (m_decompositionMethod == POLAR_DECOMPOSITION_MODIFIED) 
+        else if (d_method.getValue().getSelectedItem() == "polar2")
         {
             S[0]= displ[0];
             S[1]= displ[1];
@@ -372,7 +359,7 @@ void FastTetrahedralCorotationalForceField<DataTypes>::addForce(const sofa::core
             helper::Decompose<Real>::polarDecomposition( S, R );
             R=R.transposed()*tetraInfo.restRotation;
         }  
-        else if (m_decompositionMethod == LINEAR_ELASTIC) 
+        else if (d_method.getValue().getSelectedItem() == "none")
         {
             R.identity();
         }

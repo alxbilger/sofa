@@ -31,6 +31,8 @@
 #include <sofa/core/topology/TopologyData.h>
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
+
 
 namespace sofa::component::solidmechanics::fem::elastic
 {
@@ -139,7 +141,7 @@ protected:
     virtual ~HexahedralFEMForceField();
 public:
 
-    void setMethod(int val) { method = val; }
+    void setMethod(int val) { helper::WriteAccessor(d_method)->setSelectedItem(val); }
 
     void init() override;
     void reinit() override;
@@ -183,7 +185,6 @@ protected:
     virtual void accumulateForcePolar( WDataRefVecDeriv& f, RDataRefVecCoord & p, const int i);
 
 public:
-    int method;
 
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<std::string> f_method;
@@ -196,7 +197,7 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<sofa::type::vector<HexahedronInformation> > hexahedronInfo;
 
-    Data<std::string> d_method; ///< "large" or "polar" displacements
+    Data<helper::OptionsGroup> d_method; ///< "large" or "polar" displacements
 
     /// container that stotes all requires information for each hexahedron
     core::topology::HexahedronData<sofa::type::vector<HexahedronInformation> > d_hexahedronInfo;

@@ -32,6 +32,8 @@
 #include <sofa/type/trait/Rebind.h>
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
+
 
 namespace sofa::component::solidmechanics::fem::elastic
 {
@@ -155,8 +157,7 @@ public:
     core::topology::TetrahedronData<VecTetrahedronRestInformation > d_tetrahedronInfo; ///< Internal tetrahedron data
 
     VecCoord  _initialPoints;///< the intial positions of the points
-    Data<std::string> d_method; ///<  method for rotation computation :"qr" (by QR) or "polar" or "polar2" or "none" (Linear elastic)
-    RotationDecompositionMethod m_decompositionMethod;
+    Data<helper::OptionsGroup> d_method; ///<  method for rotation computation :"qr" (by QR) or "polar" or "polar2" or "none" (Linear elastic)
 
     Data<bool> d_drawing; ///<  draw the forcefield if true
     Data<sofa::type::RGBAColor> d_drawColor1; ///<  draw color for faces 1
@@ -192,7 +193,7 @@ public:
 
     void setRotationDecompositionMethod( const RotationDecompositionMethod m)
     {
-        m_decompositionMethod = m;
+        helper::WriteAccessor(d_method)->setSelectedItem(m);
     }
     void draw(const core::visual::VisualParams* vparams) override;
 

@@ -69,8 +69,7 @@ QuadBendingFEMForceField<DataTypes>::QuadBendingFEMForceField()
   , d_vertexInfo(initData(&d_vertexInfo, "vertexInfo", "Internal point data"))
   , d_edgeInfo(initData(&d_edgeInfo, "edgeInfo", "Internal edge data"))
   , m_topology(nullptr)
-  , method(SMALL)
-  , d_method(initData(&d_method, std::string("small"), "method", "large: large displacements, small: small displacements"))
+  , d_method(initData(&d_method, {"small", "large"}, "method", "Method used to compute the rotations"))
   , d_poisson(initData(&d_poisson, type::vector<Real>(1, static_cast<Real>(0.45)), "poissonRatio", "Poisson ratio in Hooke's law (vector)"))
   , d_young(initData(&d_young, type::vector<Real>(1, static_cast<Real>(1000.0)), "youngModulus", "Young modulus in Hooke's law (vector)"))
   , d_thickness(initData(&d_thickness, Real(1.), "thickness", "Thickness of the elements"))
@@ -80,7 +79,6 @@ QuadBendingFEMForceField<DataTypes>::QuadBendingFEMForceField()
     quadInfo.setOriginalData(&d_quadInfo);
     vertexInfo.setOriginalData(&d_vertexInfo);
     edgeInfo.setOriginalData(&d_edgeInfo);
-    f_method.setOriginalData(&d_method);
     f_poisson.setOriginalData(&d_poisson);
     f_young.setOriginalData(&d_young);
     f_thickness.setOriginalData(&d_thickness);
@@ -210,14 +208,12 @@ void QuadBendingFEMForceField<DataTypes>::createQuadInformation(unsigned int qua
     Index idx1 = t[1];
     Index idx2 = t[2];
     Index idx3 = t[3];
-    switch (method)
+
+    if (d_method.getValue().getSelectedItem() == "small")
     {
-    case SMALL:
         initSmall(quadIndex, idx0, idx1, idx2, idx3);
         computeBendingMaterialStiffness(quadIndex, idx0, idx1, idx2, idx3);
         computeShearMaterialStiffness(quadIndex, idx0, idx1, idx2, idx3);
-        break;
-
     }
 }
 

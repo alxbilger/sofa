@@ -37,13 +37,11 @@ TriangleFEMForceField<DataTypes>::
 TriangleFEMForceField()
     : _indexedElements(nullptr)
     , d_initialPoints(initData(&d_initialPoints, "initialPoints", "Initial Position"))
-    , method(LARGE)
-    , d_method(initData(&d_method, std::string("large"), "method", "large: large displacements, small: small displacements"))
+    , d_method(initData(&d_method, {"large", "small"}, "method", "Method used to compute the rotations"))
     , d_thickness(initData(&d_thickness, Real(1.), "thickness", "Thickness of the elements"))
     , d_planeStrain(initData(&d_planeStrain, false, "planeStrain", "Plane strain or plane stress assumption"))
 {
     _initialPoints.setOriginalData(&d_initialPoints);
-    f_method.setOriginalData(&d_method);
     f_thickness.setOriginalData(&d_thickness);
     f_planeStrain.setOriginalData(&d_planeStrain);
 
@@ -66,7 +64,6 @@ void TriangleFEMForceField<DataTypes>::init()
     }
 
     // checking inputs using setter
-    setMethod(d_method.getValue());
 
     if (this->l_topology->getTriangles().empty() && this->l_topology->getQuads().empty())
     {
@@ -102,7 +99,7 @@ void TriangleFEMForceField<DataTypes>::init()
     _strainDisplacements.resize(_indexedElements->size());
     _rotations.resize(_indexedElements->size());
 
-    if (method == SMALL) 
+    if (d_method.getValue().getSelectedItem() == "small")
     {
         initSmall();
     }
@@ -119,12 +116,7 @@ void TriangleFEMForceField<DataTypes>::init()
 template <class DataTypes>
 void TriangleFEMForceField<DataTypes>::reinit()
 {
-    if (d_method.getValue() == "small")
-        method = SMALL;
-    else if (d_method.getValue() == "large")
-        method = LARGE;
-
-    if (method == SMALL) 
+    if (d_method.getValue().getSelectedItem() == "small")
     {
         //    initSmall();  // useful ? The rotations are recomputed later
     }
@@ -145,7 +137,7 @@ void TriangleFEMForceField<DataTypes>::addForce(const core::MechanicalParams* /*
 
     f1.resize(x1.size());
 
-    if (method == SMALL)
+    if (d_method.getValue().getSelectedItem() == "small")
     {
         accumulateForceSmall(f1, x1, true);
     }
@@ -168,7 +160,7 @@ void TriangleFEMForceField<DataTypes>::addDForce(const core::MechanicalParams* m
     Real h = 1;
     df1.resize(dx1.size());
 
-    if (method == SMALL)
+    if (d_method.getValue().getSelectedItem() == "small")
     {
         applyStiffnessSmall(df1, h, dx1, kFactor);
     }
@@ -183,7 +175,7 @@ void TriangleFEMForceField<DataTypes>::addDForce(const core::MechanicalParams* m
 template <class DataTypes>
 void TriangleFEMForceField<DataTypes>::applyStiffness(VecCoord& v, Real h, const VecCoord& x, const Real& kFactor)
 {
-    if (method == SMALL)
+    if (d_method.getValue().getSelectedItem() == "small")
     {
         applyStiffnessSmall(v, h, x, kFactor);
     }
@@ -671,25 +663,18 @@ void TriangleFEMForceField<DataTypes>::setMethod(int val)
     if (val != 0 && val != 1)
     {
         msg_warning() << "Input Method is not possible: " << val << ", should be 0 (Large) or 1 (Small). Setting default value: Large";
-        method = LARGE;
+        helper::WriteAccessor(d_method)->setSelectedItem("large");
     }
-    else if (method != val)
+    else
     {
-        method = val;
+        helper::WriteAccessor(d_method)->setSelectedItem(val);
     }
 }
 
 template<class DataTypes>
-void TriangleFEMForceField<DataTypes>::setMethod(std::string val)
+void TriangleFEMForceField<DataTypes>::setMethod(const std::string& val)
 {
-    if (val == "small")
-        method = SMALL;
-    else if (val == "large")
-        method = LARGE;
-    else {
-        msg_warning() << "Input Method is not possible: " << val << ", should be 0 (Large) or 1 (Small). Setting default value: Large";
-        method = LARGE;
-    }
+    helper::WriteAccessor(d_method)->setSelectedItem(val);
 }
 
 

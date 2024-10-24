@@ -37,6 +37,8 @@
 #include <sofa/helper/map.h>
 
 #include <sofa/core/objectmodel/RenamedData.h>
+#include <sofa/helper/OptionsGroup.h>
+
 
 namespace sofa::component::solidmechanics::fem::elastic
 {
@@ -205,9 +207,8 @@ public:
         type::vector<Real> newY(1, val);
         d_young.setValue(newY);
     }
-    int  getMethod() { return method; }
-    void setMethod(int val) { method = val; }
-    void setMethod(const std::string& methodName); 
+    unsigned int getMethod() const { return d_method.getValue().getSelectedId(); }
+    void setMethod(int val) { helper::WriteAccessor(d_method)->setSelectedItem(val); }
 protected : 
     /// Forcefiled computations
     void computeDisplacementSmall(Displacement &D, Index elementIndex, const VecCoord &p);
@@ -230,7 +231,6 @@ protected :
 public:
 
     /// Forcefield intern paramaters
-    int method;
 
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<std::string> f_method;
@@ -244,7 +244,7 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
     sofa::core::objectmodel::RenamedData<Real> f_thickness;
 
-    Data<std::string> d_method; ///< large: large displacements, small: small displacements
+    Data<helper::OptionsGroup> d_method; ///< large: large displacements, small: small displacements
     Data<type::vector<Real> > d_poisson; ///< Poisson ratio in Hooke's law (vector)
     Data<type::vector<Real> > d_young; ///< Young modulus in Hooke's law (vector)
     Data<Real> d_thickness; ///< Thickness of the elements

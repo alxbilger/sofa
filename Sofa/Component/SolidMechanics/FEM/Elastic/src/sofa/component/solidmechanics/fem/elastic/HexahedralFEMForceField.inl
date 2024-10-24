@@ -53,7 +53,7 @@ namespace sofa::component::solidmechanics::fem::elastic
 
 template <class DataTypes>
 HexahedralFEMForceField<DataTypes>::HexahedralFEMForceField()
-    : d_method(initData(&d_method, std::string("large"), "method", "\"large\" or \"polar\" displacements"))
+    : d_method(initData(&d_method, {"large", "polar"}, "method", "Method used to compute the rotations"))
     , d_hexahedronInfo(initData(&d_hexahedronInfo, "hexahedronInfo", "Internal hexahedron data"))
 {
 
@@ -66,7 +66,6 @@ HexahedralFEMForceField<DataTypes>::HexahedralFEMForceField()
     _coef[6][0]=  1;		_coef[6][1]=  1;		_coef[6][2]=  1;
     _coef[7][0]= -1;		_coef[7][1]=  1;		_coef[7][2]=  1;
 
-    f_method.setOriginalData(&d_method);
     hexahedronInfo.setOriginalData(&d_hexahedronInfo);
 
 }
@@ -103,11 +102,6 @@ void HexahedralFEMForceField<DataTypes>::init()
 template <class DataTypes>
 void HexahedralFEMForceField<DataTypes>::reinit()
 {
-    if (d_method.getValue() == "large")
-        this->setMethod(LARGE);
-    else if (d_method.getValue() == "polar")
-        this->setMethod(POLAR);
-
     type::vector<typename HexahedralFEMForceField<DataTypes>::HexahedronInformation>& hexahedronInf = *(d_hexahedronInfo.beginEdit());
 
 
@@ -136,7 +130,7 @@ void HexahedralFEMForceField<DataTypes>::createHexahedronInformation(Index hexah
     const sofa::type::vector<Index>&,
     const sofa::type::vector<SReal>&)
 {
-    switch (method)
+    switch (d_method.getValue().getSelectedId())
     {
     case LARGE:
         initLarge(hexahedronIndex);
@@ -156,7 +150,7 @@ void HexahedralFEMForceField<DataTypes>::addForce (const core::MechanicalParams*
 
     _f.resize(_p.size());
 
-    switch(method)
+    switch(d_method.getValue().getSelectedId())
     {
     case LARGE :
     {

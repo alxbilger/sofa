@@ -50,7 +50,7 @@ using namespace sofa::defaulttype;
 
 template <class DataTypes>
 HexahedronFEMForceField<DataTypes>::HexahedronFEMForceField()
-    : d_method(initData(&d_method, std::string("large"), "method", "\"large\" or \"polar\" or \"small\" displacements" ))
+    : d_method(initData(&d_method, {"large", "polar", "small"}, "method", "Method used to compute the rotations" ))
     , d_updateStiffnessMatrix(initData(&d_updateStiffnessMatrix, false, "updateStiffnessMatrix", ""))
     , d_gatherPt(initData(&d_gatherPt, "gatherPt", "number of dof accumulated per threads during the gather operation (Only use in GPU version)"))
     , d_gatherBsize(initData(&d_gatherBsize, "gatherBsize", "number of dof accumulated per threads during the gather operation (Only use in GPU version)"))
@@ -90,7 +90,6 @@ HexahedronFEMForceField<DataTypes>::HexahedronFEMForceField()
 
     _alreadyInit=false;
 
-    f_method.setOriginalData(&d_method);
     f_updateStiffnessMatrix.setOriginalData(&d_updateStiffnessMatrix);
     _gatherPt.setOriginalData(&d_gatherPt);
     _gatherBsize.setOriginalData(&d_gatherBsize);
@@ -147,14 +146,7 @@ void HexahedronFEMForceField<DataTypes>::reinit()
     _rotatedInitialElements.resize(this->getIndexedElements()->size());
     _initialrotations.resize( this->getIndexedElements()->size() );
 
-    if (d_method.getValue() == "large")
-        this->setMethod(LARGE);
-    else if (d_method.getValue() == "polar")
-        this->setMethod(POLAR);
-    else if (d_method.getValue() == "small")
-        this->setMethod(SMALL);
-
-    switch(method)
+    switch(d_method.getValue().getSelectedId())
     {
     case LARGE :
     {
@@ -220,7 +212,7 @@ void HexahedronFEMForceField<DataTypes>::addForce (const core::MechanicalParams*
 
     const auto* indexedElements = this->getIndexedElements();
 
-    switch(method)
+    switch(d_method.getValue().getSelectedId())
     {
     case LARGE :
     {
@@ -1105,12 +1097,11 @@ inline void HexahedronFEMForceField<DataTypes>::handleTopologyChange()
 template<class DataTypes>
 inline void HexahedronFEMForceField<DataTypes>::setMethod(int val)
 {
-    method = val;
     switch(val)
     {
-    case POLAR: d_method.setValue("polar"); break;
-    case SMALL: d_method.setValue("small"); break;
-    default   : d_method.setValue("large");
+    case POLAR: helper::WriteAccessor(d_method)->setSelectedItem("polar"); break;
+    case SMALL: helper::WriteAccessor(d_method)->setSelectedItem("small"); break;
+    default   : helper::WriteAccessor(d_method)->setSelectedItem("large");
     }
 }
 
