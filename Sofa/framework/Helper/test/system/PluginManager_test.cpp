@@ -190,6 +190,18 @@ TEST_F(PluginManager_test, pluginEntries)
 
 }
 
+TEST_F(PluginManager_test, pluginNotFound)
+{
+    PluginManager&pm = PluginManager::getInstance();
+
+    std::stringstream ss;
+    std::string pluginName = "Sofa.Commponent.AnimationLoop"; // two 'm' in Component, so it cannot be found
+    const auto res = pm.findPlugin(pluginName, PluginManager::getDefaultSuffix(), true, true, 1000, &ss);
+    EXPECT_EQ(res, std::string());
+    EXPECT_NE(ss.str().find("Did you mean"), std::string::npos) << ss.str();
+    std::cout << ss.str() << std::endl;
+}
+
 TEST_F(PluginManager_test, pluginEntriesValues)
 {
     PluginManager&pm = PluginManager::getInstance();
@@ -290,7 +302,7 @@ TEST_F(PluginManager_test, testPluginAAsDependencyOfPluginB)
 }
 
 
-TEST_F(PluginManager_test, failingPlugin)
+TEST_F(PluginManager_test, failingPlugin   )
 {
     std::string testModuleName = "FailingPlugin";
     PluginManager&pm = PluginManager::getInstance();

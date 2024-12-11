@@ -221,7 +221,7 @@ public:
     void init(const std::string& pluginPath);
     void cleanup();
 
-    std::string findPlugin(const std::string& pluginName, const std::string& suffix = getDefaultSuffix(), bool ignoreCase = true, bool recursive = true, int maxRecursiveDepth = 3);
+    std::string findPlugin(const std::string& pluginName, const std::string& suffix = getDefaultSuffix(), bool ignoreCase = true, bool recursive = true, int maxRecursiveDepth = 3, std::ostream* errlog = nullptr);
     bool pluginIsLoaded(const std::string& plugin);
 
     /**

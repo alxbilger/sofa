@@ -19,6 +19,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
+#include <sofa/helper/DiffLib.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <sofa/helper/system/FileRepository.h>
 #include <sofa/helper/system/SetDirectory.h>
@@ -278,14 +279,15 @@ std::string PluginManager::GetPluginNameFromPath(const std::string& pluginPath)
 auto PluginManager::loadPluginByName(const std::string& pluginName, const std::string& suffix, bool ignoreCase,
                                      bool recursive, std::ostream* errlog) -> PluginLoadStatus
 {
-    const std::string pluginPath = findPlugin(pluginName, suffix, ignoreCase, recursive);
+    std::stringstream errorStream;
+    const std::string pluginPath = findPlugin(pluginName, suffix, ignoreCase, recursive, 3, &errorStream);
 
     if (!pluginPath.empty())
     {
         return loadPluginByPath(pluginPath, errlog);
     }
 
-    const std::string msg = "Plugin not found: \"" + pluginName + suffix + "\"";
+    const std::string msg = "Plugin not found: \"" + pluginName + suffix + "\". " + errorStream.str();
     if (errlog)
     {
         (*errlog) << msg << std::endl;
@@ -446,7 +448,7 @@ void PluginManager::init(const std::string& pluginPath)
 
 
 
-std::string PluginManager::findPlugin(const std::string& pluginName, const std::string& suffix, bool ignoreCase, bool recursive, int maxRecursiveDepth)
+std::string PluginManager::findPlugin(const std::string& pluginName, const std::string& suffix, bool ignoreCase, bool recursive, int maxRecursiveDepth, std::ostream* errlog)
 {
     std::vector<std::string> searchPaths = PluginRepository.getPaths();
 
@@ -454,18 +456,24 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
     name  += suffix;
     const std::string libName = DynamicLibrary::prefix + name + "." + DynamicLibrary::extension;
 
+    if (errlog) *errlog << "Searched plugin '" << libName << "' into:\n";
+
     // First try: case-sensitive
     for (const auto & prefix : searchPaths)
     {
         const std::array<std::string, 4> paths = {
-            FileSystem::append(prefix, libName),
-            FileSystem::append(prefix, pluginName, libName),
-            FileSystem::append(prefix, pluginName, "bin", libName),
-            FileSystem::append(prefix, pluginName, "lib", libName)
+            prefix,
+            FileSystem::append(prefix, pluginName),
+            FileSystem::append(prefix, pluginName, "bin"),
+            FileSystem::append(prefix, pluginName, "lib")
         };
-        for (const auto & path : paths) {
-            if (FileSystem::isFile(path)) {
-                return path;
+        for (const auto & path : paths)
+        {
+            const auto pathfile = FileSystem::append(path, libName);
+            if (errlog) *errlog << "- " << path << "\n";
+            if (FileSystem::isFile(pathfile))
+            {
+                return pathfile;
             }
         }
     }
@@ -475,11 +483,10 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
     {
         if(!recursive) maxRecursiveDepth = 0;
         const std::string downcaseLibName = helper::downcaseString(libName);
+        std::vector<std::string> visitedFiles;
 
-        for (std::vector<std::string>::iterator i = searchPaths.begin(); i!=searchPaths.end(); i++)
+        for (auto& dir : searchPaths)
         {
-            const std::string& dir = *i;
-
             fs::recursive_directory_iterator iter(dir);
             fs::recursive_directory_iterator end;
 
@@ -499,6 +506,12 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
                     {
                         return FileSystem::cleanPath(path);
                     }
+
+                    visitedFiles.push_back(filename);
+                }
+                else
+                {
+                    if (errlog) *errlog << "- " << iter->path().string() << "\n";
                 }
 
                 std::error_code ec;
@@ -509,7 +522,17 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
                 }
             }
         }
+
+        if (errlog)
+        {
+            const auto& matches = getClosestMatch(libName, visitedFiles, 3, 0.8_sreal);
+            for (const auto& match : matches)
+            {
+                *errlog << "Did you mean '" << std::get<std::string>(match) << "'?\n";
+            }
+        }
     }
+
     return std::string();
 }
 
