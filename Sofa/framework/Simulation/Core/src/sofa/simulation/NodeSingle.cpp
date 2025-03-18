@@ -19,47 +19,20 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <sofa/core/objectmodel/BaseObject.h>
-using sofa::core::objectmodel::BaseObject ;
+#define SOFA_SIMULATION_NODESINGLE_CPP_
 
-#include <sofa/core/objectmodel/BaseNode.h>
-using sofa::core::objectmodel::BaseNode ;
+#include <sofa/simulation/Node.h>
 
-#include <sofa/core/objectmodel/BaseLink.h>
-using sofa::core::objectmodel::BaseLink ;
-
-#include <sofa/testing/BaseTest.h>
-using sofa::testing::BaseTest ;
-
-/***********************************************************************************
- * This is checking that the predicates about BaseLink are still valid in an
- * inherited type
- ***********************************************************************************/
-template<class Link>
-class FakeObject : public BaseObject
+namespace sofa::simulation
 {
-public:
-    FakeObject() : BaseObject()
-    {       
-    }
-};
-
-template<class Link>
-class BaseLinkTests : public BaseTest
-{
-public:
-    Link link1;
-    FakeObject<Link> object1;
-};
-
-TYPED_TEST_SUITE_P(BaseLinkTests);
-
-TYPED_TEST_P(BaseLinkTests, checkOwnerSetGet)
-{
-    this->link1.setOwner(&this->object1);
-    EXPECT_EQ(this->link1.getOwnerBase(), &this->object1);
+template class NodeSingle<sofa::core::behavior::BaseAnimationLoop>;
+template class NodeSingle<sofa::core::visual::VisualLoop>;
+template class NodeSingle<sofa::core::visual::BaseVisualStyle>;
+template class NodeSingle<sofa::core::topology::Topology>;
+template class NodeSingle<sofa::core::topology::BaseMeshTopology>;
+template class NodeSingle<sofa::core::BaseState>;
+template class NodeSingle<sofa::core::behavior::BaseMechanicalState>;
+template class NodeSingle<sofa::core::BaseMapping>;
+template class NodeSingle<sofa::core::behavior::BaseMass>;
+template class NodeSingle<sofa::core::collision::Pipeline>;
 }
-
-REGISTER_TYPED_TEST_SUITE_P(BaseLinkTests,
-                            checkOwnerSetGet);
-

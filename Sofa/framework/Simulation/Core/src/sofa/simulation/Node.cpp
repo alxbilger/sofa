@@ -1063,35 +1063,4 @@ NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::visual::VisualManager, VisualManager,
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::CollisionModel, CollisionModel, collisionModel )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::collision::Pipeline, CollisionPipeline, collisionPipeline )
 
-template class NodeSequence<Node,true>;
-template class NodeSequence<sofa::core::objectmodel::BaseObject,true>;
-template class NodeSequence<sofa::core::BehaviorModel>;
-template class NodeSequence<sofa::core::BaseMapping>;
-template class NodeSequence<sofa::core::behavior::OdeSolver>;
-template class NodeSequence<sofa::core::behavior::ConstraintSolver>;
-template class NodeSequence<sofa::core::behavior::BaseLinearSolver>;
-template class NodeSequence<sofa::core::topology::BaseTopologyObject>;
-template class NodeSequence<sofa::core::behavior::BaseForceField>;
-template class NodeSequence<sofa::core::behavior::BaseInteractionForceField>;
-template class NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet>;
-template class NodeSequence<sofa::core::behavior::BaseConstraintSet>;
-template class NodeSequence<sofa::core::objectmodel::ContextObject>;
-template class NodeSequence<sofa::core::objectmodel::ConfigurationSetting>;
-template class NodeSequence<sofa::core::visual::Shader>;
-template class NodeSequence<sofa::core::visual::VisualModel>;
-template class NodeSequence<sofa::core::visual::VisualManager>;
-template class NodeSequence<sofa::core::CollisionModel>;
-template class NodeSequence<sofa::core::objectmodel::BaseObject>;
-
-template class NodeSingle<sofa::core::behavior::BaseAnimationLoop>;
-template class NodeSingle<sofa::core::visual::VisualLoop>;
-template class NodeSingle<sofa::core::visual::BaseVisualStyle>;
-template class NodeSingle<sofa::core::topology::Topology>;
-template class NodeSingle<sofa::core::topology::BaseMeshTopology>;
-template class NodeSingle<sofa::core::BaseState>;
-template class NodeSingle<sofa::core::behavior::BaseMechanicalState>;
-template class NodeSingle<sofa::core::BaseMapping>;
-template class NodeSingle<sofa::core::behavior::BaseMass>;
-template class NodeSingle<sofa::core::collision::Pipeline>;
-
 }

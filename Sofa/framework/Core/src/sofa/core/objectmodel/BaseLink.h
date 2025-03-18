@@ -70,15 +70,15 @@ public:
         Owner* owner;
     };
 
-    BaseLink(LinkFlags flags);
+    explicit BaseLink(LinkFlags flags);
     BaseLink(const BaseInitLink& init, LinkFlags flags);
     virtual ~BaseLink();
 
-    const std::string& getName() const { return m_name; }
+    [[nodiscard]] const std::string& getName() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
     /// Get help message
-    const std::string& getHelp() const { return m_help; }
+    [[nodiscard]] const std::string& getHelp() const { return m_help; }
 
     /// Set help message
     void setHelp(const std::string& val) { m_help = val; }
@@ -86,35 +86,30 @@ public:
     virtual Base* getOwnerBase() const = 0;
 
     /// Set one of the flags.
-    void setFlag(LinkFlagsEnum flag, bool b)
-    {
-        if(b) m_flags |= LinkFlags(flag);
-        else m_flags &= ~LinkFlags(flag);
-    }
+    void setFlag(const LinkFlagsEnum flag, const bool activateFlag);
 
     /// Get one flag
-    bool getFlag(LinkFlagsEnum flag) const { return (m_flags&LinkFlags(flag))!=0; }
+    [[nodiscard]] bool getFlag(LinkFlagsEnum flag) const;
 
-    bool isMultiLink() const { return getFlag(FLAG_MULTILINK); }
-
-    bool isStrongLink() const { return getFlag(FLAG_STRONGLINK); }
-    bool isDoubleLink() const { return getFlag(FLAG_DOUBLELINK); }
-    bool isDuplicate() const { return getFlag(FLAG_DUPLICATE); }
-    bool storePath() const { return getFlag(FLAG_STOREPATH); }
+    [[nodiscard]] bool isMultiLink() const { return getFlag(FLAG_MULTILINK); }
+    [[nodiscard]] bool isStrongLink() const { return getFlag(FLAG_STRONGLINK); }
+    [[nodiscard]] bool isDoubleLink() const { return getFlag(FLAG_DOUBLELINK); }
+    [[nodiscard]] bool isDuplicate() const { return getFlag(FLAG_DUPLICATE); }
+    [[nodiscard]] bool storePath() const { return getFlag(FLAG_STOREPATH); }
 
     /// Alias to match BaseData API
     void setPersistent(bool b) { setFlag(FLAG_STOREPATH, b); }
-    bool isPersistent() const { return storePath(); }
+    [[nodiscard]] bool isPersistent() const { return storePath(); }
 
     /// Alias to match BaseData API
-    bool isReadOnly() const   { return !storePath(); }
+    [[nodiscard]] bool isReadOnly() const   { return !storePath(); }
 
     virtual const BaseClass* getDestClass() const = 0;
     virtual const BaseClass* getOwnerClass() const = 0;
 
     /// Return the number of changes since creation
     /// This can be used to efficiently detect changes
-    int getCounter() const { return m_counter; }
+    [[nodiscard]] int getCounter() const { return m_counter; }
 
     void setLinkedBase(Base* link);
 

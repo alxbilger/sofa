@@ -35,6 +35,8 @@ set(HEADER_FILES
     ${SRC_ROOT}/MutationListener.h
     ${SRC_ROOT}/Node.h
     ${SRC_ROOT}/Node.inl
+    ${SRC_ROOT}/NodeSequence.h
+    ${SRC_ROOT}/NodeSingle.h
     ${SRC_ROOT}/ParallelForEach.h
     ${SRC_ROOT}/ParallelSparseMatrixProduct.h
     ${SRC_ROOT}/PauseEvent.h
@@ -171,6 +173,8 @@ set(SOURCE_FILES
     ${SRC_ROOT}/MechanicalVisitor.cpp
     ${SRC_ROOT}/MutationListener.cpp
     ${SRC_ROOT}/Node.cpp
+    ${SRC_ROOT}/NodeSequence.cpp
+    ${SRC_ROOT}/NodeSingle.cpp
     ${SRC_ROOT}/PauseEvent.cpp
     ${SRC_ROOT}/PipelineImpl.cpp
     ${SRC_ROOT}/PositionEvent.cpp

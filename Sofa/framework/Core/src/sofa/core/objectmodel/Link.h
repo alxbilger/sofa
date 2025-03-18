@@ -55,6 +55,7 @@ public:
     static TDestType* get(const T& p) { return p.get(); }
 };
 
+
 template<class TDestType, class TDestPtr, bool strongLink, bool storePath>
 class LinkTraitsValueType;
 
@@ -78,6 +79,9 @@ class LinkTraitsValueType<TDestType,TDestPtr,strongLink, true>
 public:
     typedef LinkTraitsDestPtr<TDestType, strongLink> TraitsDestPtr;
 
+ /**
+  * Combination of a pointer and a path
+  */
     struct T
     {
         TDestPtr ptr;
@@ -303,14 +307,14 @@ public:
     static constexpr bool IsMultiLink = (ActiveFlags & FLAG_MULTILINK) != 0;
     static constexpr bool StorePath = (ActiveFlags & FLAG_STOREPATH) != 0;
 
-    typedef LinkTraitsDestPtr<DestType, IsStrongLink> TraitsDestPtr;
-    typedef typename TraitsDestPtr::T DestPtr;
-    typedef LinkTraitsValueType<DestType, DestPtr, IsStrongLink, StorePath> TraitsValueType;
-    typedef typename TraitsValueType::T ValueType;
-    typedef LinkTraitsContainer<DestType, DestPtr, ValueType, IsMultiLink> TraitsContainer;
-    typedef typename TraitsContainer::T Container;
-    typedef typename Container::const_iterator const_iterator;
-    typedef typename Container::const_reverse_iterator const_reverse_iterator;
+    using TraitsDestPtr = LinkTraitsDestPtr<DestType, IsStrongLink>;
+    using DestPtr = typename TraitsDestPtr::T; //sptr<DestType> if IsStrongLink, DestType* otherwise
+    using TraitsValueType = LinkTraitsValueType<DestType, DestPtr, IsStrongLink, StorePath>;
+    using ValueType = typename TraitsValueType::T; //pointer + path if StorePath, pointer otherwise
+    using TraitsContainer = LinkTraitsContainer<DestType, DestPtr, ValueType, IsMultiLink>;
+    using Container = typename TraitsContainer::T; //stable_vector if IsMultiLink, SinglePtr otherwise
+    using const_iterator = typename Container::const_iterator;
+    using const_reverse_iterator = typename Container::const_reverse_iterator;
 
     TLink()
         : BaseLink(ActiveFlags)
@@ -580,9 +584,7 @@ public:
         if (val) this->add(val);
     }
 
-    virtual ~MultiLink()
-    {
-    }
+    ~MultiLink() override = default;
 
     void setValidator(ValidatorFn fn)
     {
@@ -657,9 +659,7 @@ public:
         if (val) this->add(val);
     }
 
-    virtual ~SingleLink()
-    {
-    }
+    ~SingleLink() override = default;
 
     void setValidator(ValidatorFn fn)
     {

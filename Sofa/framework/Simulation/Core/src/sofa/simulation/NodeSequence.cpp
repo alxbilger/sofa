@@ -19,47 +19,29 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <sofa/core/objectmodel/BaseObject.h>
-using sofa::core::objectmodel::BaseObject ;
+#define SOFA_SIMULATION_NODESEQUENCE_CPP_
 
-#include <sofa/core/objectmodel/BaseNode.h>
-using sofa::core::objectmodel::BaseNode ;
+#include <sofa/simulation/Node.h>
 
-#include <sofa/core/objectmodel/BaseLink.h>
-using sofa::core::objectmodel::BaseLink ;
-
-#include <sofa/testing/BaseTest.h>
-using sofa::testing::BaseTest ;
-
-/***********************************************************************************
- * This is checking that the predicates about BaseLink are still valid in an
- * inherited type
- ***********************************************************************************/
-template<class Link>
-class FakeObject : public BaseObject
+namespace sofa::simulation
 {
-public:
-    FakeObject() : BaseObject()
-    {       
-    }
-};
-
-template<class Link>
-class BaseLinkTests : public BaseTest
-{
-public:
-    Link link1;
-    FakeObject<Link> object1;
-};
-
-TYPED_TEST_SUITE_P(BaseLinkTests);
-
-TYPED_TEST_P(BaseLinkTests, checkOwnerSetGet)
-{
-    this->link1.setOwner(&this->object1);
-    EXPECT_EQ(this->link1.getOwnerBase(), &this->object1);
+template class NodeSequence<Node,true>;
+template class NodeSequence<sofa::core::objectmodel::BaseObject,true>;
+template class NodeSequence<sofa::core::BehaviorModel>;
+template class NodeSequence<sofa::core::BaseMapping>;
+template class NodeSequence<sofa::core::behavior::OdeSolver>;
+template class NodeSequence<sofa::core::behavior::ConstraintSolver>;
+template class NodeSequence<sofa::core::behavior::BaseLinearSolver>;
+template class NodeSequence<sofa::core::topology::BaseTopologyObject>;
+template class NodeSequence<sofa::core::behavior::BaseForceField>;
+template class NodeSequence<sofa::core::behavior::BaseInteractionForceField>;
+template class NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet>;
+template class NodeSequence<sofa::core::behavior::BaseConstraintSet>;
+template class NodeSequence<sofa::core::objectmodel::ContextObject>;
+template class NodeSequence<sofa::core::objectmodel::ConfigurationSetting>;
+template class NodeSequence<sofa::core::visual::Shader>;
+template class NodeSequence<sofa::core::visual::VisualModel>;
+template class NodeSequence<sofa::core::visual::VisualManager>;
+template class NodeSequence<sofa::core::CollisionModel>;
+template class NodeSequence<sofa::core::objectmodel::BaseObject>;
 }
-
-REGISTER_TYPED_TEST_SUITE_P(BaseLinkTests,
-                            checkOwnerSetGet);
-

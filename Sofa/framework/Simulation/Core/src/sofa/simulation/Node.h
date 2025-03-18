@@ -26,6 +26,8 @@
 
 #include <sofa/core/objectmodel/BaseNode.h>
 #include <sofa/core/objectmodel/Context.h>
+#include <sofa/simulation/NodeSequence.h>
+#include <sofa/simulation/NodeSingle.h>
 
 #include <type_traits>
 #include <string>
@@ -33,109 +35,6 @@
 
 namespace sofa::simulation
 {
-
-/// @name Component containers
-/// @{
-/// Sequence class to hold a list of objects. Public access is only readonly using an interface similar to std::vector (size/[]/begin/end).
-/// UPDATE: it is now an alias for the Link pointer container
-template < class T, bool strong = false >
-class NodeSequence : public MultiLink<Node, T, BaseLink::FLAG_DOUBLELINK|(strong ? BaseLink::FLAG_STRONGLINK : BaseLink::FLAG_DUPLICATE)>
-{
-public:
-    typedef MultiLink<Node, T, BaseLink::FLAG_DOUBLELINK|(strong ? BaseLink::FLAG_STRONGLINK : BaseLink::FLAG_DUPLICATE)> Inherit;
-    typedef T pointed_type;
-    typedef typename Inherit::DestPtr value_type;
-    typedef typename Inherit::const_iterator const_iterator;
-    typedef typename Inherit::const_reverse_iterator const_reverse_iterator;
-    typedef const_iterator iterator;
-    typedef const_reverse_iterator reverse_iterator;
-
-    NodeSequence(const BaseLink::InitLink<Node>& init)
-        : Inherit(init)
-    {
-    }
-
-    value_type operator[](std::size_t i) const
-    {
-        return this->get(i);
-    }
-
-    /// Swap two values in the list. Uses a const_cast to violate the read-only iterators.
-    void swap( iterator a, iterator b )
-    {
-        value_type& wa = const_cast<value_type&>(*a);
-        value_type& wb = const_cast<value_type&>(*b);
-        value_type tmp = *a;
-        wa = *b;
-        wb = tmp;
-    }
-};
-
-/// Class to hold 0-or-1 object. Public access is only readonly using an interface similar to std::vector (size/[]/begin/end), plus an automatic conversion to one pointer.
-/// UPDATE: it is now an alias for the Link pointer container
-template < class T, bool duplicate = true >
-class NodeSingle : public SingleLink<Node, T, BaseLink::FLAG_DOUBLELINK|(duplicate ? BaseLink::FLAG_DUPLICATE : BaseLink::FLAG_NONE)>
-{
-public:
-    typedef SingleLink<Node, T, BaseLink::FLAG_DOUBLELINK|(duplicate ? BaseLink::FLAG_DUPLICATE : BaseLink::FLAG_NONE)> Inherit;
-    typedef T pointed_type;
-    typedef typename Inherit::DestPtr value_type;
-    typedef typename Inherit::const_iterator const_iterator;
-    typedef typename Inherit::const_reverse_iterator const_reverse_iterator;
-    typedef const_iterator iterator;
-    typedef const_reverse_iterator reverse_iterator;
-
-    NodeSingle(const BaseLink::InitLink<Node>& init)
-        : Inherit(init)
-    {
-    }
-
-    T* operator->() const
-    {
-        return this->get();
-    }
-    T& operator*() const
-    {
-        return *this->get();
-    }
-    operator T*() const
-    {
-        return this->get();
-    }
-};
-
-
-extern template class NodeSequence<Node,true>;
-extern template class NodeSequence<sofa::core::objectmodel::BaseObject,true>;
-extern template class NodeSequence<sofa::core::BehaviorModel>;
-extern template class NodeSequence<sofa::core::BaseMapping>;
-extern template class NodeSequence<sofa::core::behavior::OdeSolver>;
-extern template class NodeSequence<sofa::core::behavior::ConstraintSolver>;
-extern template class NodeSequence<sofa::core::behavior::BaseLinearSolver>;
-extern template class NodeSequence<sofa::core::topology::BaseTopologyObject>;
-extern template class NodeSequence<sofa::core::behavior::BaseForceField>;
-extern template class NodeSequence<sofa::core::behavior::BaseInteractionForceField>;
-extern template class NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet>;
-extern template class NodeSequence<sofa::core::behavior::BaseConstraintSet>;
-extern template class NodeSequence<sofa::core::objectmodel::ContextObject>;
-extern template class NodeSequence<sofa::core::objectmodel::ConfigurationSetting>;
-extern template class NodeSequence<sofa::core::visual::Shader>;
-extern template class NodeSequence<sofa::core::visual::VisualModel>;
-extern template class NodeSequence<sofa::core::visual::VisualManager>;
-extern template class NodeSequence<sofa::core::CollisionModel>;
-extern template class NodeSequence<sofa::core::objectmodel::BaseObject>;
-
-extern template class NodeSingle<sofa::core::behavior::BaseAnimationLoop>;
-extern template class NodeSingle<sofa::core::visual::VisualLoop>;
-extern template class NodeSingle<sofa::core::visual::BaseVisualStyle>;
-extern template class NodeSingle<sofa::core::topology::Topology>;
-extern template class NodeSingle<sofa::core::topology::BaseMeshTopology>;
-extern template class NodeSingle<sofa::core::BaseState>;
-extern template class NodeSingle<sofa::core::behavior::BaseMechanicalState>;
-extern template class NodeSingle<sofa::core::BaseMapping>;
-extern template class NodeSingle<sofa::core::behavior::BaseMass>;
-extern template class NodeSingle<sofa::core::collision::Pipeline>;
-
 
 /**
    Implements the object (component) management of the core::Context.
@@ -227,13 +126,12 @@ public:
     template<class A, bool B=true>
     using Single = NodeSingle<A,B>;
 
+    NodeSequence<Node, true> child;
+    typedef NodeSequence<Node, true>::iterator ChildIterator;
 
-    NodeSequence<Node,true> child;
-    typedef NodeSequence<Node,true>::iterator ChildIterator;
-
-    NodeSequence<sofa::core::objectmodel::BaseObject,true> object;
-    typedef NodeSequence<sofa::core::objectmodel::BaseObject,true>::iterator ObjectIterator;
-    typedef NodeSequence<sofa::core::objectmodel::BaseObject,true>::reverse_iterator ObjectReverseIterator;
+    NodeSequence<sofa::core::objectmodel::BaseObject, /*strong link*/true> object;
+    typedef NodeSequence<sofa::core::objectmodel::BaseObject, true>::iterator ObjectIterator;
+    typedef NodeSequence<sofa::core::objectmodel::BaseObject, true>::reverse_iterator ObjectReverseIterator;
 
     NodeSequence<sofa::core::BehaviorModel> behaviorModel;
     NodeSequence<sofa::core::BaseMapping> mapping;

@@ -45,8 +45,23 @@ BaseLink::BaseLink(const BaseInitLink& init, LinkFlags flags)
     m_counter = 0;
 }
 
-BaseLink::~BaseLink()
+BaseLink::~BaseLink() {}
+
+void BaseLink::setFlag(const LinkFlagsEnum flag, const bool activateFlag)
 {
+    if (activateFlag)
+    {
+        m_flags |= LinkFlags(flag);
+    }
+    else
+    {
+        m_flags &= ~LinkFlags(flag);
+    }
+}
+
+bool BaseLink::getFlag(LinkFlagsEnum flag) const
+{
+    return (m_flags & LinkFlags(flag)) != 0;
 }
 
 /// Print the value of the associated variable
