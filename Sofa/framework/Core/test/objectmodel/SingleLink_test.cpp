@@ -142,3 +142,18 @@ TEST_F(SingleLink_test, checkEmptyness  )
     m_link.clear();
     ASSERT_EQ( m_link.size(), 0 );
 }
+
+TEST(WeakSingleLink_test, weak)
+{
+    SingleLink<BaseObject, BaseObject, BaseLink::FLAG_NONE > link;
+    EXPECT_EQ(link.get(), nullptr);
+
+    {
+        BaseObject::SPtr dst = sofa::core::objectmodel::New<BaseObject>() ;
+        link.set(dst.get());
+        EXPECT_EQ(link.get(), dst.get());
+    }
+
+    //WARNING: the destination object is deleted, but the pointer to it remains not null
+    EXPECT_EQ(link.get(), nullptr);
+}
