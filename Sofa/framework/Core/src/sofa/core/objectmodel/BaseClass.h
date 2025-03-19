@@ -25,6 +25,7 @@
 #include <sofa/core/fwd.h>
 #include <sofa/core/objectmodel/BaseClassNameHelper.h>
 #include <sofa/core/objectmodel/SPtr.h>
+#include <sofa/type/vector.h>
 #include <map>
 
 namespace sofa::core::objectmodel
@@ -51,7 +52,7 @@ public:
     std::string className;
     std::string templateName;
     std::string shortName;
-    type::vector<const BaseClass*> parents;
+    sofa::type::vector<const BaseClass*> parents;
 
     /// returns true iff c is a parent class of this
     bool hasParent(const BaseClass* c) const

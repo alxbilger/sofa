@@ -79,7 +79,7 @@ protected:
 
     /// Direct calls to destructor are forbidden.
     /// Smart pointers must be used to manage creation/destruction of objects
-    virtual ~Base();
+    ~Base() override;
 
 private:
     /// Copy constructor is not allowed

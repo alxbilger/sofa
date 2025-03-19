@@ -33,6 +33,7 @@ set(SOURCE_FILES
     TestEngine.cpp
     TrackedData_test.cpp
     VecId_test.cpp
+    WeakPtr_test.cpp
     visual/DisplayFlags_test.cpp
 )
 

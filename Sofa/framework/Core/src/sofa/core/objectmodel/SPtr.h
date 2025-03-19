@@ -21,9 +21,6 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/type/vector.h>
-#include <sofa/core/config.h>
-
 namespace sofa::core::objectmodel
 {
 

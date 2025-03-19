@@ -21,18 +21,36 @@
 ******************************************************************************/
 #include <sofa/core/IntrusiveObject.h>
 
+#include <cassert>
+
 namespace sofa::core
 {
-void IntrusiveObject::addRef()
+void IntrusiveObject::incrementStrong()
 {
-    ++ref_counter;
+    ++m_strongCounter;
 }
 
-void IntrusiveObject::release()
+void IntrusiveObject::incrementWeak()
 {
-    if (ref_counter.fetch_sub(1) == 1)
+    ++m_weakCounter;
+}
+
+void IntrusiveObject::decrementStrong()
+{
+    if (--m_strongCounter == 0)
     {
-        delete this;
+        if (m_weakCounter.load() < 1)
+        {
+            delete this;
+        }
     }
 }
+
+bool IntrusiveObject::expired() const { return m_strongCounter.load() == 0; }
+
+IntrusiveObject::~IntrusiveObject()
+{
+    assert(m_strongCounter.load() == 0 && m_weakCounter.load() == 0);
 }
+
+}  // namespace sofa::core

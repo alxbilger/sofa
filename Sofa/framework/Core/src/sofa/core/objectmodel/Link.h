@@ -25,6 +25,7 @@
 #include <sofa/type/stable_vector.h>
 #include <sofa/core/PathResolver.h>
 #include <sofa/core/sptr.h>
+#include <sofa/core/WeakPtr.h>
 #include <sofa/core/fwd.h>
 
 #include <functional>
@@ -43,15 +44,17 @@ template<class TDestType>
 class LinkTraitsDestPtr<TDestType, false>
 {
 public:
+    // typedef WeakPtr<TDestType> T;
     typedef TDestType* T;
     static TDestType* get(T p) { return p; }
+    // static TDestType* get(T p) { return p.lock().get(); }
 };
 
 template<class TDestType>
 class LinkTraitsDestPtr<TDestType, true>
 {
 public:
-    typedef typename sofa::core::sptr<TDestType> T;
+    typedef sofa::core::sptr<TDestType> T;
     static TDestType* get(const T& p) { return p.get(); }
 };
 
@@ -79,9 +82,9 @@ class LinkTraitsValueType<TDestType,TDestPtr,strongLink, true>
 public:
     typedef LinkTraitsDestPtr<TDestType, strongLink> TraitsDestPtr;
 
- /**
-  * Combination of a pointer and a path
-  */
+    /**
+     * Combination of a pointer and a path
+     */
     struct T
     {
         TDestPtr ptr;
@@ -113,7 +116,7 @@ class LinkTraitsContainer;
 
 
 /// Class to hold 0-or-1 pointer. The interface is similar to std::vector (size/[]/begin/end), plus an automatic conversion to one pointer.
-template < class T, class TDestPtr, class TPtr = T* >
+template < class T, class TDestPtr, class TPtr>
 class SinglePtr
 {
 protected:
@@ -309,8 +312,10 @@ public:
 
     using TraitsDestPtr = LinkTraitsDestPtr<DestType, IsStrongLink>;
     using DestPtr = typename TraitsDestPtr::T; //sptr<DestType> if IsStrongLink, DestType* otherwise
+
     using TraitsValueType = LinkTraitsValueType<DestType, DestPtr, IsStrongLink, StorePath>;
     using ValueType = typename TraitsValueType::T; //pointer + path if StorePath, pointer otherwise
+
     using TraitsContainer = LinkTraitsContainer<DestType, DestPtr, ValueType, IsMultiLink>;
     using Container = typename TraitsContainer::T; //stable_vector if IsMultiLink, SinglePtr otherwise
     using const_iterator = typename Container::const_iterator;

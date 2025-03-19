@@ -26,6 +26,9 @@
 namespace sofa::core
 {
 
+template<class T>
+class WeakPtr;
+
 /**
  * The `IntrusiveObject` class implements an internal reference counting mechanism
  * to manage its lifetime. It is intended to work with intrusive smart pointers like
@@ -33,23 +36,33 @@ namespace sofa::core
  */
 class SOFA_CORE_API IntrusiveObject
 {
-    std::atomic<int> ref_counter { 0 };
+    std::atomic<int> m_strongCounter { 0 };
+    std::atomic<int> m_weakCounter { 0 };
 
-    void addRef();
-    void release();
+    void incrementStrong();
+    void incrementWeak();
+    void decrementStrong();
+
+    bool expired() const;
 
     friend inline void intrusive_ptr_add_ref(IntrusiveObject* p)
     {
-        p->addRef();
+        p->incrementStrong();
     }
 
     friend inline void intrusive_ptr_release(IntrusiveObject* p)
     {
-        p->release();
+        p->decrementStrong();
     }
 
-protected:
-    virtual ~IntrusiveObject() = default;
+    template<class T>
+    friend class WeakPtr;
+
+    void kill() { delete this; }
+
+public:
+    virtual ~IntrusiveObject();
+
 };
 
 }

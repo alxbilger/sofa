@@ -62,7 +62,7 @@ public:
         }
 
         l_mechanicalStates.clear();
-        l_mechanicalStates.add(mstate);
+        l_mechanicalStates.add(mstate.get());
     }
 
     MechanicalState<DataTypes>* getMState() { return mstate.get(); }
