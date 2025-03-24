@@ -40,7 +40,7 @@ public:
             : m_mparams(mparams), m_node(node)
     {}
 
-    void accept(MappingGraphVisitor& visitor, bool executeConcurrently = true);
+    void accept(MappingGraphVisitor& visitor, bool executeConcurrently = true) const;
 
 private:
     const sofa::core::MechanicalParams* m_mparams { nullptr };

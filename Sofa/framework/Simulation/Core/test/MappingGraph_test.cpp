@@ -46,13 +46,16 @@ TEST(MappingGraph_Test, dsafads)
     struct PrintNameVisitor : simulation::MappingGraphVisitor
     {
         sofa::type::vector<std::string> visit;
+        std::mutex mutex;
         ~PrintNameVisitor() override = default;
         void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
         {
+            // std::lock_guard lock(mutex);
             visit.push_back(state->getPathName());
         }
         void forwardVisit(sofa::core::BaseMapping* mapping) override
         {
+            // std::lock_guard lock(mutex);
             visit.push_back(mapping->getPathName());
         }
 

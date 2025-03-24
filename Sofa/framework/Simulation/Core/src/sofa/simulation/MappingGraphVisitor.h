@@ -29,7 +29,10 @@ namespace sofa::core
 
     namespace behavior
     {
+        class BaseMass;
         class BaseMechanicalState;
+        class BaseProjectiveConstraintSet;
+        class BaseForceField;
     }
 }
 
@@ -42,9 +45,15 @@ struct SOFA_SIMULATION_CORE_API MappingGraphVisitor
 
     virtual void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) {}
     virtual void forwardVisit(sofa::core::BaseMapping* mapping) {}
+    virtual void forwardVisit(sofa::core::behavior::BaseMass* mass) {}
+    virtual void forwardVisit(sofa::core::behavior::BaseForceField* forceField) {}
+    virtual void forwardVisit(sofa::core::behavior::BaseProjectiveConstraintSet* projectiveConstraint) {}
 
     virtual void backwardVisit(sofa::core::behavior::BaseMechanicalState* state) {}
     virtual void backwardVisit(sofa::core::BaseMapping* mapping) {}
+    virtual void backwardVisit(sofa::core::behavior::BaseMass* mass) {}
+    virtual void backwardVisit(sofa::core::behavior::BaseForceField* forceField) {}
+    virtual void backwardVisit(sofa::core::behavior::BaseProjectiveConstraintSet* projectiveConstraint) {}
 };
 
 }
