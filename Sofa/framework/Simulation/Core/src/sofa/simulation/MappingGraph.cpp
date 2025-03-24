@@ -28,6 +28,7 @@
 #include <sofa/core/behavior/BaseMass.h>
 #include <sofa/core/behavior/BaseForceField.h>
 #include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
+#include <sofa/core/behavior/BaseInteractionForceField.h>
 
 namespace sofa::simulation
 {
@@ -41,21 +42,23 @@ public:
 
     Result processNodeTopDown(simulation::Node* node) override
     {
-        const auto addTasks = [this](auto& links, auto& forwardTasks, auto& backwardTasks, const std::string& category)
+        const auto addTasks = [this]<typename T0>(auto& links,
+            std::map<T0*, tf::Task>& forwardTasks, std::map<T0*, tf::Task>& backwardTasks, const std::string& category)
         {
             for (auto* object : links)
             {
                 if (object)
                 {
-                    forwardTasks[object] = forward.taskflow->emplace([v = mappingGraphVisitor, object]()
+                    auto* ptr = static_cast<T0*>(object);
+                    forwardTasks[ptr] = forward.taskflow->emplace([v = mappingGraphVisitor, ptr]()
                     {
-                        v->forwardVisit(object);
-                    }).name("fwd" + category + object->getPathName());
+                        v->forwardVisit(ptr);
+                    }).name("fwd" + category + ptr->getPathName());
 
-                    backwardTasks[object] = backward.taskflow->emplace([v = mappingGraphVisitor, object]()
+                    backwardTasks[ptr] = backward.taskflow->emplace([v = mappingGraphVisitor, ptr]()
                     {
-                        v->backwardVisit(object);
-                    }).name("bwd" + category + object->getPathName());
+                        v->backwardVisit(ptr);
+                    }).name("bwd" + category + ptr->getPathName());
                 }
             }
         };
@@ -64,6 +67,7 @@ public:
         addTasks(node->mechanicalMapping, forward.mappingTasks, backward.mappingTasks, "Mapping");
         addTasks(node->mass, forward.massTasks, backward.massTasks, "Mass");
         addTasks(node->forceField, forward.forceFieldTasks, backward.forceFieldTasks, "ForceField");
+        addTasks(node->interactionForceField, forward.forceFieldTasks, backward.forceFieldTasks, "InteractionForceField");
         addTasks(node->projectiveConstraintSet, forward.projectiveConstraintTasks, backward.projectiveConstraintTasks, "ProjectiveConstraint");
 
         return Result::RESULT_CONTINUE;
@@ -209,6 +213,8 @@ void MappingGraph::accept(MappingGraphVisitor& visitor, bool executeConcurrently
 
         handleSemaphore(v.forward.projectiveConstraintTasks);
         handleSemaphore(v.backward.projectiveConstraintTasks);
+
+        forwardTaskFlow.dump(std::cout);
 
         executor.run(forwardTaskFlow, [&backwardTaskFlow]()
         {
