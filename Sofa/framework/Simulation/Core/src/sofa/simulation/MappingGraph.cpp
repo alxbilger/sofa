@@ -25,71 +25,12 @@
 
 #include <sofa/simulation/MechanicalVisitor.h>
 #include <sofa/simulation/Node.h>
-#include <sofa/core/behavior/BaseMass.h>
-#include <sofa/core/behavior/BaseForceField.h>
-#include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
-#include <sofa/core/behavior/BaseInteractionForceField.h>
+
 
 namespace sofa::simulation
 {
 
-class CreateTasksVisitor : public Visitor
-{
-public:
-    explicit CreateTasksVisitor(const sofa::core::MechanicalParams *p, MappingGraphVisitor* v)
-        : Visitor(p), mappingGraphVisitor(v)
-    {}
 
-    Result processNodeTopDown(simulation::Node* node) override
-    {
-        const auto addTasks = [this]<typename T0>(auto& links,
-            std::map<T0*, tf::Task>& forwardTasks, std::map<T0*, tf::Task>& backwardTasks, const std::string& category)
-        {
-            for (auto* object : links)
-            {
-                if (object)
-                {
-                    auto* ptr = static_cast<T0*>(object);
-                    forwardTasks[ptr] = forward.taskflow->emplace([v = mappingGraphVisitor, ptr]()
-                    {
-                        v->forwardVisit(ptr);
-                    }).name("fwd" + category + ptr->getPathName());
-
-                    backwardTasks[ptr] = backward.taskflow->emplace([v = mappingGraphVisitor, ptr]()
-                    {
-                        v->backwardVisit(ptr);
-                    }).name("bwd" + category + ptr->getPathName());
-                }
-            }
-        };
-
-        addTasks(node->mechanicalState, forward.stateTasks, backward.stateTasks, "State");
-        addTasks(node->mechanicalMapping, forward.mappingTasks, backward.mappingTasks, "Mapping");
-        addTasks(node->mass, forward.massTasks, backward.massTasks, "Mass");
-        addTasks(node->forceField, forward.forceFieldTasks, backward.forceFieldTasks, "ForceField");
-        addTasks(node->interactionForceField, forward.forceFieldTasks, backward.forceFieldTasks, "InteractionForceField");
-        addTasks(node->projectiveConstraintSet, forward.projectiveConstraintTasks, backward.projectiveConstraintTasks, "ProjectiveConstraint");
-
-        return Result::RESULT_CONTINUE;
-    }
-
-private:
-    MappingGraphVisitor* mappingGraphVisitor;
-
-public:
-    struct Tasks
-    {
-        tf::Taskflow* taskflow { nullptr };
-        std::map<core::behavior::BaseMechanicalState*, tf::Task> stateTasks;
-        std::map<core::BaseMapping*, tf::Task> mappingTasks;
-        std::map<sofa::core::behavior::BaseMass*, tf::Task> massTasks;
-        std::map<sofa::core::behavior::BaseForceField*, tf::Task> forceFieldTasks;
-        std::map<sofa::core::behavior::BaseProjectiveConstraintSet*, tf::Task> projectiveConstraintTasks;
-    };
-
-    Tasks forward;
-    Tasks backward;
-};
 
 void sortMappingTasks(
     std::map<core::BaseMapping*, tf::Task>& mappingTasks,
@@ -165,63 +106,107 @@ void sortComponentTasks(std::map<Component*, tf::Task>& componentTasks,
         }
     }
 }
+//
+// void MappingGraph::accept(MappingGraphVisitor& visitor, bool executeConcurrently) const
+// {
+//     if (m_mparams && m_node)
+//     {
+//         tf::Taskflow forwardTaskFlow, backwardTaskFlow;
+//
+//         static tf::Executor executor;
+//         tf::Semaphore semaphore(executeConcurrently ? executor.num_workers() : 1);
+//
+//         CreateTasksVisitor v(m_mparams, &visitor);
+//         v.forward.taskflow = &forwardTaskFlow;
+//         v.backward.taskflow = &backwardTaskFlow;
+//         m_node->executeVisitor(&v);
+//
+//         sortMappingTasks(v.forward.mappingTasks, v.forward.stateTasks, true);
+//         sortMappingTasks(v.backward.mappingTasks, v.backward.stateTasks, false);
+//
+//         sortComponentTasks(v.forward.massTasks, v.forward.stateTasks, true);
+//         sortComponentTasks(v.backward.massTasks, v.backward.stateTasks, false);
+//         sortComponentTasks(v.forward.forceFieldTasks, v.forward.stateTasks, true);
+//         sortComponentTasks(v.backward.forceFieldTasks, v.backward.stateTasks, false);
+//         sortComponentTasks(v.forward.projectiveConstraintTasks, v.forward.stateTasks, true);
+//         sortComponentTasks(v.backward.projectiveConstraintTasks, v.backward.stateTasks, false);
+//
+//         const auto handleSemaphore = [&semaphore](auto& tasks)
+//         {
+//             for (auto& [_, task] : tasks)
+//             {
+//                 task.acquire(semaphore);
+//                 task.release(semaphore);
+//             }
+//         };
+//
+//         handleSemaphore(v.forward.stateTasks);
+//         handleSemaphore(v.backward.stateTasks);
+//
+//         handleSemaphore(v.forward.mappingTasks);
+//         handleSemaphore(v.backward.mappingTasks);
+//
+//         handleSemaphore(v.forward.massTasks);
+//         handleSemaphore(v.backward.massTasks);
+//
+//         handleSemaphore(v.forward.forceFieldTasks);
+//         handleSemaphore(v.backward.forceFieldTasks);
+//
+//         handleSemaphore(v.forward.projectiveConstraintTasks);
+//         handleSemaphore(v.backward.projectiveConstraintTasks);
+//
+//         forwardTaskFlow.dump(std::cout);
+//
+//         executor.run(forwardTaskFlow, [&backwardTaskFlow]()
+//         {
+//             executor.run(backwardTaskFlow).wait();
+//         }).wait();
+//
+//     }
+// }
 
-void MappingGraph::accept(MappingGraphVisitor& visitor, bool executeConcurrently) const
+void MappingGraph::sortMappingTasks(
+    std::map<core::BaseMapping*, tf::Task>& mappingTasks,
+    std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks, bool isForward)
 {
-    if (m_mparams && m_node)
+    for (auto& [mapping, task] : mappingTasks)
     {
-        tf::Taskflow forwardTaskFlow, backwardTaskFlow;
-
-        static tf::Executor executor;
-        tf::Semaphore semaphore(executeConcurrently ? executor.num_workers() : 1);
-
-        CreateTasksVisitor v(m_mparams, &visitor);
-        v.forward.taskflow = &forwardTaskFlow;
-        v.backward.taskflow = &backwardTaskFlow;
-        m_node->executeVisitor(&v);
-
-        sortMappingTasks(v.forward.mappingTasks, v.forward.stateTasks, true);
-        sortMappingTasks(v.backward.mappingTasks, v.backward.stateTasks, false);
-
-        sortComponentTasks(v.forward.massTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.massTasks, v.backward.stateTasks, false);
-        sortComponentTasks(v.forward.forceFieldTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.forceFieldTasks, v.backward.stateTasks, false);
-        sortComponentTasks(v.forward.projectiveConstraintTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.projectiveConstraintTasks, v.backward.stateTasks, false);
-
-        const auto handleSemaphore = [&semaphore](auto& tasks)
+        for (auto* state : mapping->getMechFrom())
         {
-            for (auto& [_, task] : tasks)
+            if (state)
             {
-                task.acquire(semaphore);
-                task.release(semaphore);
+                const auto it = stateTasks.find(state);
+                if (it != stateTasks.end())
+                {
+                    if (isForward)
+                    {
+                        it->second.precede(task);
+                    }
+                    else
+                    {
+                        it->second.succeed(task);
+                    }
+                }
             }
-        };
-
-        handleSemaphore(v.forward.stateTasks);
-        handleSemaphore(v.backward.stateTasks);
-
-        handleSemaphore(v.forward.mappingTasks);
-        handleSemaphore(v.backward.mappingTasks);
-
-        handleSemaphore(v.forward.massTasks);
-        handleSemaphore(v.backward.massTasks);
-
-        handleSemaphore(v.forward.forceFieldTasks);
-        handleSemaphore(v.backward.forceFieldTasks);
-
-        handleSemaphore(v.forward.projectiveConstraintTasks);
-        handleSemaphore(v.backward.projectiveConstraintTasks);
-
-        forwardTaskFlow.dump(std::cout);
-
-        executor.run(forwardTaskFlow, [&backwardTaskFlow]()
+        }
+        for (auto* state : mapping->getMechTo())
         {
-            executor.run(backwardTaskFlow).wait();
-        }).wait();
-
+            if (state)
+            {
+                const auto it = stateTasks.find(state);
+                if (it != stateTasks.end())
+                {
+                    if (isForward)
+                    {
+                        it->second.succeed(task);
+                    }
+                    else
+                    {
+                        it->second.precede(task);
+                    }
+                }
+            }
+        }
     }
 }
-
 }  // namespace sofa::simulation

@@ -23,37 +23,111 @@
 
 #include <sofa/simulation/config.h>
 
-namespace sofa::core
-{
-    class BaseMapping;
+#include <type_traits>
 
-    namespace behavior
+#include <sofa/core/behavior/BaseMass.h>
+#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
+#include <sofa/core/behavior/BaseInteractionForceField.h>
+
+namespace sofa::simulation::mapping_graph
+{
+
+template<class T>
+struct TForwardVisitor
+{
+    virtual ~TForwardVisitor() {}
+    virtual void forwardVisit(T*) {}
+};
+
+template<class T>
+struct TBackwardVisitor
+{
+    virtual ~TBackwardVisitor() {}
+    virtual void backwardVisit(T*) {}
+};
+
+namespace details
+{
+    template<class... Types>
+    struct ListTypes{};
+
+    template<typename T, typename List>
+    struct is_base_of_any;
+
+    template<typename T, template<class...> class List, typename... Types>
+    struct is_base_of_any<T, List<Types...>>
     {
-        class BaseMass;
-        class BaseMechanicalState;
-        class BaseProjectiveConstraintSet;
-        class BaseForceField;
-    }
+        static constexpr bool value = (std::is_base_of_v<T, Types> || ...);
+    };
 }
 
-namespace sofa::simulation
+using VisitableTypes = details::ListTypes<
+    sofa::core::behavior::BaseMechanicalState,
+    sofa::core::BaseMapping,
+    sofa::core::behavior::BaseMass,
+    sofa::core::behavior::BaseForceField,
+    sofa::core::behavior::BaseProjectiveConstraintSet
+>;
+
+template<class T>
+concept IsTypeVisitable = details::is_base_of_any<T, VisitableTypes>::value;
+
+template<class VisitorType, class T>
+concept CanForwardVisit = IsTypeVisitable<T> && requires(VisitorType& v, T* t)
 {
-
-struct SOFA_SIMULATION_CORE_API MappingGraphVisitor
-{
-    virtual ~MappingGraphVisitor() = default;
-
-    virtual void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) {}
-    virtual void forwardVisit(sofa::core::BaseMapping* mapping) {}
-    virtual void forwardVisit(sofa::core::behavior::BaseMass* mass) {}
-    virtual void forwardVisit(sofa::core::behavior::BaseForceField* forceField) {}
-    virtual void forwardVisit(sofa::core::behavior::BaseProjectiveConstraintSet* projectiveConstraint) {}
-
-    virtual void backwardVisit(sofa::core::behavior::BaseMechanicalState* state) {}
-    virtual void backwardVisit(sofa::core::BaseMapping* mapping) {}
-    virtual void backwardVisit(sofa::core::behavior::BaseMass* mass) {}
-    virtual void backwardVisit(sofa::core::behavior::BaseForceField* forceField) {}
-    virtual void backwardVisit(sofa::core::behavior::BaseProjectiveConstraintSet* projectiveConstraint) {}
+    v.forwardVisit(t);
 };
+
+template<class VisitorType, class T>
+concept CanBackwardVisit = IsTypeVisitable<T> && requires(VisitorType& v, T* t)
+{
+    v.backwardVisit(t);
+};
+
+namespace details
+{
+    template<typename T, typename List>
+    struct IsForwardVisitorOfAny;
+
+    template<typename T, template<class...> class List, typename... Types>
+    struct IsForwardVisitorOfAny<T, List<Types...>>
+    {
+        static constexpr bool value = (CanForwardVisit<T, Types> || ...);
+    };
+
+    template<typename T, typename List>
+    struct IsBackwardVisitorOfAny;
+
+    template<typename T, template<class...> class List, typename... Types>
+    struct IsBackwardVisitorOfAny<T, List<Types...>>
+    {
+        static constexpr bool value = (CanBackwardVisit<T, Types> || ...);
+    };
+}
+
+
+template<class T>
+concept IsForwardVisitor = details::IsForwardVisitorOfAny<T, VisitableTypes>::value;
+template<class T>
+concept IsBackwardVisitor = details::IsBackwardVisitorOfAny<T, VisitableTypes>::value;
+
+template<class T>
+concept IsVisitor = IsForwardVisitor<T> || IsBackwardVisitor<T>;
+
+using StateForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseMechanicalState>;
+using StateBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseMechanicalState>;
+
+using MappingForwardVisitor = TForwardVisitor<sofa::core::BaseMapping>;
+using MappingBackwardVisitor = TBackwardVisitor<sofa::core::BaseMapping>;
+
+using MassForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseMass>;
+using MassBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseMass>;
+
+using ForceFieldForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseForceField>;
+using ForceFieldBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseForceField>;
+
+using ProjectiveConstraintForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseProjectiveConstraintSet>;
+using ProjectiveConstraintBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseProjectiveConstraintSet>;
 
 }

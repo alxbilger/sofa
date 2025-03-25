@@ -43,25 +43,33 @@ TEST(MappingGraph_Test, dsafads)
     auto* mparams = sofa::core::MechanicalParams::defaultInstance();
     sofa::simulation::MappingGraph graph(mparams, groot.get());
 
-    struct PrintNameVisitor : simulation::MappingGraphVisitor
+    struct PrintNameVisitor :
+        simulation::mapping_graph::StateForwardVisitor,
+        simulation::mapping_graph::MappingForwardVisitor,
+        simulation::mapping_graph::ForceFieldForwardVisitor
     {
         sofa::type::vector<std::string> visit;
         std::mutex mutex;
         ~PrintNameVisitor() override = default;
         void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
         {
-            // std::lock_guard lock(mutex);
+            std::lock_guard lock(mutex);
             visit.push_back(state->getPathName());
         }
         void forwardVisit(sofa::core::BaseMapping* mapping) override
         {
-            // std::lock_guard lock(mutex);
+            std::lock_guard lock(mutex);
             visit.push_back(mapping->getPathName());
+        }
+        void forwardVisit(core::behavior::BaseForceField* forceField) override
+        {
+            std::lock_guard lock(mutex);
+            visit.push_back(forceField->getPathName());
         }
 
     } visitor;
 
-    graph.accept(visitor, false);
+    graph.accept(visitor);
 
     const auto compare = [&visitor](const std::string& A, const std::string& B)
     {
