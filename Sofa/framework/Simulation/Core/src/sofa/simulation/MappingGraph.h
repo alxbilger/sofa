@@ -35,8 +35,8 @@ namespace sofa::simulation
 class SOFA_SIMULATION_CORE_API MappingGraph
 {
 public:
-    MappingGraph(const sofa::core::MechanicalParams* mparams, simulation::Node* node)
-        : m_mparams(mparams), m_node(node)
+    MappingGraph(const sofa::core::MechanicalParams* mparams, core::objectmodel::BaseContext* context)
+        : m_mparams(mparams), m_context(context)
     {}
 
     template<mapping_graph::IsVisitor Visitor>
@@ -44,7 +44,7 @@ public:
 
 private:
     const sofa::core::MechanicalParams* m_mparams{nullptr};
-    simulation::Node* m_node{nullptr};
+    core::objectmodel::BaseContext* m_context{nullptr};
 };
 
 namespace details
@@ -214,7 +214,7 @@ public:
 template <mapping_graph::IsVisitor Visitor>
 void MappingGraph::accept(Visitor& visitor, bool executeConcurrently) const
 {
-    if (m_mparams && m_node)
+    if (m_mparams && m_context)
     {
         tf::Taskflow forwardTaskFlow, backwardTaskFlow;
 
@@ -224,7 +224,7 @@ void MappingGraph::accept(Visitor& visitor, bool executeConcurrently) const
         details::CreateTasksVisitor<Visitor> v(m_mparams, &visitor);
         v.forward.taskflow = &forwardTaskFlow;
         v.backward.taskflow = &backwardTaskFlow;
-        m_node->executeVisitor(&v);
+        m_context->executeVisitor(&v);
 
         v.forward.sortAllTasks();
         v.forward.applyGlobalSemaphore(semaphore);
