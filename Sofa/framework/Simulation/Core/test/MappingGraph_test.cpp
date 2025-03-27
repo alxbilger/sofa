@@ -30,7 +30,7 @@
 
 namespace sofa
 {
-TEST(MappingGraph_Test, dsafads)
+TEST(MappingGraph_Test, CollectPathNameVisitor)
 {
     constexpr std::string_view filename { "Component/LinearSystem/MatrixLinearSystem.scn" };
     const std::string path = sofa::helper::system::DataRepository.getFile(std::string{filename});
@@ -43,33 +43,46 @@ TEST(MappingGraph_Test, dsafads)
     auto* mparams = sofa::core::MechanicalParams::defaultInstance();
     sofa::simulation::MappingGraph graph(mparams, groot.get());
 
-    struct PrintNameVisitor :
+    struct CollectPathNameVisitor :
         simulation::mapping_graph::StateForwardVisitor,
         simulation::mapping_graph::MappingForwardVisitor,
-        simulation::mapping_graph::ForceFieldForwardVisitor
+        simulation::mapping_graph::ForceFieldForwardVisitor,
+        simulation::mapping_graph::MassForwardVisitor,
+        simulation::mapping_graph::ProjectiveConstraintForwardVisitor
     {
         sofa::type::vector<std::string> visit;
         std::mutex mutex;
-        ~PrintNameVisitor() override = default;
+        ~CollectPathNameVisitor() override = default;
         void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
         {
-            std::lock_guard lock(mutex);
-            visit.push_back(state->getPathName());
+            visitObject(state);
         }
         void forwardVisit(sofa::core::BaseMapping* mapping) override
         {
-            std::lock_guard lock(mutex);
-            visit.push_back(mapping->getPathName());
+            visitObject(mapping);
         }
         void forwardVisit(core::behavior::BaseForceField* forceField) override
         {
-            std::lock_guard lock(mutex);
-            visit.push_back(forceField->getPathName());
+            visitObject(forceField);
+        }
+        void forwardVisit(core::behavior::BaseMass* mass) override
+        {
+            visitObject(mass);
+        }
+        void forwardVisit(core::behavior::BaseProjectiveConstraintSet* constraint) override
+        {
+            visitObject(constraint);
+        }
+
+    private:
+        void visitObject(const core::objectmodel::BaseObject* object)
+        {
+            visit.push_back(object->getPathName());
         }
 
     } visitor;
 
-    graph.accept(visitor);
+    graph.accept(visitor, false);
 
     const auto compare = [&visitor](const std::string& A, const std::string& B)
     {

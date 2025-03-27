@@ -33,6 +33,12 @@
 namespace sofa::simulation::mapping_graph
 {
 
+enum class VisitorDirection : bool
+{
+    FORWARD,
+    BACKWARD
+};
+
 template<class T>
 struct TForwardVisitor
 {
@@ -49,16 +55,23 @@ struct TBackwardVisitor
 
 namespace details
 {
-    template<class... Types>
+    /**
+     * An empty structure to contain a list of types
+     */
+    template <class... Types>
     struct ListTypes{};
 
-    template<typename T, typename List>
+    /**
+     * A trait to check if there is at least one type from a given list of types which is a base
+     * class of a given type.
+     */
+    template <typename T, typename List>
     struct is_base_of_any;
 
     template<typename T, template<class...> class List, typename... Types>
     struct is_base_of_any<T, List<Types...>>
     {
-        static constexpr bool value = (std::is_base_of_v<T, Types> || ...);
+        static constexpr bool value = (std::is_base_of_v<Types, T> || ...);
     };
 }
 

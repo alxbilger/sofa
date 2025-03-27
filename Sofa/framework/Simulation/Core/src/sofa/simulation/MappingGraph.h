@@ -21,20 +21,16 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/simulation/config.h>
-#include <sofa/simulation/MappingGraphVisitor.h>
-#include <sofa/simulation/Visitor.h>
-#include <sofa/simulation/Node.h>
+#include <sofa/core/BaseMapping.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/helper/taskflow.h>
-
-#include <map>
-
-
+#include <sofa/simulation/MappingGraphVisitor.h>
+#include <sofa/simulation/Node.h>
+#include <sofa/simulation/Visitor.h>
+#include <sofa/simulation/config.h>
 
 namespace sofa::simulation
 {
-class Node;
 
 class SOFA_SIMULATION_CORE_API MappingGraph
 {
@@ -49,20 +45,53 @@ public:
 private:
     const sofa::core::MechanicalParams* m_mparams{nullptr};
     simulation::Node* m_node{nullptr};
-
-    static void sortMappingTasks(std::map<core::BaseMapping*, tf::Task>& mappingTasks,
-      std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks,
-      bool isForward);
-
-    template<class Component>
-    static void sortComponentTasks(std::map<Component*, tf::Task>& componentTasks,
-                            std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks,
-                            bool isForward);
 };
-
 
 namespace details
 {
+
+// Custom hash function for std::set<BaseMechanicalState*>
+struct SOFA_SIMULATION_CORE_API SetHash
+{
+    size_t operator()(const std::set<sofa::core::behavior::BaseMechanicalState*>& objSet) const;
+};
+
+// Custom equality function for std::set<BaseMechanicalState*>
+struct SOFA_SIMULATION_CORE_API SetEqual
+{
+    bool operator()(const std::set<sofa::core::behavior::BaseMechanicalState*>& lhs,
+                    const std::set<sofa::core::behavior::BaseMechanicalState*>& rhs) const;
+};
+
+template<mapping_graph::VisitorDirection D>
+struct TasksContainer
+{
+    static const std::string prefix;
+
+    tf::Taskflow* taskflow { nullptr };
+
+    using StateGroup = std::set<sofa::core::behavior::BaseMechanicalState*>;
+
+    std::unordered_map<StateGroup, std::vector<tf::Task>, SetHash, SetEqual > stateAccessorTasks;
+
+    std::unordered_map<core::behavior::BaseMechanicalState*, tf::Task> stateTasks;
+    std::unordered_map<core::BaseMapping*, tf::Task> mappingTasks;
+
+    void sortAllTasks();
+    void applyGlobalSemaphore(tf::Semaphore& s);
+
+private:
+    void makeStateAccessorTasksSequential();
+    void stateAccessorTasksSucceedStateTasks();
+    void stateAccessorTasksPrecedeMappingTasks();
+    void findDependenciesInStateAccessorTasks();
+    void sortMappingTasks();
+};
+
+#if !defined(SOFA_SIMULATION_MAPPINGGRAPH_CPP)
+extern template struct SOFA_SIMULATION_CORE_API details::TasksContainer<mapping_graph::VisitorDirection::FORWARD>;
+extern template struct SOFA_SIMULATION_CORE_API details::TasksContainer<mapping_graph::VisitorDirection::BACKWARD>;
+#endif
 
 template<mapping_graph::IsVisitor MappingGraphVisitor>
 class CreateTasksVisitor : public sofa::simulation::Visitor
@@ -74,69 +103,25 @@ public:
 
     Result processNodeTopDown(simulation::Node* node) override
     {
-        const auto addForwardTasks = [this]<mapping_graph::IsTypeVisitable T0>(
-            auto& links,
-            tf::FlowBuilder* forwardFlow,
-            std::map<T0*, tf::Task>& forwardTasks,
-            const std::string& category)
-        {
-            if constexpr (mapping_graph::CanForwardVisit<MappingGraphVisitor, T0>)
-            {
-                for (auto* object : links)
-                {
-                    if (object)
-                    {
-                        auto* ptr = static_cast<T0*>(object);
+        /**
+         * The forward and backward tasks are created for each state, even if the visitor does not visit states
+         */
+        addTasks<mapping_graph::VisitorDirection::FORWARD>(node->mechanicalState, forward.stateTasks, "State");
+        addTasks<mapping_graph::VisitorDirection::BACKWARD>(node->mechanicalState, backward.stateTasks, "State");
 
-                        forwardTasks[ptr] = forwardFlow->emplace([v = mappingGraphVisitor, ptr]()
-                        {
-                            v->forwardVisit(ptr);
-                        }).name("fwd" + category + ptr->getPathName());
-                    }
-                }
-            }
-        };
+        /**
+         * The forward and backward tasks are created for each mapping, even if the visitor does not visit mappings
+         */
+        addTasks<mapping_graph::VisitorDirection::FORWARD>(node->mechanicalMapping, forward.mappingTasks, "Mapping");
+        addTasks<mapping_graph::VisitorDirection::BACKWARD>(node->mechanicalMapping, backward.mappingTasks, "Mapping");
 
-        const auto addBackwardTasks = [this]<mapping_graph::IsTypeVisitable T0>(
-            auto& links,
-            tf::FlowBuilder* backwardFlow,
-            std::map<T0*, tf::Task>& backwardTasks,
-            const std::string& category)
-        {
-            if constexpr (mapping_graph::CanBackwardVisit<MappingGraphVisitor, T0>)
-            {
-                for (auto* object : links)
-                {
-                    if (object)
-                    {
-                        auto* ptr = static_cast<T0*>(object);
-
-                        backwardTasks[ptr] = backwardFlow->emplace([v = mappingGraphVisitor, ptr]()
-                        {
-                            v->backwardVisit(ptr);
-                        }).name("bwd" + category + ptr->getPathName());
-                    }
-                }
-            }
-        };
-
-        addForwardTasks(node->mechanicalState, forward.taskflow, forward.stateTasks, "State");
-        addBackwardTasks(node->mechanicalState, backward.taskflow, backward.stateTasks, "State");
-
-        addForwardTasks(node->mechanicalMapping, forward.taskflow, forward.mappingTasks, "Mapping");
-        addBackwardTasks(node->mechanicalMapping, backward.taskflow, backward.mappingTasks, "Mapping");
-
-        addForwardTasks(node->mass, forward.taskflow, forward.massTasks, "Mass");
-        addBackwardTasks(node->mass, backward.taskflow, backward.massTasks, "Mass");
-
-        addForwardTasks(node->forceField, forward.taskflow, forward.forceFieldTasks, "ForceField");
-        addBackwardTasks(node->forceField, backward.taskflow, backward.forceFieldTasks, "ForceField");
-
-        addForwardTasks(node->interactionForceField, forward.taskflow, forward.forceFieldTasks, "InteractionForceField");
-        addBackwardTasks(node->interactionForceField, backward.taskflow, backward.forceFieldTasks, "InteractionForceField");
-
-        addForwardTasks(node->projectiveConstraintSet, forward.taskflow, forward.projectiveConstraintTasks, "ProjectiveConstraint");
-        addBackwardTasks(node->projectiveConstraintSet, backward.taskflow, backward.projectiveConstraintTasks, "ProjectiveConstraint");
+        /**
+         * The forward and backward tasks are created for each component (mass, forcefield, projective constraint)
+         */
+        addStateAccessorTaskToGroup<core::behavior::BaseMass>(node->mass, "Mass");
+        addStateAccessorTaskToGroup<core::behavior::BaseForceField>(node->forceField, "ForceField");
+        addStateAccessorTaskToGroup<core::behavior::BaseForceField>(node->interactionForceField, "ForceField");
+        addStateAccessorTaskToGroup<core::behavior::BaseProjectiveConstraintSet>(node->projectiveConstraintSet, "ProjectiveConstraint");
 
         return Result::RESULT_CONTINUE;
     }
@@ -144,23 +129,87 @@ public:
 private:
     MappingGraphVisitor* mappingGraphVisitor { nullptr };
 
-public:
-    struct Tasks
+    template<mapping_graph::VisitorDirection D>
+    TasksContainer<D>& getTaskContainer()
     {
-        tf::Taskflow* taskflow { nullptr };
-        std::map<core::behavior::BaseMechanicalState*, tf::Task> stateTasks;
-        std::map<core::BaseMapping*, tf::Task> mappingTasks;
-        std::map<sofa::core::behavior::BaseMass*, tf::Task> massTasks;
-        std::map<sofa::core::behavior::BaseForceField*, tf::Task> forceFieldTasks;
-        std::map<sofa::core::behavior::BaseProjectiveConstraintSet*, tf::Task> projectiveConstraintTasks;
-    };
+        if constexpr (D == mapping_graph::VisitorDirection::FORWARD)
+        {
+            return forward;
+        }
+        else
+        {
+            return backward;
+        }
+    }
 
-    Tasks forward;
-    Tasks backward;
+    template<mapping_graph::VisitorDirection D>
+    void addDirectionTaskToGroup(auto& links, const std::string& category)
+    {
+        for (auto* object : links)
+        {
+            if (object)
+            {
+                const auto& states = object->getMechanicalStates();
+                typename TasksContainer<D>::StateGroup group { states.begin(), states.end() };
+                tf::Task task = getTaskContainer<D>().taskflow->emplace([v = mappingGraphVisitor, object]()
+                {
+                    if constexpr (D == mapping_graph::VisitorDirection::FORWARD)
+                    {
+                        v->forwardVisit(object);
+                    }
+                    else
+                    {
+                        v->backwardVisit(object);
+                    }
+                }).name(TasksContainer<D>::prefix + category + object->getPathName());
+                getTaskContainer<D>().stateAccessorTasks[group].push_back(task);
+            }
+        }
+    }
+
+    template <class T, class NodeLinks>
+    void addStateAccessorTaskToGroup(NodeLinks& links, const std::string& category)
+    {
+        if constexpr (mapping_graph::CanForwardVisit<MappingGraphVisitor, T>)
+        {
+            addDirectionTaskToGroup<mapping_graph::VisitorDirection::FORWARD>(links, category);
+        }
+        if constexpr (mapping_graph::CanBackwardVisit<MappingGraphVisitor, T>)
+        {
+            addDirectionTaskToGroup<mapping_graph::VisitorDirection::BACKWARD>(links, category);
+        }
+    }
+
+    template<mapping_graph::VisitorDirection D, mapping_graph::IsTypeVisitable T>
+    void addTasks(auto& links, std::unordered_map<T*, tf::Task>& tasks, const std::string& category)
+    {
+        for (auto* object : links)
+        {
+            if (object)
+            {
+                tasks[object] = getTaskContainer<D>().taskflow->emplace([v = mappingGraphVisitor, object]()
+                {
+                    if constexpr (D == mapping_graph::VisitorDirection::FORWARD
+                        && mapping_graph::CanForwardVisit<MappingGraphVisitor, T>)
+                    {
+                        v->forwardVisit(object);
+                    }
+                    if constexpr (D == mapping_graph::VisitorDirection::BACKWARD
+                        && mapping_graph::CanBackwardVisit<MappingGraphVisitor, T>)
+                    {
+                        v->backwardVisit(object);
+                    }
+                }).name(TasksContainer<D>::prefix + category + object->getPathName());
+            }
+        }
+    }
+
+public:
+
+    TasksContainer<mapping_graph::VisitorDirection::FORWARD> forward;
+    TasksContainer<mapping_graph::VisitorDirection::BACKWARD> backward;
 };
 }
-
-
 
 template <mapping_graph::IsVisitor Visitor>
 void MappingGraph::accept(Visitor& visitor, bool executeConcurrently) const
@@ -177,79 +226,15 @@ void MappingGraph::accept(Visitor& visitor, bool executeConcurrently) const
         v.backward.taskflow = &backwardTaskFlow;
         m_node->executeVisitor(&v);
 
-        sortMappingTasks(v.forward.mappingTasks, v.forward.stateTasks, true);
-        sortMappingTasks(v.backward.mappingTasks, v.backward.stateTasks, false);
+        v.forward.sortAllTasks();
+        v.forward.applyGlobalSemaphore(semaphore);
 
-        sortComponentTasks(v.forward.massTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.massTasks, v.backward.stateTasks, false);
-
-        sortComponentTasks(v.forward.forceFieldTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.forceFieldTasks, v.backward.stateTasks, false);
-
-        sortComponentTasks(v.forward.projectiveConstraintTasks, v.forward.stateTasks, true);
-        sortComponentTasks(v.backward.projectiveConstraintTasks, v.backward.stateTasks, false);
-
-        const auto handleSemaphore = [&semaphore](auto& tasks)
-        {
-            for (auto& [_, task] : tasks)
-            {
-                task.acquire(semaphore);
-                task.release(semaphore);
-            }
-        };
-
-        handleSemaphore(v.forward.stateTasks);
-        handleSemaphore(v.backward.stateTasks);
-
-        handleSemaphore(v.forward.mappingTasks);
-        handleSemaphore(v.backward.mappingTasks);
-
-        handleSemaphore(v.forward.massTasks);
-        handleSemaphore(v.backward.massTasks);
-
-        handleSemaphore(v.forward.forceFieldTasks);
-        handleSemaphore(v.backward.forceFieldTasks);
-
-        handleSemaphore(v.forward.projectiveConstraintTasks);
-        handleSemaphore(v.backward.projectiveConstraintTasks);
-
-        forwardTaskFlow.dump(std::cout);
-        std::cout << std::endl;
+        v.backward.sortAllTasks();
+        v.backward.applyGlobalSemaphore(semaphore);
 
         executor
             .run(forwardTaskFlow, [&backwardTaskFlow]() { executor.run(backwardTaskFlow).wait(); })
             .wait();
     }
 }
-template <class Component>
-void MappingGraph::sortComponentTasks(
-    std::map<Component*, tf::Task>& componentTasks,
-    std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks, bool isForward)
-{
-    for (auto& [component, task] : componentTasks)
-    {
-        if (component)
-        {
-            for (auto* state : component->getMechanicalStates())
-            {
-                if (state)
-                {
-                    const auto it = stateTasks.find(state);
-                    if (it != stateTasks.end())
-                    {
-                        if (isForward)
-                        {
-                            it->second.precede(task);
-                        }
-                        else
-                        {
-                            it->second.succeed(task);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 }  // namespace sofa::simulation

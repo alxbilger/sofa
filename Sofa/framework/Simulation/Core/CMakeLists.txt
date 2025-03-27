@@ -30,6 +30,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/IntegrateBeginEvent.h
     ${SRC_ROOT}/IntegrateEndEvent.h
     ${SRC_ROOT}/MappingGraph.h
+    ${SRC_ROOT}/MappingGraph.inl
     ${SRC_ROOT}/MappingGraphVisitor.h
     ${SRC_ROOT}/MechanicalOperations.h
     ${SRC_ROOT}/MechanicalVPrintVisitor.h

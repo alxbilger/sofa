@@ -19,7 +19,8 @@
  *                                                                             *
  * Contact information: contact@sofa-framework.org                             *
  ******************************************************************************/
-#include <sofa/simulation/MappingGraph.h>
+#define SOFA_SIMULATION_MAPPINGGRAPH_CPP
+#include <sofa/simulation/MappingGraph.inl>
 
 #include <sofa/helper/taskflow.h>
 
@@ -30,183 +31,26 @@
 namespace sofa::simulation
 {
 
+template struct SOFA_SIMULATION_CORE_API details::TasksContainer<mapping_graph::VisitorDirection::FORWARD>;
+template struct SOFA_SIMULATION_CORE_API details::TasksContainer<mapping_graph::VisitorDirection::BACKWARD>;
 
-
-void sortMappingTasks(
-    std::map<core::BaseMapping*, tf::Task>& mappingTasks,
-    std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks, bool isForward)
+size_t details::SetHash::operator()(
+    const std::set<sofa::core::behavior::BaseMechanicalState*>& objSet) const
 {
-    for (auto& [mapping, task] : mappingTasks)
+    size_t hashValue = 0;
+    for (sofa::core::behavior::BaseMechanicalState* obj : objSet)
     {
-        for (auto* state : mapping->getMechFrom())
-        {
-            if (state)
-            {
-                const auto it = stateTasks.find(state);
-                if (it != stateTasks.end())
-                {
-                    if (isForward)
-                    {
-                        it->second.precede(task);
-                    }
-                    else
-                    {
-                        it->second.succeed(task);
-                    }
-                }
-            }
-        }
-        for (auto* state : mapping->getMechTo())
-        {
-            if (state)
-            {
-                const auto it = stateTasks.find(state);
-                if (it != stateTasks.end())
-                {
-                    if (isForward)
-                    {
-                        it->second.succeed(task);
-                    }
-                    else
-                    {
-                        it->second.precede(task);
-                    }
-                }
-            }
-        }
+        hashValue ^= std::hash<sofa::core::behavior::BaseMechanicalState*>{}(obj) + 0x9e3779b9 +
+                     (hashValue << 6) + (hashValue >> 2);
     }
+    return hashValue;
 }
 
-template<class Component>
-void sortComponentTasks(std::map<Component*, tf::Task>& componentTasks,
-    std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks, bool isForward)
+bool details::SetEqual::operator()(
+    const std::set<sofa::core::behavior::BaseMechanicalState*>& lhs,
+    const std::set<sofa::core::behavior::BaseMechanicalState*>& rhs) const
 {
-    for (auto& [component, task] : componentTasks)
-    {
-        if (component)
-        {
-            for (auto* state : component->getMechanicalStates())
-            {
-                if (state)
-                {
-                    const auto it = stateTasks.find(state);
-                    if (it != stateTasks.end())
-                    {
-                        if (isForward)
-                        {
-                            it->second.precede(task);
-                        }
-                        else
-                        {
-                            it->second.succeed(task);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    return lhs == rhs;  // Directly compare sets
 }
-//
-// void MappingGraph::accept(MappingGraphVisitor& visitor, bool executeConcurrently) const
-// {
-//     if (m_mparams && m_node)
-//     {
-//         tf::Taskflow forwardTaskFlow, backwardTaskFlow;
-//
-//         static tf::Executor executor;
-//         tf::Semaphore semaphore(executeConcurrently ? executor.num_workers() : 1);
-//
-//         CreateTasksVisitor v(m_mparams, &visitor);
-//         v.forward.taskflow = &forwardTaskFlow;
-//         v.backward.taskflow = &backwardTaskFlow;
-//         m_node->executeVisitor(&v);
-//
-//         sortMappingTasks(v.forward.mappingTasks, v.forward.stateTasks, true);
-//         sortMappingTasks(v.backward.mappingTasks, v.backward.stateTasks, false);
-//
-//         sortComponentTasks(v.forward.massTasks, v.forward.stateTasks, true);
-//         sortComponentTasks(v.backward.massTasks, v.backward.stateTasks, false);
-//         sortComponentTasks(v.forward.forceFieldTasks, v.forward.stateTasks, true);
-//         sortComponentTasks(v.backward.forceFieldTasks, v.backward.stateTasks, false);
-//         sortComponentTasks(v.forward.projectiveConstraintTasks, v.forward.stateTasks, true);
-//         sortComponentTasks(v.backward.projectiveConstraintTasks, v.backward.stateTasks, false);
-//
-//         const auto handleSemaphore = [&semaphore](auto& tasks)
-//         {
-//             for (auto& [_, task] : tasks)
-//             {
-//                 task.acquire(semaphore);
-//                 task.release(semaphore);
-//             }
-//         };
-//
-//         handleSemaphore(v.forward.stateTasks);
-//         handleSemaphore(v.backward.stateTasks);
-//
-//         handleSemaphore(v.forward.mappingTasks);
-//         handleSemaphore(v.backward.mappingTasks);
-//
-//         handleSemaphore(v.forward.massTasks);
-//         handleSemaphore(v.backward.massTasks);
-//
-//         handleSemaphore(v.forward.forceFieldTasks);
-//         handleSemaphore(v.backward.forceFieldTasks);
-//
-//         handleSemaphore(v.forward.projectiveConstraintTasks);
-//         handleSemaphore(v.backward.projectiveConstraintTasks);
-//
-//         forwardTaskFlow.dump(std::cout);
-//
-//         executor.run(forwardTaskFlow, [&backwardTaskFlow]()
-//         {
-//             executor.run(backwardTaskFlow).wait();
-//         }).wait();
-//
-//     }
-// }
 
-void MappingGraph::sortMappingTasks(
-    std::map<core::BaseMapping*, tf::Task>& mappingTasks,
-    std::map<core::behavior::BaseMechanicalState*, tf::Task>& stateTasks, bool isForward)
-{
-    for (auto& [mapping, task] : mappingTasks)
-    {
-        for (auto* state : mapping->getMechFrom())
-        {
-            if (state)
-            {
-                const auto it = stateTasks.find(state);
-                if (it != stateTasks.end())
-                {
-                    if (isForward)
-                    {
-                        it->second.precede(task);
-                    }
-                    else
-                    {
-                        it->second.succeed(task);
-                    }
-                }
-            }
-        }
-        for (auto* state : mapping->getMechTo())
-        {
-            if (state)
-            {
-                const auto it = stateTasks.find(state);
-                if (it != stateTasks.end())
-                {
-                    if (isForward)
-                    {
-                        it->second.succeed(task);
-                    }
-                    else
-                    {
-                        it->second.precede(task);
-                    }
-                }
-            }
-        }
-    }
-}
 }  // namespace sofa::simulation

@@ -70,4 +70,32 @@ template<> SOFA_HELPER_API std::istream& operator>> ( std::istream& in, std::set
 
 } // namespace std
 
+namespace sofa::helper
+{
+
+template<class SetA, class SetB, typename Compare>
+bool share_element(const SetA& setA, const SetB& setB, Compare comp)
+{
+    auto xA = setA.begin();
+    auto xB = setB.begin();
+    while (xA != setA.end() && xB != setB.end())
+    {
+        if (comp(*xA, *xB))
+        {
+            ++xA;
+        }
+        else if (comp(*xB, *xA))
+        {
+            ++xB;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+}
+
 #endif
