@@ -69,7 +69,8 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
             [&visitObjectBackward](const core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectBackward(constraint);}
         );
 
-    graph.accept(visitor, false);
+    simulation::MappingGraphVisitParameters params { .forceSingleThreadAllTasks = true };
+    graph.accept(visitor, params);
 
     const auto compare = [&visitForward](const std::string& A, const std::string& B)
     {

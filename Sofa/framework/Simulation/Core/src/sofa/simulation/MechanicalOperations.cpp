@@ -264,17 +264,19 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
     );
 
     MappingGraph graph(&mparams, ctx);
+    MappingGraphVisitParameters params;
+    params.forward.sortMappingTasks = false;
+    params.forward.stateAccessorTasksPrecedeMappingTasks = false;
     if (accumulate)
     {
         auto accumulatingForceVisitor = forceVisitor + mapping_graph::makeBackwardVisitor(
             [this, &result](core::BaseMapping* map){map->applyJT(&mparams, result, result);});
-        graph.accept(accumulatingForceVisitor);
+        graph.accept(accumulatingForceVisitor, params);
     }
     else
     {
-        graph.accept(forceVisitor);
+        graph.accept(forceVisitor, params);
     }
-
 }
 
 

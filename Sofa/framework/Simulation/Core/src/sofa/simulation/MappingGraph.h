@@ -32,6 +32,21 @@
 namespace sofa::simulation
 {
 
+struct MappingGraphVisitParameters
+{
+    bool forceSingleThreadAllTasks = false;
+    std::size_t numberParallelTasks = std::thread::hardware_concurrency();
+
+    struct Direction
+    {
+        bool dumpTaskGraph = false;
+
+        bool stateAccessorTasksPrecedeMappingTasks = true;
+        bool stateAccessorTasksSucceedStateTasks = true;
+        bool sortMappingTasks = true;
+    } forward, backward;
+};
+
 class SOFA_SIMULATION_CORE_API MappingGraph
 {
 public:
@@ -40,7 +55,7 @@ public:
     {}
 
     template<mapping_graph::IsVisitor Visitor>
-    void accept(Visitor& visitor, bool executeConcurrently = true) const;
+    void accept(Visitor& visitor, MappingGraphVisitParameters = {}) const;
 
 private:
     const sofa::core::MechanicalParams* m_mparams{nullptr};
@@ -77,15 +92,15 @@ struct TasksContainer
     std::unordered_map<core::behavior::BaseMechanicalState*, tf::Task> stateTasks;
     std::unordered_map<core::BaseMapping*, tf::Task> mappingTasks;
 
-    void sortAllTasks();
+    void sortAllTasks(bool stateAccessorTasksSucceedStateTasks, bool stateAccessorTasksPrecedeMappingTasks, bool sortMappingTasks);
     void applyGlobalSemaphore(tf::Semaphore& s);
 
 private:
-    void makeStateAccessorTasksSequential();
-    void stateAccessorTasksSucceedStateTasks();
-    void stateAccessorTasksPrecedeMappingTasks();
-    void findDependenciesInStateAccessorTasks();
-    void sortMappingTasks();
+    void _makeStateAccessorTasksSequential();
+    void _stateAccessorTasksSucceedStateTasks();
+    void _stateAccessorTasksPrecedeMappingTasks();
+    void _findDependenciesInStateAccessorTasks();
+    void _sortMappingTasks();
 };
 
 #if !defined(SOFA_SIMULATION_MAPPINGGRAPH_CPP)
@@ -212,29 +227,57 @@ public:
 }
 
 template <mapping_graph::IsVisitor Visitor>
-void MappingGraph::accept(Visitor& visitor, bool executeConcurrently) const
+void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) const
 {
     if (m_mparams && m_context)
     {
         tf::Taskflow forwardTaskFlow, backwardTaskFlow;
 
         static tf::Executor executor;
-        tf::Semaphore semaphore(executeConcurrently ? executor.num_workers() : 1);
+        tf::Semaphore semaphore(params.forceSingleThreadAllTasks ? 1 : params.numberParallelTasks);
 
         details::CreateTasksVisitor<Visitor> v(m_mparams, &visitor);
         v.forward.taskflow = &forwardTaskFlow;
         v.backward.taskflow = &backwardTaskFlow;
         m_context->executeVisitor(&v);
 
-        v.forward.sortAllTasks();
-        v.forward.applyGlobalSemaphore(semaphore);
+        if constexpr(mapping_graph::IsForwardVisitor<Visitor>)
+        {
+            v.forward.sortAllTasks(
+                params.forward.stateAccessorTasksSucceedStateTasks,
+                params.forward.stateAccessorTasksPrecedeMappingTasks,
+                params.forward.sortMappingTasks);
+            v.forward.applyGlobalSemaphore(semaphore);
 
-        v.backward.sortAllTasks();
-        v.backward.applyGlobalSemaphore(semaphore);
+            if (params.forward.dumpTaskGraph && m_context->notMuted())
+            {
+                std::stringstream ss;
+                forwardTaskFlow.dump(ss);
+                msg_info(m_context) << ss.str();
+            }
+            executor
+               .run(forwardTaskFlow)
+               .wait();
+        }
 
-        executor
-            .run(forwardTaskFlow, [&backwardTaskFlow]() { executor.run(backwardTaskFlow).wait(); })
-            .wait();
+        if constexpr(mapping_graph::IsBackwardVisitor<Visitor>)
+        {
+            v.backward.sortAllTasks(
+                params.backward.stateAccessorTasksSucceedStateTasks,
+                params.backward.stateAccessorTasksPrecedeMappingTasks,
+                params.backward.sortMappingTasks);
+            v.backward.applyGlobalSemaphore(semaphore);
+
+            if (params.backward.dumpTaskGraph && m_context->notMuted())
+            {
+                std::stringstream ss;
+                backwardTaskFlow.dump(ss);
+                msg_info(m_context) << ss.str();
+            }
+            executor
+               .run(backwardTaskFlow)
+               .wait();
+        }
     }
 }
 }  // namespace sofa::simulation

@@ -30,7 +30,7 @@ template<mapping_graph::VisitorDirection D>
 const std::string details::TasksContainer<D>::prefix = mapping_graph::VisitorDirection::FORWARD == D ? "fwd" : "bwd";
 
 template<mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::makeStateAccessorTasksSequential()
+void details::TasksContainer<D>::_makeStateAccessorTasksSequential()
 {
     for (auto& [_, tasks] : this->stateAccessorTasks)
     {
@@ -52,7 +52,7 @@ void details::TasksContainer<D>::makeStateAccessorTasksSequential()
 }
 
 template<mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::stateAccessorTasksSucceedStateTasks()
+void details::TasksContainer<D>::_stateAccessorTasksSucceedStateTasks()
 {
     for (auto& [states, tasks] : stateAccessorTasks)
     {
@@ -81,7 +81,7 @@ void details::TasksContainer<D>::stateAccessorTasksSucceedStateTasks()
 }
 
 template<mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::stateAccessorTasksPrecedeMappingTasks()
+void details::TasksContainer<D>::_stateAccessorTasksPrecedeMappingTasks()
 {
     for (auto& [states, tasks] : stateAccessorTasks)
     {
@@ -114,7 +114,7 @@ void details::TasksContainer<D>::stateAccessorTasksPrecedeMappingTasks()
 }
 
 template<mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::findDependenciesInStateAccessorTasks()
+void details::TasksContainer<D>::_findDependenciesInStateAccessorTasks()
 {
     for (auto it1 = stateAccessorTasks.begin(); it1 != stateAccessorTasks.end(); ++it1)
     {
@@ -136,7 +136,7 @@ void details::TasksContainer<D>::findDependenciesInStateAccessorTasks()
 }
 
 template <mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::sortMappingTasks()
+void details::TasksContainer<D>::_sortMappingTasks()
 {
     for (auto& [mapping, task] : mappingTasks)
     {
@@ -180,13 +180,20 @@ void details::TasksContainer<D>::sortMappingTasks()
 }
 
 template <mapping_graph::VisitorDirection D>
-void details::TasksContainer<D>::sortAllTasks()
+void details::TasksContainer<D>::sortAllTasks(bool stateAccessorTasksSucceedStateTasks, bool stateAccessorTasksPrecedeMappingTasks, bool sortMappingTasks)
 {
-    makeStateAccessorTasksSequential();
-    stateAccessorTasksSucceedStateTasks();
-    stateAccessorTasksPrecedeMappingTasks();
-    findDependenciesInStateAccessorTasks();
-    sortMappingTasks();
+    _makeStateAccessorTasksSequential();
+
+    if (stateAccessorTasksSucceedStateTasks)
+        _stateAccessorTasksSucceedStateTasks();
+
+    if (stateAccessorTasksPrecedeMappingTasks)
+        _stateAccessorTasksPrecedeMappingTasks();
+
+    _findDependenciesInStateAccessorTasks();
+
+    if (sortMappingTasks)
+        _sortMappingTasks();
 }
 
 template <mapping_graph::VisitorDirection D>
