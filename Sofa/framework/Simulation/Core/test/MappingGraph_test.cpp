@@ -55,18 +55,18 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
 
     auto visitor =
         simulation::mapping_graph::makeForwardVisitor(
-            [&visitObjectForward](core::behavior::BaseMechanicalState* state){visitObjectForward(state);},
-            [&visitObjectForward](core::BaseMapping* mapping){visitObjectForward(mapping);},
-            [&visitObjectForward](core::behavior::BaseForceField* forcefield){visitObjectForward(forcefield);},
-            [&visitObjectForward](core::behavior::BaseMass* mass){visitObjectForward(mass);},
-            [&visitObjectForward](core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectForward(constraint);}
+            [&visitObjectForward](const core::behavior::BaseMechanicalState* state){visitObjectForward(state);},
+            [&visitObjectForward](const core::BaseMapping* mapping){visitObjectForward(mapping);},
+            [&visitObjectForward](const core::behavior::BaseForceField* forcefield){visitObjectForward(forcefield);},
+            [&visitObjectForward](const core::behavior::BaseMass* mass){visitObjectForward(mass);},
+            [&visitObjectForward](const core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectForward(constraint);}
         ) +
         simulation::mapping_graph::makeBackwardVisitor(
-            [&visitObjectBackward](core::behavior::BaseMechanicalState* state){visitObjectBackward(state);},
-            [&visitObjectBackward](core::BaseMapping* mapping){visitObjectBackward(mapping);},
-            [&visitObjectBackward](core::behavior::BaseForceField* forcefield){visitObjectBackward(forcefield);},
-            [&visitObjectBackward](core::behavior::BaseMass* mass){visitObjectBackward(mass);},
-            [&visitObjectBackward](core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectBackward(constraint);}
+            [&visitObjectBackward](const core::behavior::BaseMechanicalState* state){visitObjectBackward(state);},
+            [&visitObjectBackward](const core::BaseMapping* mapping){visitObjectBackward(mapping);},
+            [&visitObjectBackward](const core::behavior::BaseForceField* forcefield){visitObjectBackward(forcefield);},
+            [&visitObjectBackward](const core::behavior::BaseMass* mass){visitObjectBackward(mass);},
+            [&visitObjectBackward](const core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectBackward(constraint);}
         );
 
     graph.accept(visitor, false);

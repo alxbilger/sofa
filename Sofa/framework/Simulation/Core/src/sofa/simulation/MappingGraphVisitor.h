@@ -21,14 +21,14 @@
 ******************************************************************************/
 #pragma once
 
+#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/behavior/BaseInteractionForceField.h>
+#include <sofa/core/behavior/BaseMass.h>
+#include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
 #include <sofa/simulation/config.h>
 
+#include <sofa/type/trait/callable_argument.h>
 #include <type_traits>
-
-#include <sofa/core/behavior/BaseMass.h>
-#include <sofa/core/behavior/BaseForceField.h>
-#include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
-#include <sofa/core/behavior/BaseInteractionForceField.h>
 
 namespace sofa::simulation::mapping_graph
 {
@@ -156,45 +156,6 @@ using ProjectiveConstraintVisitor = TVisitor<sofa::core::behavior::BaseProjectiv
 using ProjectiveConstraintForwardVisitor = ProjectiveConstraintVisitor<VisitorDirection::FORWARD>;
 using ProjectiveConstraintBackwardVisitor = ProjectiveConstraintVisitor<VisitorDirection::BACKWARD>;
 
-namespace details
-{
-// Helper to extract the argument types from a callable
-template <typename T>
-struct function_traits;
-
-// Specialization for function pointers
-template <typename T>
-struct function_traits<void(*)(T*)>
-{
-    using argument_type = T;
-};
-
-// Specialization for std::function
-template <typename T>
-struct function_traits<std::function<void(T*)>>
-{
-    using argument_type = T;
-};
-
-// Specialization for member function pointers
-template <typename C, typename T>
-struct function_traits<void(C::*)(T*)>
-{
-    using argument_type = T;
-};
-
-// Specialization for const member function pointers
-template <typename C, typename T>
-struct function_traits<void(C::*)(T*) const>
-{
-    using argument_type = T;
-};
-
-// Specialization for functors and lambdas
-template <typename F>
-struct function_traits : public function_traits<decltype(&F::operator())> {};
-}
-
 template<class T1, class T2>
 struct CompositeVisitor : T1, T2
 {
@@ -222,16 +183,16 @@ struct ComposableVisitor
 };
 
 template <typename Callable>
-requires IsTypeVisitable<typename details::function_traits<Callable>::argument_type>
+requires IsTypeVisitable<type::trait::callable_argument_t<Callable>>
 struct CallableVisitor<VisitorDirection::FORWARD, Callable> :
-    TVisitor<typename details::function_traits<Callable>::argument_type, VisitorDirection::FORWARD>,
+    TVisitor<sofa::type::trait::callable_argument_t<Callable>, VisitorDirection::FORWARD>,
     ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor<VisitorDirection::FORWARD, Callable>>
 {
     explicit CallableVisitor(const Callable& callable)
         : m_function(callable) {}
     using ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor>::operator+;
 
-    void forwardVisit(typename details::function_traits<Callable>::argument_type* object) override
+    void forwardVisit(sofa::type::trait::callable_argument_t<Callable>* object) override
     {
         m_function(object);
     }
@@ -241,16 +202,16 @@ private:
 };
 
 template <typename Callable>
-requires IsTypeVisitable<typename details::function_traits<Callable>::argument_type>
+requires IsTypeVisitable<sofa::type::trait::callable_argument_t<Callable>>
 struct CallableVisitor<VisitorDirection::BACKWARD, Callable> :
-    TVisitor<typename details::function_traits<Callable>::argument_type, VisitorDirection::BACKWARD>,
+    TVisitor<sofa::type::trait::callable_argument_t<Callable>, VisitorDirection::BACKWARD>,
     ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor<VisitorDirection::BACKWARD, Callable>>
 {
     explicit CallableVisitor(const Callable& callable)
         : m_function(callable) {}
     using ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor>::operator+;
 
-    void backwardVisit(typename details::function_traits<Callable>::argument_type* object) override
+    void backwardVisit(sofa::type::trait::callable_argument_t<Callable>* object) override
     {
         m_function(object);
     }
