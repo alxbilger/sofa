@@ -39,6 +39,10 @@ enum class VisitorDirection : bool
     BACKWARD
 };
 
+template<VisitorDirection Direction>
+constexpr inline VisitorDirection OtherDirection =
+    Direction == VisitorDirection::FORWARD ? VisitorDirection::BACKWARD : VisitorDirection::FORWARD;
+
 template<class T>
 struct TForwardVisitor
 {
@@ -52,6 +56,9 @@ struct TBackwardVisitor
     virtual ~TBackwardVisitor() {}
     virtual void backwardVisit(T*) {}
 };
+
+template<class T, VisitorDirection Direction>
+using TVisitor = std::conditional_t<Direction == VisitorDirection::FORWARD, TForwardVisitor<T>, TBackwardVisitor<T>>;
 
 namespace details
 {
@@ -98,49 +105,198 @@ concept CanBackwardVisit = IsTypeVisitable<T> && requires(VisitorType& v, T* t)
     v.backwardVisit(t);
 };
 
+template<class VisitorType, VisitorDirection Direction, class T>
+concept CanVisit =
+    Direction == VisitorDirection::FORWARD && CanForwardVisit<VisitorType, T>
+    || Direction == VisitorDirection::BACKWARD && CanBackwardVisit<VisitorType, T>;
+
 namespace details
 {
-    template<typename T, typename List>
-    struct IsForwardVisitorOfAny;
+    template<typename T, VisitorDirection Direction, typename List>
+    struct IsVisitorOfAny;
 
-    template<typename T, template<class...> class List, typename... Types>
-    struct IsForwardVisitorOfAny<T, List<Types...>>
+    template<typename T, VisitorDirection Direction, template<class...> class List, typename... Types>
+    struct IsVisitorOfAny<T, Direction, List<Types...>>
     {
-        static constexpr bool value = (CanForwardVisit<T, Types> || ...);
-    };
-
-    template<typename T, typename List>
-    struct IsBackwardVisitorOfAny;
-
-    template<typename T, template<class...> class List, typename... Types>
-    struct IsBackwardVisitorOfAny<T, List<Types...>>
-    {
-        static constexpr bool value = (CanBackwardVisit<T, Types> || ...);
+        static constexpr bool value = (CanVisit<T, Direction, Types> || ...);
     };
 }
 
 
 template<class T>
-concept IsForwardVisitor = details::IsForwardVisitorOfAny<T, VisitableTypes>::value;
+concept IsForwardVisitor = details::IsVisitorOfAny<T, VisitorDirection::FORWARD, VisitableTypes>::value;
 template<class T>
-concept IsBackwardVisitor = details::IsBackwardVisitorOfAny<T, VisitableTypes>::value;
+concept IsBackwardVisitor = details::IsVisitorOfAny<T, VisitorDirection::BACKWARD, VisitableTypes>::value;
 
 template<class T>
 concept IsVisitor = IsForwardVisitor<T> || IsBackwardVisitor<T>;
 
-using StateForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseMechanicalState>;
-using StateBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseMechanicalState>;
+template<VisitorDirection Direction>
+using StateVisitor = TVisitor<sofa::core::behavior::BaseMechanicalState, Direction>;
+using StateForwardVisitor = StateVisitor<VisitorDirection::FORWARD>;
+using StateBackwardVisitor = StateVisitor<VisitorDirection::BACKWARD>;
 
-using MappingForwardVisitor = TForwardVisitor<sofa::core::BaseMapping>;
-using MappingBackwardVisitor = TBackwardVisitor<sofa::core::BaseMapping>;
+template<VisitorDirection Direction>
+using MappingVisitor = TVisitor<sofa::core::BaseMapping, Direction>;
+using MappingForwardVisitor = MappingVisitor<VisitorDirection::FORWARD>;
+using MappingBackwardVisitor = MappingVisitor<VisitorDirection::BACKWARD>;
 
-using MassForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseMass>;
-using MassBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseMass>;
+template<VisitorDirection Direction>
+using MassVisitor = TVisitor<sofa::core::behavior::BaseMass, Direction>;
+using MassForwardVisitor = MassVisitor<VisitorDirection::FORWARD>;
+using MassBackwardVisitor = MassVisitor<VisitorDirection::BACKWARD>;
 
-using ForceFieldForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseForceField>;
-using ForceFieldBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseForceField>;
+template<VisitorDirection Direction>
+using ForceFieldVisitor = TVisitor<sofa::core::behavior::BaseForceField, Direction>;
+using ForceFieldForwardVisitor = ForceFieldVisitor<VisitorDirection::FORWARD>;
+using ForceFieldBackwardVisitor = ForceFieldVisitor<VisitorDirection::BACKWARD>;
 
-using ProjectiveConstraintForwardVisitor = TForwardVisitor<sofa::core::behavior::BaseProjectiveConstraintSet>;
-using ProjectiveConstraintBackwardVisitor = TBackwardVisitor<sofa::core::behavior::BaseProjectiveConstraintSet>;
+template<VisitorDirection Direction>
+using ProjectiveConstraintVisitor = TVisitor<sofa::core::behavior::BaseProjectiveConstraintSet, Direction>;
+using ProjectiveConstraintForwardVisitor = ProjectiveConstraintVisitor<VisitorDirection::FORWARD>;
+using ProjectiveConstraintBackwardVisitor = ProjectiveConstraintVisitor<VisitorDirection::BACKWARD>;
+
+namespace details
+{
+// Helper to extract the argument types from a callable
+template <typename T>
+struct function_traits;
+
+// Specialization for function pointers
+template <typename T>
+struct function_traits<void(*)(T*)>
+{
+    using argument_type = T;
+};
+
+// Specialization for std::function
+template <typename T>
+struct function_traits<std::function<void(T*)>>
+{
+    using argument_type = T;
+};
+
+// Specialization for member function pointers
+template <typename C, typename T>
+struct function_traits<void(C::*)(T*)>
+{
+    using argument_type = T;
+};
+
+// Specialization for const member function pointers
+template <typename C, typename T>
+struct function_traits<void(C::*)(T*) const>
+{
+    using argument_type = T;
+};
+
+// Specialization for functors and lambdas
+template <typename F>
+struct function_traits : public function_traits<decltype(&F::operator())> {};
+}
+
+template<class T1, class T2>
+struct CompositeVisitor : T1, T2
+{
+    using ForwardVisitor = std::conditional_t<IsForwardVisitor<T1>, T1, T2>;
+    using BackwardVisitor = std::conditional_t<IsBackwardVisitor<T1>, T1, T2>;
+    static_assert(IsForwardVisitor<T1> && IsBackwardVisitor<T2> || IsBackwardVisitor<T1> && IsForwardVisitor<T2>);
+
+    using BackwardVisitor::backwardVisit;
+    using ForwardVisitor::forwardVisit;
+    CompositeVisitor(const T1& a, const T2& b)
+        : T1(a), T2(b){}
+};
+
+template <VisitorDirection Direction, typename... T>
+struct CallableVisitor;
+
+template <VisitorDirection Direction, class Derived>
+struct ComposableVisitor
+{
+    template<typename... Other>
+    auto operator+(CallableVisitor<OtherDirection<Direction>, Other...> other)
+    {
+        return CompositeVisitor(*static_cast<Derived*>(this), other);
+    }
+};
+
+template <typename Callable>
+requires IsTypeVisitable<typename details::function_traits<Callable>::argument_type>
+struct CallableVisitor<VisitorDirection::FORWARD, Callable> :
+    TVisitor<typename details::function_traits<Callable>::argument_type, VisitorDirection::FORWARD>,
+    ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor<VisitorDirection::FORWARD, Callable>>
+{
+    explicit CallableVisitor(const Callable& callable)
+        : m_function(callable) {}
+    using ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor>::operator+;
+
+    void forwardVisit(typename details::function_traits<Callable>::argument_type* object) override
+    {
+        m_function(object);
+    }
+
+private:
+    Callable m_function;
+};
+
+template <typename Callable>
+requires IsTypeVisitable<typename details::function_traits<Callable>::argument_type>
+struct CallableVisitor<VisitorDirection::BACKWARD, Callable> :
+    TVisitor<typename details::function_traits<Callable>::argument_type, VisitorDirection::BACKWARD>,
+    ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor<VisitorDirection::BACKWARD, Callable>>
+{
+    explicit CallableVisitor(const Callable& callable)
+        : m_function(callable) {}
+    using ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor>::operator+;
+
+    void backwardVisit(typename details::function_traits<Callable>::argument_type* object) override
+    {
+        m_function(object);
+    }
+
+private:
+    Callable m_function;
+};
+
+template <typename Callable, typename... Rest>
+struct CallableVisitor<VisitorDirection::FORWARD, Callable, Rest...> :
+    CallableVisitor<VisitorDirection::FORWARD, Callable>,
+    CallableVisitor<VisitorDirection::FORWARD, Rest...>,
+    ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor<VisitorDirection::FORWARD, Callable, Rest...>>
+{
+    explicit CallableVisitor(const Callable& callable, Rest... rest)
+        : CallableVisitor<VisitorDirection::FORWARD, Rest...>(rest...)
+        , CallableVisitor<VisitorDirection::FORWARD, Callable>(callable) {}
+    using ComposableVisitor<VisitorDirection::FORWARD, CallableVisitor>::operator+;
+    using CallableVisitor<VisitorDirection::FORWARD, Rest...>::forwardVisit;
+    using CallableVisitor<VisitorDirection::FORWARD, Callable>::forwardVisit;
+};
+
+template <typename Callable, typename... Rest>
+struct CallableVisitor<VisitorDirection::BACKWARD, Callable, Rest...> :
+    CallableVisitor<VisitorDirection::BACKWARD, Callable>,
+    CallableVisitor<VisitorDirection::BACKWARD, Rest...>,
+    ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor<VisitorDirection::BACKWARD, Callable, Rest...>>
+{
+    explicit CallableVisitor(const Callable& callable, Rest... rest)
+        : CallableVisitor<VisitorDirection::BACKWARD, Rest...>(rest...)
+        , CallableVisitor<VisitorDirection::BACKWARD, Callable>(callable) {}
+    using ComposableVisitor<VisitorDirection::BACKWARD, CallableVisitor>::operator+;
+    using CallableVisitor<VisitorDirection::BACKWARD, Rest...>::backwardVisit;
+    using CallableVisitor<VisitorDirection::BACKWARD, Callable>::backwardVisit;
+};
+
+template <typename... Callable>
+auto makeForwardVisitor(Callable... callable)
+{
+    return CallableVisitor<VisitorDirection::FORWARD, Callable...>(callable...);
+}
+
+template <typename... Callable>
+auto makeBackwardVisitor(Callable... callable)
+{
+    return CallableVisitor<VisitorDirection::BACKWARD, Callable...>(callable...);
+}
 
 }
