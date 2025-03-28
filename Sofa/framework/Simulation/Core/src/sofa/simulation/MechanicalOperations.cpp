@@ -55,6 +55,7 @@
 #include <sofa/core/behavior/ConstraintSolver.h>
 
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/simulation/MappingGraph.h>
 
 #include <numeric>
 
@@ -256,7 +257,24 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
         executeVisitor( MechanicalResetForceVisitor(&mparams, result, false) );
         //finish();
     }
-    executeVisitor( MechanicalComputeForceVisitor(&mparams, result, accumulate) );
+
+    auto forceVisitor = mapping_graph::makeForwardVisitor(
+        [this, &result](core::behavior::BaseMechanicalState* state) { state->accumulateForce(&mparams, result.getId(state));},
+        [this, &result](core::behavior::BaseForceField* forceField) { forceField->addForce(&mparams, result);}
+    );
+
+    MappingGraph graph(&mparams, ctx);
+    if (accumulate)
+    {
+        auto accumulatingForceVisitor = forceVisitor + mapping_graph::makeBackwardVisitor(
+            [this, &result](core::BaseMapping* map){map->applyJT(&mparams, result, result);});
+        graph.accept(accumulatingForceVisitor);
+    }
+    else
+    {
+        graph.accept(forceVisitor);
+    }
+
 }
 
 
