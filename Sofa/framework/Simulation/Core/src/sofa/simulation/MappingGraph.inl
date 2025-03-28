@@ -34,20 +34,7 @@ void details::TasksContainer<D>::_makeStateAccessorTasksSequential()
 {
     for (auto& [_, tasks] : this->stateAccessorTasks)
     {
-        if (!tasks.empty())
-        {
-            for (std::size_t i = 0; i < tasks.size() - 1; ++i)
-            {
-                if constexpr (D == mapping_graph::VisitorDirection::FORWARD)
-                {
-                    tasks[i].precede(tasks[i + 1]);
-                }
-                else
-                {
-                    tasks[i].succeed(tasks[i + 1]);
-                }
-            }
-        }
+        taskflow->linearize(tasks);
     }
 }
 
