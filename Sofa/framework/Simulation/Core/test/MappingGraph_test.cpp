@@ -38,46 +38,66 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
     const simulation::Node::SPtr groot = sofa::simulation::node::load(path, false, {});
     ASSERT_NE(groot, nullptr);
 
+    groot->f_printLog.setValue(true);
+
     sofa::simulation::node::initRoot(groot.get());
 
     auto* mparams = sofa::core::MechanicalParams::defaultInstance();
     sofa::simulation::MappingGraph graph(mparams, groot.get());
 
-    sofa::type::vector<std::string> visitForward, visitBackward;
-    const auto visitObjectForward = [&visitForward](const core::objectmodel::BaseObject* object)
+    struct CollectPathNameVisitor :
+        simulation::mapping_graph::StateForwardVisitor,
+        simulation::mapping_graph::MappingForwardVisitor,
+        simulation::mapping_graph::ForceFieldForwardVisitor,
+        simulation::mapping_graph::MassForwardVisitor,
+        simulation::mapping_graph::ProjectiveConstraintForwardVisitor
     {
-        visitForward.push_back(object->getPathName());
-    };
-    const auto visitObjectBackward = [&visitBackward](const core::objectmodel::BaseObject* object)
-    {
-        visitBackward.push_back(object->getPathName());
-    };
+        sofa::type::vector<std::string> visit;
+        std::mutex mutex;
+        ~CollectPathNameVisitor() override = default;
+        void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
+        {
+            visitObject(state);
+        }
+        void forwardVisit(sofa::core::BaseMapping* mapping) override
+        {
+            visitObject(mapping);
+        }
+        void forwardVisit(core::behavior::BaseForceField* forceField) override
+        {
+            visitObject(forceField);
+        }
+        void forwardVisit(core::behavior::BaseMass* mass) override
+        {
+            visitObject(mass);
+        }
+        void forwardVisit(core::behavior::BaseProjectiveConstraintSet* constraint) override
+        {
+            visitObject(constraint);
+        }
 
-    auto visitor =
-        simulation::mapping_graph::makeForwardVisitor(
-            [&visitObjectForward](const core::behavior::BaseMechanicalState* state){visitObjectForward(state);},
-            [&visitObjectForward](const core::BaseMapping* mapping){visitObjectForward(mapping);},
-            [&visitObjectForward](const core::behavior::BaseForceField* forcefield){visitObjectForward(forcefield);},
-            [&visitObjectForward](const core::behavior::BaseMass* mass){visitObjectForward(mass);},
-            [&visitObjectForward](const core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectForward(constraint);}
-        ) +
-        simulation::mapping_graph::makeBackwardVisitor(
-            [&visitObjectBackward](const core::behavior::BaseMechanicalState* state){visitObjectBackward(state);},
-            [&visitObjectBackward](const core::BaseMapping* mapping){visitObjectBackward(mapping);},
-            [&visitObjectBackward](const core::behavior::BaseForceField* forcefield){visitObjectBackward(forcefield);},
-            [&visitObjectBackward](const core::behavior::BaseMass* mass){visitObjectBackward(mass);},
-            [&visitObjectBackward](const core::behavior::BaseProjectiveConstraintSet* constraint){visitObjectBackward(constraint);}
-        );
+        bool forwardPrune(core::BaseMapping*) override
+        {
+            return false;
+        }
 
-    simulation::MappingGraphVisitParameters params { .forceSingleThreadAllTasks = true };
+    private:
+        void visitObject(const core::objectmodel::BaseObject* object)
+        {
+            visit.push_back(object->getPathName());
+        }
+
+    } visitor;
+
+    simulation::MappingGraphVisitParameters params { .forceSingleThreadAllTasks = true, .forward = {.dumpTaskGraph = true} };
     graph.accept(visitor, params);
 
-    const auto compare = [&visitForward](const std::string& A, const std::string& B)
+    const auto compare = [&visitor](const std::string& A, const std::string& B)
     {
-        const auto itA = std::find(visitForward.begin(), visitForward.end(), A);
-        EXPECT_NE(itA, visitForward.end());
-        const auto itB = std::find(visitForward.begin(), visitForward.end(), B);
-        EXPECT_NE(itB, visitForward.end());
+        const auto itA = std::find(visitor.visit.begin(), visitor.visit.end(), A);
+        EXPECT_NE(itA, visitor.visit.end());
+        const auto itB = std::find(visitor.visit.begin(), visitor.visit.end(), B);
+        EXPECT_NE(itB, visitor.visit.end());
 
         return std::distance(itA, itB);
     };

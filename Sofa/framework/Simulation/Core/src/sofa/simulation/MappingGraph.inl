@@ -78,7 +78,7 @@ void details::TasksContainer<D>::_stateAccessorTasksPrecedeMappingTasks()
             {
                 if (state)
                 {
-                    for (const auto& [mapping, mappingTask] : mappingTasks)
+                    for (const auto& [mapping, mappingTask] : startMappingTasks)
                     {
                         const auto& mappingInput = mapping->getMechFrom();
                         if (std::find(mappingInput.begin(), mappingInput.end(), state) !=
@@ -125,7 +125,7 @@ void details::TasksContainer<D>::_findDependenciesInStateAccessorTasks()
 template <mapping_graph::VisitorDirection D>
 void details::TasksContainer<D>::_sortMappingTasks()
 {
-    for (auto& [mapping, task] : mappingTasks)
+    for (auto& [mapping, task] : startMappingTasks)
     {
         for (auto* state : mapping->getMechFrom())
         {
@@ -145,6 +145,9 @@ void details::TasksContainer<D>::_sortMappingTasks()
                 }
             }
         }
+    }
+    for (auto& [mapping, task] : mappingTasks)
+    {
         for (auto* state : mapping->getMechTo())
         {
             if (state)

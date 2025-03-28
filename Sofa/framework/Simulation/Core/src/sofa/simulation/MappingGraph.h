@@ -90,6 +90,7 @@ struct TasksContainer
     std::unordered_map<StateGroup, std::vector<tf::Task>, SetHash, SetEqual > stateAccessorTasks;
 
     std::unordered_map<core::behavior::BaseMechanicalState*, tf::Task> stateTasks;
+    std::unordered_map<core::BaseMapping*, tf::Task> startMappingTasks;
     std::unordered_map<core::BaseMapping*, tf::Task> mappingTasks;
 
     void sortAllTasks(bool stateAccessorTasksSucceedStateTasks, bool stateAccessorTasksPrecedeMappingTasks, bool sortMappingTasks);
@@ -127,8 +128,8 @@ public:
         /**
          * The forward and backward tasks are created for each mapping, even if the visitor does not visit mappings
          */
-        addTasks<mapping_graph::VisitorDirection::FORWARD>(node->mechanicalMapping, forward.mappingTasks, "Mapping");
-        addTasks<mapping_graph::VisitorDirection::BACKWARD>(node->mechanicalMapping, backward.mappingTasks, "Mapping");
+        addMappingTasks<mapping_graph::VisitorDirection::FORWARD>(node->mechanicalMapping, forward.mappingTasks, forward.startMappingTasks, "Mapping");
+        addMappingTasks<mapping_graph::VisitorDirection::BACKWARD>(node->mechanicalMapping, backward.mappingTasks, backward.startMappingTasks, "Mapping");
 
         /**
          * The forward and backward tasks are created for each component (mass, forcefield, projective constraint)
@@ -215,6 +216,56 @@ private:
                         v->backwardVisit(object);
                     }
                 }).name(TasksContainer<D>::prefix + category + object->getPathName());
+            }
+        }
+    }
+
+    template<mapping_graph::VisitorDirection D, mapping_graph::IsTypeVisitable T>
+    void addMappingTasks(auto& links,
+        std::unordered_map<T*, tf::Task>& tasks,
+        std::unordered_map<T*, tf::Task>& startTasks,
+        const std::string& category)
+    {
+        for (auto* object : links)
+        {
+            if (object)
+            {
+                tf::Task mappingTask = getTaskContainer<D>().taskflow->emplace([v = mappingGraphVisitor, object]()
+                {
+                    if constexpr (D == mapping_graph::VisitorDirection::FORWARD
+                        && mapping_graph::CanForwardVisit<MappingGraphVisitor, T>)
+                    {
+                        v->forwardVisit(object);
+                    }
+                    if constexpr (D == mapping_graph::VisitorDirection::BACKWARD
+                        && mapping_graph::CanBackwardVisit<MappingGraphVisitor, T>)
+                    {
+                        v->backwardVisit(object);
+                    }
+                }).name(TasksContainer<D>::prefix + category + object->getPathName());
+
+                tf::Task pruneTask = getTaskContainer<D>().taskflow->emplace([v = mappingGraphVisitor, object]() -> int
+                {
+                    if constexpr (D == mapping_graph::VisitorDirection::FORWARD
+                        && mapping_graph::CanForwardVisit<MappingGraphVisitor, T>)
+                    {
+                        return v->forwardPrune(object);
+                    }
+                    if constexpr (D == mapping_graph::VisitorDirection::BACKWARD
+                        && mapping_graph::CanBackwardVisit<MappingGraphVisitor, T>)
+                    {
+                        return v->backwardPrune(object);
+                    }
+                    return false;
+                }).name("prune");
+
+                tf::Task initTask = getTaskContainer<D>().taskflow->emplace([](){}).name("start");
+                tf::Task stopTask = getTaskContainer<D>().taskflow->emplace([](){}).name("stop");
+
+                pruneTask.succeed(initTask).precede(mappingTask, stopTask);
+
+                tasks[object] = mappingTask;
+                startTasks[object] = initTask;
             }
         }
     }

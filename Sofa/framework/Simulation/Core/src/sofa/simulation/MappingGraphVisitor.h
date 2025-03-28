@@ -50,11 +50,27 @@ struct TForwardVisitor
     virtual void forwardVisit(T*) {}
 };
 
+template<>
+struct TForwardVisitor<core::BaseMapping>
+{
+    virtual ~TForwardVisitor() {}
+    virtual void forwardVisit(core::BaseMapping*) {}
+    virtual bool forwardPrune(core::BaseMapping*) { return false; }
+};
+
 template<class T>
 struct TBackwardVisitor
 {
     virtual ~TBackwardVisitor() {}
     virtual void backwardVisit(T*) {}
+};
+
+template<>
+struct TBackwardVisitor<core::BaseMapping>
+{
+    virtual ~TBackwardVisitor() {}
+    virtual void backwardVisit(core::BaseMapping*) {}
+    virtual bool backwardPrune(core::BaseMapping*) { return false; }
 };
 
 template<class T, VisitorDirection Direction>
