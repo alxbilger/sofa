@@ -28,6 +28,7 @@
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/Visitor.h>
 #include <sofa/simulation/config.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::simulation
 {
@@ -186,6 +187,7 @@ private:
     template <class T, class NodeLinks>
     void addStateAccessorTaskToGroup(NodeLinks& links, const std::string& category)
     {
+        SCOPED_TIMER_TR("addStateAccessorTaskToGroup");
         if constexpr (mapping_graph::CanForwardVisit<MappingGraphVisitor, T>)
         {
             addDirectionTaskToGroup<mapping_graph::VisitorDirection::FORWARD>(links, category);
@@ -199,6 +201,7 @@ private:
     template<mapping_graph::VisitorDirection D, mapping_graph::IsTypeVisitable T>
     void addTasks(auto& links, std::unordered_map<T*, tf::Task>& tasks, const std::string& category)
     {
+        SCOPED_TIMER_TR("addTasks");
         for (auto* object : links)
         {
             if (object)
@@ -226,6 +229,7 @@ private:
         std::unordered_map<T*, tf::Task>& startTasks,
         const std::string& category)
     {
+        SCOPED_TIMER_TR("addMappingTasks");
         for (auto* object : links)
         {
             if (object)
@@ -282,7 +286,10 @@ void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) 
 {
     if (m_mparams && m_context)
     {
-        tf::Taskflow forwardTaskFlow, backwardTaskFlow;
+        SCOPED_TIMER_TR("acceptVisitor");
+
+        tf::Taskflow forwardTaskFlow("forward");
+        tf::Taskflow backwardTaskFlow("backward");
 
         static tf::Executor executor;
         tf::Semaphore semaphore(params.forceSingleThreadAllTasks ? 1 : params.numberParallelTasks);
@@ -290,15 +297,21 @@ void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) 
         details::CreateTasksVisitor<Visitor> v(m_mparams, &visitor);
         v.forward.taskflow = &forwardTaskFlow;
         v.backward.taskflow = &backwardTaskFlow;
-        m_context->executeVisitor(&v);
+        {
+            SCOPED_TIMER_TR("createTasks");
+            m_context->executeVisitor(&v);
+        }
 
         if constexpr(mapping_graph::IsForwardVisitor<Visitor>)
         {
-            v.forward.sortAllTasks(
-                params.forward.stateAccessorTasksSucceedStateTasks,
-                params.forward.stateAccessorTasksPrecedeMappingTasks,
-                params.forward.sortMappingTasks);
-            v.forward.applyGlobalSemaphore(semaphore);
+            {
+                SCOPED_TIMER_TR("sortForwardTasks");
+                v.forward.sortAllTasks(
+                   params.forward.stateAccessorTasksSucceedStateTasks,
+                   params.forward.stateAccessorTasksPrecedeMappingTasks,
+                   params.forward.sortMappingTasks);
+                v.forward.applyGlobalSemaphore(semaphore);
+            }
 
             if (params.forward.dumpTaskGraph && m_context->notMuted())
             {
@@ -306,6 +319,8 @@ void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) 
                 forwardTaskFlow.dump(ss);
                 msg_info(m_context) << ss.str();
             }
+
+            SCOPED_TIMER_TR("executeForward");
             executor
                .run(forwardTaskFlow)
                .wait();
@@ -313,11 +328,14 @@ void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) 
 
         if constexpr(mapping_graph::IsBackwardVisitor<Visitor>)
         {
-            v.backward.sortAllTasks(
-                params.backward.stateAccessorTasksSucceedStateTasks,
-                params.backward.stateAccessorTasksPrecedeMappingTasks,
-                params.backward.sortMappingTasks);
-            v.backward.applyGlobalSemaphore(semaphore);
+            {
+                SCOPED_TIMER_TR("sortBackwardTasks");
+                v.backward.sortAllTasks(
+                   params.backward.stateAccessorTasksSucceedStateTasks,
+                   params.backward.stateAccessorTasksPrecedeMappingTasks,
+                   params.backward.sortMappingTasks);
+                v.backward.applyGlobalSemaphore(semaphore);
+            }
 
             if (params.backward.dumpTaskGraph && m_context->notMuted())
             {
@@ -325,6 +343,8 @@ void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) 
                 backwardTaskFlow.dump(ss);
                 msg_info(m_context) << ss.str();
             }
+
+            SCOPED_TIMER_TR("executeBackward");
             executor
                .run(backwardTaskFlow)
                .wait();

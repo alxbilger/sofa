@@ -259,8 +259,16 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
     }
 
     auto forceVisitor = mapping_graph::makeForwardVisitor(
-        [this, &result](core::behavior::BaseMechanicalState* state) { state->accumulateForce(&mparams, result.getId(state));},
-        [this, &result](core::behavior::BaseForceField* forceField) { forceField->addForce(&mparams, result);}
+        [this, &result](core::behavior::BaseMechanicalState* state)
+        {
+            SCOPED_TIMER_TR("accumulateForce");
+            state->accumulateForce(&mparams, result.getId(state));
+        },
+        [this, &result](core::behavior::BaseForceField* forceField)
+        {
+            SCOPED_TIMER_TR("addForce");
+            forceField->addForce(&mparams, result);
+        }
     );
 
     MappingGraph graph(&mparams, ctx);
@@ -270,7 +278,11 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
     if (accumulate)
     {
         auto accumulatingForceVisitor = forceVisitor + mapping_graph::makeBackwardVisitor(
-            [this, &result](core::BaseMapping* map){map->applyJT(&mparams, result, result);});
+            [this, &result](core::BaseMapping* map)
+            {
+                SCOPED_TIMER_TR("applyJT");
+                map->applyJT(&mparams, result, result);
+            });
         graph.accept(accumulatingForceVisitor, params);
     }
     else
