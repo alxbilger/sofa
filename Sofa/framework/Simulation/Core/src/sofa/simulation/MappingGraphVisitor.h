@@ -33,6 +33,24 @@
 namespace sofa::simulation::mapping_graph
 {
 
+struct BaseMappingGraphVisitor
+{
+    virtual ~BaseMappingGraphVisitor() = default;
+
+    virtual void forwardVisit(core::BaseMapping*) {}
+    virtual void forwardVisit(core::behavior::BaseMechanicalState*) {}
+    virtual void forwardVisit(core::behavior::BaseForceField*) {}
+    virtual void forwardVisit(core::behavior::BaseMass*) {}
+    virtual void forwardVisit(core::behavior::BaseProjectiveConstraintSet*) {}
+
+    virtual void backwardVisit(core::BaseMapping*) {}
+    virtual void backwardVisit(core::behavior::BaseMechanicalState*) {}
+    virtual void backwardVisit(core::behavior::BaseForceField*) {}
+    virtual void backwardVisit(core::behavior::BaseMass*) {}
+    virtual void backwardVisit(core::behavior::BaseProjectiveConstraintSet*) {}
+};
+
+
 enum class VisitorDirection : bool
 {
     FORWARD,

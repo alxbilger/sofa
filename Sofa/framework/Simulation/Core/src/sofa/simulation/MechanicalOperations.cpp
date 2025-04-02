@@ -257,38 +257,39 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
         executeVisitor( MechanicalResetForceVisitor(&mparams, result, false) );
         //finish();
     }
-
-    auto forceVisitor = mapping_graph::makeForwardVisitor(
-        [this, &result](core::behavior::BaseMechanicalState* state)
-        {
-            SCOPED_TIMER_TR("accumulateForce");
-            state->accumulateForce(&mparams, result.getId(state));
-        },
-        [this, &result](core::behavior::BaseForceField* forceField)
-        {
-            SCOPED_TIMER_TR("addForce");
-            forceField->addForce(&mparams, result);
-        }
-    );
-
-    MappingGraph graph(&mparams, ctx);
-    MappingGraphVisitParameters params;
-    params.forward.sortMappingTasks = false;
-    params.forward.stateAccessorTasksPrecedeMappingTasks = false;
-    if (accumulate)
-    {
-        auto accumulatingForceVisitor = forceVisitor + mapping_graph::makeBackwardVisitor(
-            [this, &result](core::BaseMapping* map)
-            {
-                SCOPED_TIMER_TR("applyJT");
-                map->applyJT(&mparams, result, result);
-            });
-        graph.accept(accumulatingForceVisitor, params);
-    }
-    else
-    {
-        graph.accept(forceVisitor, params);
-    }
+    //
+    // auto forceVisitor = mapping_graph::makeForwardVisitor(
+    //     [this, &result](core::behavior::BaseMechanicalState* state)
+    //     {
+    //         SCOPED_TIMER_TR("accumulateForce");
+    //         state->accumulateForce(&mparams, result.getId(state));
+    //     },
+    //     [this, &result](core::behavior::BaseForceField* forceField)
+    //     {
+    //         SCOPED_TIMER_TR("addForce");
+    //         forceField->addForce(&mparams, result);
+    //     }
+    // );
+    //
+    // MappingGraph graph(&mparams, ctx);
+    // MappingGraphVisitParameters params;
+    // params.forward.sortMappingTasks = false;
+    // params.forward.stateAccessorTasksPrecedeMappingTasks = false;
+    // if (accumulate)
+    // {
+    //     auto accumulatingForceVisitor = forceVisitor + mapping_graph::makeBackwardVisitor(
+    //         [this, &result](core::BaseMapping* map)
+    //         {
+    //             SCOPED_TIMER_TR("applyJT");
+    //             map->applyJT(&mparams, result, result);
+    //         });
+    //     graph.accept(accumulatingForceVisitor, params);
+    // }
+    // else
+    // {
+    //     graph.accept(forceVisitor, params);
+    // }
+    executeVisitor( MechanicalComputeForceVisitor(&mparams, result, accumulate) );
 }
 
 

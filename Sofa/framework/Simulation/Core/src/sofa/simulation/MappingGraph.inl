@@ -211,4 +211,4 @@ void details::TasksContainer<D>::applyGlobalSemaphore(tf::Semaphore& s)
     }
 }
 
-}
+}  // namespace sofa::simulation

@@ -48,19 +48,143 @@ struct MappingGraphVisitParameters
     } forward, backward;
 };
 
+struct StateVertex;
+struct MappingVertex;
+struct StateAccessorVertex;
+
+struct MappingGraphVertex
+{
+    virtual ~MappingGraphVertex() = default;
+    using StateGroup = std::set<sofa::core::behavior::BaseMechanicalState*>;
+
+    mapping_graph::BaseMappingGraphVisitor** m_visitor { nullptr };
+};
+
+struct StateAccessorVertex : MappingGraphVertex
+{
+    explicit StateAccessorVertex(const StateGroup& states) : m_states({states}) {}
+
+    StateGroup m_states;
+    tf::Task m_task;
+
+    StateVertex* m_parent { nullptr };
+};
+
+template<class T>
+struct TStateAccessorVertex : StateAccessorVertex
+{
+    explicit TStateAccessorVertex(const StateGroup& states, T* object)
+        : StateAccessorVertex({states}), m_stateAccessor(object) {}
+    T* m_stateAccessor { nullptr };
+
+    void task()
+    {
+        if (m_visitor && *m_visitor && m_stateAccessor)
+        {
+            (*m_visitor)->forwardVisit(m_stateAccessor);
+        }
+    }
+};
+
+using ForceFieldVertex = TStateAccessorVertex<core::behavior::BaseForceField>;
+using MassVertex = TStateAccessorVertex<core::behavior::BaseMass>;
+using ProjectiveConstraintVertex = TStateAccessorVertex<core::behavior::BaseProjectiveConstraintSet>;
+
+struct StateVertex : MappingGraphVertex
+{
+    explicit StateVertex(sofa::core::behavior::BaseMechanicalState* state) : m_states({state}) {}
+    explicit StateVertex(const StateGroup& states) : m_states({states}) {}
+
+    StateGroup m_states;
+    sofa::type::vector<MappingVertex*> m_parents;
+    sofa::type::vector<MappingVertex*> m_mappingChildren;
+    sofa::type::vector<StateAccessorVertex*> m_accessorChildren;
+
+    tf::Task m_task;
+    std::unique_ptr<tf::Task> m_exitTask { nullptr };
+
+    void task()
+    {
+        if (m_visitor && *m_visitor && m_states.size() == 1)
+        {
+            (*m_visitor)->forwardVisit(*m_states.begin());
+        }
+    }
+
+    tf::Task* entryPoint() const { return nullptr; }
+    tf::Task* exitPoint()
+    {
+        if (m_exitTask)
+            return m_exitTask.get();
+        return &m_task;
+    }
+};
+
+
+struct MappingVertex : MappingGraphVertex
+{
+    explicit MappingVertex(sofa::core::BaseMapping* mapping) : m_mapping(mapping) {}
+
+    sofa::core::BaseMapping* m_mapping { nullptr };
+    sofa::type::vector<StateVertex*> m_parents;
+    sofa::type::vector<StateVertex*> m_children;
+
+    tf::Task m_task;
+    void task()
+    {
+        if (m_visitor && *m_visitor && m_mapping)
+        {
+            (*m_visitor)->forwardVisit(m_mapping);
+        }
+    }
+};
+
 class SOFA_SIMULATION_CORE_API MappingGraph
 {
 public:
     MappingGraph(const sofa::core::MechanicalParams* mparams, core::objectmodel::BaseContext* context)
         : m_mparams(mparams), m_context(context)
-    {}
+    {
+        buildGraph();
+    }
 
-    template<mapping_graph::IsVisitor Visitor>
-    void accept(Visitor& visitor, MappingGraphVisitParameters = {}) const;
+    void buildGraph();
+    void buildTaskDependencies();
+    void dumpTasksGraph(std::ostream& ostream) const;
+
+    void accept(mapping_graph::BaseMappingGraphVisitor& visitor, MappingGraphVisitParameters = {});
+
+    // template<mapping_graph::IsVisitor Visitor>
+    // void accept(Visitor& visitor, MappingGraphVisitParameters = {}) const;
 
 private:
     const sofa::core::MechanicalParams* m_mparams{nullptr};
     core::objectmodel::BaseContext* m_context{nullptr};
+
+    sofa::type::vector<MappingVertex> m_mappings;
+    sofa::type::vector<StateVertex> m_states;
+
+    using ListForceFields = sofa::type::vector<ForceFieldVertex>;
+    using ListMass = sofa::type::vector<MassVertex>;
+    using ListProjectiveConstraints = sofa::type::vector<ProjectiveConstraintVertex>;
+
+    std::tuple<
+        ListForceFields,
+        ListMass,
+        ListProjectiveConstraints
+    > m_stateAccessors;
+
+    tf::Taskflow m_taskflow;
+    tf::Semaphore m_globalSemaphore;
+
+    template<class T>
+    static std::string category() { return ""; }
+
+    mapping_graph::BaseMappingGraphVisitor* m_visitor { nullptr };
+
+    void setupSemaphore(tf::Task& task);
+
+    friend class CreateGraphVisitor;
 };
 
 namespace details
@@ -280,75 +404,75 @@ public:
     TasksContainer<mapping_graph::VisitorDirection::BACKWARD> backward;
 };
 }
-
-template <mapping_graph::IsVisitor Visitor>
-void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) const
-{
-    if (m_mparams && m_context)
-    {
-        SCOPED_TIMER_TR("acceptVisitor");
-
-        tf::Taskflow forwardTaskFlow("forward");
-        tf::Taskflow backwardTaskFlow("backward");
-
-        static tf::Executor executor;
-        tf::Semaphore semaphore(params.forceSingleThreadAllTasks ? 1 : params.numberParallelTasks);
-
-        details::CreateTasksVisitor<Visitor> v(m_mparams, &visitor);
-        v.forward.taskflow = &forwardTaskFlow;
-        v.backward.taskflow = &backwardTaskFlow;
-        {
-            SCOPED_TIMER_TR("createTasks");
-            m_context->executeVisitor(&v);
-        }
-
-        if constexpr(mapping_graph::IsForwardVisitor<Visitor>)
-        {
-            {
-                SCOPED_TIMER_TR("sortForwardTasks");
-                v.forward.sortAllTasks(
-                   params.forward.stateAccessorTasksSucceedStateTasks,
-                   params.forward.stateAccessorTasksPrecedeMappingTasks,
-                   params.forward.sortMappingTasks);
-                v.forward.applyGlobalSemaphore(semaphore);
-            }
-
-            if (params.forward.dumpTaskGraph && m_context->notMuted())
-            {
-                std::stringstream ss;
-                forwardTaskFlow.dump(ss);
-                msg_info(m_context) << ss.str();
-            }
-
-            SCOPED_TIMER_TR("executeForward");
-            executor
-               .run(forwardTaskFlow)
-               .wait();
-        }
-
-        if constexpr(mapping_graph::IsBackwardVisitor<Visitor>)
-        {
-            {
-                SCOPED_TIMER_TR("sortBackwardTasks");
-                v.backward.sortAllTasks(
-                   params.backward.stateAccessorTasksSucceedStateTasks,
-                   params.backward.stateAccessorTasksPrecedeMappingTasks,
-                   params.backward.sortMappingTasks);
-                v.backward.applyGlobalSemaphore(semaphore);
-            }
-
-            if (params.backward.dumpTaskGraph && m_context->notMuted())
-            {
-                std::stringstream ss;
-                backwardTaskFlow.dump(ss);
-                msg_info(m_context) << ss.str();
-            }
-
-            SCOPED_TIMER_TR("executeBackward");
-            executor
-               .run(backwardTaskFlow)
-               .wait();
-        }
-    }
-}
+//
+// template <mapping_graph::IsVisitor Visitor>
+// void MappingGraph::accept(Visitor& visitor, MappingGraphVisitParameters params) const
+// {
+//     if (m_mparams && m_context)
+//     {
+//         SCOPED_TIMER_TR("acceptVisitor");
+//
+//         tf::Taskflow forwardTaskFlow("forward");
+//         tf::Taskflow backwardTaskFlow("backward");
+//
+//         static tf::Executor executor;
+//         tf::Semaphore semaphore(params.forceSingleThreadAllTasks ? 1 : params.numberParallelTasks);
+//
+//         details::CreateTasksVisitor<Visitor> v(m_mparams, &visitor);
+//         v.forward.taskflow = &forwardTaskFlow;
+//         v.backward.taskflow = &backwardTaskFlow;
+//         {
+//             SCOPED_TIMER_TR("createTasks");
+//             m_context->executeVisitor(&v);
+//         }
+//
+//         if constexpr(mapping_graph::IsForwardVisitor<Visitor>)
+//         {
+//             {
+//                 SCOPED_TIMER_TR("sortForwardTasks");
+//                 v.forward.sortAllTasks(
+//                    params.forward.stateAccessorTasksSucceedStateTasks,
+//                    params.forward.stateAccessorTasksPrecedeMappingTasks,
+//                    params.forward.sortMappingTasks);
+//                 v.forward.applyGlobalSemaphore(semaphore);
+//             }
+//
+//             if (params.forward.dumpTaskGraph && m_context->notMuted())
+//             {
+//                 std::stringstream ss;
+//                 forwardTaskFlow.dump(ss);
+//                 msg_info(m_context) << ss.str();
+//             }
+//
+//             SCOPED_TIMER_TR("executeForward");
+//             executor
+//                .run(forwardTaskFlow)
+//                .wait();
+//         }
+//
+//         if constexpr(mapping_graph::IsBackwardVisitor<Visitor>)
+//         {
+//             {
+//                 SCOPED_TIMER_TR("sortBackwardTasks");
+//                 v.backward.sortAllTasks(
+//                    params.backward.stateAccessorTasksSucceedStateTasks,
+//                    params.backward.stateAccessorTasksPrecedeMappingTasks,
+//                    params.backward.sortMappingTasks);
+//                 v.backward.applyGlobalSemaphore(semaphore);
+//             }
+//
+//             if (params.backward.dumpTaskGraph && m_context->notMuted())
+//             {
+//                 std::stringstream ss;
+//                 backwardTaskFlow.dump(ss);
+//                 msg_info(m_context) << ss.str();
+//             }
+//
+//             SCOPED_TIMER_TR("executeBackward");
+//             executor
+//                .run(backwardTaskFlow)
+//                .wait();
+//         }
+//     }
+// }
 }  // namespace sofa::simulation

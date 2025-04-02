@@ -30,7 +30,88 @@
 
 namespace sofa
 {
-TEST(MappingGraph_Test, CollectPathNameVisitor)
+// TEST(MappingGraph_Test, CollectPathNameVisitor)
+// {
+//     constexpr std::string_view filename { "Component/LinearSystem/MatrixLinearSystem.scn" };
+//     const std::string path = sofa::helper::system::DataRepository.getFile(std::string{filename});
+//
+//     const simulation::Node::SPtr groot = sofa::simulation::node::load(path, false, {});
+//     ASSERT_NE(groot, nullptr);
+//
+//     groot->f_printLog.setValue(true);
+//
+//     sofa::simulation::node::initRoot(groot.get());
+//
+//     auto* mparams = sofa::core::MechanicalParams::defaultInstance();
+//     sofa::simulation::MappingGraph graph(mparams, groot.get());
+//
+//     struct CollectPathNameVisitor :
+//         simulation::mapping_graph::StateForwardVisitor,
+//         simulation::mapping_graph::MappingForwardVisitor,
+//         simulation::mapping_graph::ForceFieldForwardVisitor,
+//         simulation::mapping_graph::MassForwardVisitor,
+//         simulation::mapping_graph::ProjectiveConstraintForwardVisitor
+//     {
+//         sofa::type::vector<std::string> visit;
+//         ~CollectPathNameVisitor() override = default;
+//         void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
+//         {
+//             visitObject(state);
+//         }
+//         void forwardVisit(sofa::core::BaseMapping* mapping) override
+//         {
+//             visitObject(mapping);
+//         }
+//         void forwardVisit(core::behavior::BaseForceField* forceField) override
+//         {
+//             visitObject(forceField);
+//         }
+//         void forwardVisit(core::behavior::BaseMass* mass) override
+//         {
+//             visitObject(mass);
+//         }
+//         void forwardVisit(core::behavior::BaseProjectiveConstraintSet* constraint) override
+//         {
+//             visitObject(constraint);
+//         }
+//
+//         bool forwardPrune(core::BaseMapping*) override
+//         {
+//             return false;
+//         }
+//
+//     private:
+//         void visitObject(const core::objectmodel::BaseObject* object)
+//         {
+//             visit.push_back(object->getPathName());
+//         }
+//
+//     } visitor;
+//
+//     simulation::MappingGraphVisitParameters params { .forceSingleThreadAllTasks = true, .forward = {.dumpTaskGraph = true} };
+//     graph.accept(visitor, params);
+//
+//     const auto compare = [&visitor](const std::string& A, const std::string& B)
+//     {
+//         const auto itA = std::find(visitor.visit.begin(), visitor.visit.end(), A);
+//         EXPECT_NE(itA, visitor.visit.end());
+//         const auto itB = std::find(visitor.visit.begin(), visitor.visit.end(), B);
+//         EXPECT_NE(itB, visitor.visit.end());
+//
+//         return std::distance(itA, itB);
+//     };
+//
+//     EXPECT_GT(compare("/rigidSections/blue/DOFs", "/rigidSections/blue/intermediateMapping/IdentityMapping1"), 0);
+//     EXPECT_LT(compare("/rigidSections/blue/intermediateMapping/IdentityMapping1", "/rigidSections/blue/DOFs"), 0);
+//     EXPECT_GT(compare("/rigidSections/blue/intermediateMapping/IdentityMapping1", "/rigidSections/blue/intermediateMapping/DOFs"), 0);
+//
+//     EXPECT_GT(compare("/rigidSections/red/DOFs", "/rigidSections/red/FEM/RigidMapping1"), 0);
+//     EXPECT_GT(compare("/rigidSections/red/FEM/RigidMapping1", "/rigidSections/red/FEM/DOFs"), 0);
+//
+// }
+
+
+TEST(MappingGraph_Test, Graph)
 {
     constexpr std::string_view filename { "Component/LinearSystem/MatrixLinearSystem.scn" };
     const std::string path = sofa::helper::system::DataRepository.getFile(std::string{filename});
@@ -45,15 +126,9 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
     auto* mparams = sofa::core::MechanicalParams::defaultInstance();
     sofa::simulation::MappingGraph graph(mparams, groot.get());
 
-    struct CollectPathNameVisitor :
-        simulation::mapping_graph::StateForwardVisitor,
-        simulation::mapping_graph::MappingForwardVisitor,
-        simulation::mapping_graph::ForceFieldForwardVisitor,
-        simulation::mapping_graph::MassForwardVisitor,
-        simulation::mapping_graph::ProjectiveConstraintForwardVisitor
+    struct CollectPathNameVisitor : simulation::mapping_graph::BaseMappingGraphVisitor
     {
         sofa::type::vector<std::string> visit;
-        std::mutex mutex;
         ~CollectPathNameVisitor() override = default;
         void forwardVisit(sofa::core::behavior::BaseMechanicalState* state) override
         {
@@ -76,11 +151,6 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
             visitObject(constraint);
         }
 
-        bool forwardPrune(core::BaseMapping*) override
-        {
-            return false;
-        }
-
     private:
         void visitObject(const core::objectmodel::BaseObject* object)
         {
@@ -89,7 +159,13 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
 
     } visitor;
 
-    simulation::MappingGraphVisitParameters params { .forceSingleThreadAllTasks = true, .forward = {.dumpTaskGraph = true} };
+    simulation::MappingGraphVisitParameters params
+    {
+        .forceSingleThreadAllTasks = true,
+        .forward = {.dumpTaskGraph = true}
+    };
+
+    graph.buildTaskDependencies();
     graph.accept(visitor, params);
 
     const auto compare = [&visitor](const std::string& A, const std::string& B)
@@ -102,13 +178,31 @@ TEST(MappingGraph_Test, CollectPathNameVisitor)
         return std::distance(itA, itB);
     };
 
-    EXPECT_GT(compare("/rigidSections/blue/DOFs", "/rigidSections/blue/intermediateMapping/IdentityMapping1"), 0);
-    EXPECT_LT(compare("/rigidSections/blue/intermediateMapping/IdentityMapping1", "/rigidSections/blue/DOFs"), 0);
-    EXPECT_GT(compare("/rigidSections/blue/intermediateMapping/IdentityMapping1", "/rigidSections/blue/intermediateMapping/DOFs"), 0);
+    const auto a_precede_b = [&compare](const std::string& A, const std::string& B)
+    {
+        const auto res = compare(A, B);
+        EXPECT_GT(res, 0) << "A = " << A << " B = " << B << " res = " << res;
+    };
 
-    EXPECT_GT(compare("/rigidSections/red/DOFs", "/rigidSections/red/FEM/RigidMapping1"), 0);
-    EXPECT_GT(compare("/rigidSections/red/FEM/RigidMapping1", "/rigidSections/red/FEM/DOFs"), 0);
+    a_precede_b("/rigidSections/red/DOFs", "/rigidSections/red/fixConstraint");
+    a_precede_b("/rigidSections/red/DOFs", "/rigidSections/red/FEM/rigidMapping");
+    a_precede_b("/rigidSections/red/FEM/rigidMapping", "/rigidSections/red/FEM/DOFs");
+    a_precede_b("/rigidSections/red/DOFs", "/rigidSections/red/FEM/DOFs");
+    a_precede_b("/rigidSections/red/FEM/DOFs", "/rigidSections/red/FEM/mass");
+    a_precede_b("/rigidSections/red/FEM/DOFs", "/rigidSections/red/FEM/FEM");
 
+    a_precede_b("/rigidSections/blue/DOFs", "/rigidSections/blue/intermediateMapping/id");
+    a_precede_b("/rigidSections/blue/intermediateMapping/id", "/rigidSections/blue/intermediateMapping/DOFs");
+
+
+    a_precede_b("/rigidSections/red/DOFs", "/rigidSections/spring/nonMappedDOFsSpring/spring_red-blue");
+    a_precede_b("/rigidSections/blue/DOFs", "/rigidSections/spring/nonMappedDOFsSpring/spring_red-blue");
+
+    a_precede_b("/rigidSections/red/DOFs", "/rigidSections/spring/springBetweenMappedAndNonMapped/spring_red-green");
+    a_precede_b("/rigidSections/red/FEM/DOFs", "/rigidSections/spring/springBetweenMappedAndNonMapped/spring_red-green");
+    a_precede_b("/rigidSections/green/DOFs", "/rigidSections/spring/springBetweenMappedAndNonMapped/spring_red-green");
+
+    a_precede_b("/rigidSections/green/DOFs", "/rigidSections/green/spring_a-b");
 }
 
 }
