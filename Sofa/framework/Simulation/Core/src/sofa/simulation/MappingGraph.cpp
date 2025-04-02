@@ -89,15 +89,22 @@ class CreateGraphVisitor : public sofa::simulation::Visitor
 
         if (auto* mapping = node->mechanicalMapping.get())
         {
-            mappingGraph.m_mappings.emplace_back(mapping);
+            if (mapping->isMechanical())
+            {
+                mappingGraph.m_mappings.emplace_back(mapping);
 
-            {
-                const auto from = mapping->getMechFrom();
-                m_states.emplace_back(MappingGraphVertex::StateGroup{from.begin(), from.end()});
-            }
-            {
-                const auto to = mapping->getMechTo();
-                m_states.emplace_back(MappingGraphVertex::StateGroup{to.begin(), to.end()});
+                {
+                    if (const auto from = mapping->getMechFrom(); !from.empty())
+                    {
+                        m_states.emplace_back(MappingGraphVertex::StateGroup{from.begin(), from.end()});
+                    }
+                }
+                {
+                    if (const auto to = mapping->getMechTo(); !to.empty())
+                    {
+                        m_states.emplace_back(MappingGraphVertex::StateGroup{to.begin(), to.end()});
+                    }
+                }
             }
         }
 
