@@ -58,6 +58,9 @@ struct MappingGraphVertex
     using StateGroup = std::set<sofa::core::behavior::BaseMechanicalState*>;
 
     mapping_graph::BaseMappingGraphVisitor** m_visitor { nullptr };
+
+    tf::Task m_forwardTask;
+    tf::Task m_backwardTask;
 };
 
 struct StateAccessorVertex : MappingGraphVertex
@@ -65,7 +68,6 @@ struct StateAccessorVertex : MappingGraphVertex
     explicit StateAccessorVertex(const StateGroup& states) : m_states({states}) {}
 
     StateGroup m_states;
-    tf::Task m_task;
 
     StateVertex* m_parent { nullptr };
 };
@@ -77,11 +79,19 @@ struct TStateAccessorVertex : StateAccessorVertex
         : StateAccessorVertex({states}), m_stateAccessor(object) {}
     T* m_stateAccessor { nullptr };
 
-    void task()
+    void forwardTask()
     {
         if (m_visitor && *m_visitor && m_stateAccessor)
         {
             (*m_visitor)->forwardVisit(m_stateAccessor);
+        }
+    }
+
+    void backwardTask()
+    {
+        if (m_visitor && *m_visitor && m_stateAccessor)
+        {
+            (*m_visitor)->backwardVisit(m_stateAccessor);
         }
     }
 };
@@ -100,10 +110,10 @@ struct StateVertex : MappingGraphVertex
     sofa::type::vector<MappingVertex*> m_mappingChildren;
     sofa::type::vector<StateAccessorVertex*> m_accessorChildren;
 
-    tf::Task m_task;
-    std::unique_ptr<tf::Task> m_exitTask { nullptr };
+    std::unique_ptr<tf::Task> m_forwardExitTask { nullptr };
+    std::unique_ptr<tf::Task> m_backwardEntryTask { nullptr };
 
-    void task()
+    void forwardTask()
     {
         if (m_visitor && *m_visitor && m_states.size() == 1)
         {
@@ -111,12 +121,26 @@ struct StateVertex : MappingGraphVertex
         }
     }
 
-    tf::Task* entryPoint() const { return nullptr; }
-    tf::Task* exitPoint()
+    void backwardTask()
     {
-        if (m_exitTask)
-            return m_exitTask.get();
-        return &m_task;
+        if (m_visitor && *m_visitor && m_states.size() == 1)
+        {
+            (*m_visitor)->backwardVisit(*m_states.begin());
+        }
+    }
+
+    tf::Task* forwardExitPoint()
+    {
+        if (m_forwardExitTask)
+            return m_forwardExitTask.get();
+        return &m_forwardTask;
+    }
+
+    tf::Task* backwardEntryPoint()
+    {
+        if (m_backwardEntryTask)
+            return m_backwardEntryTask.get();
+        return &m_backwardTask;
     }
 };
 
@@ -129,12 +153,19 @@ struct MappingVertex : MappingGraphVertex
     sofa::type::vector<StateVertex*> m_parents;
     sofa::type::vector<StateVertex*> m_children;
 
-    tf::Task m_task;
-    void task()
+    void forwardTask()
     {
         if (m_visitor && *m_visitor && m_mapping)
         {
             (*m_visitor)->forwardVisit(m_mapping);
+        }
+    }
+
+    void backwardTask()
+    {
+        if (m_visitor && *m_visitor && m_mapping)
+        {
+            (*m_visitor)->backwardVisit(m_mapping);
         }
     }
 };

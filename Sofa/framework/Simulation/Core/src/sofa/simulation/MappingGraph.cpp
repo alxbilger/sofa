@@ -170,8 +170,11 @@ void MappingGraph::buildGraph()
                 }
             }
         }
-        mapping.m_task = m_taskflow.emplace([m = &mapping]() { m->task(); }).name("fwdMapping" + mapping.m_mapping->getPathName());
-        setupSemaphore(mapping.m_task);
+        mapping.m_forwardTask = m_taskflow.emplace([m = &mapping]() { m->forwardTask(); }).name("fwdMapping" + mapping.m_mapping->getPathName());
+        setupSemaphore(mapping.m_forwardTask);
+
+        mapping.m_backwardTask = m_taskflow.emplace([m = &mapping]() { m->backwardTask(); }).name("bwdMapping" + mapping.m_mapping->getPathName());
+        setupSemaphore(mapping.m_backwardTask);
     }
 
     const auto stateAccessorTasks = [&]<class T>(T& stateAccessors)
@@ -183,9 +186,13 @@ void MappingGraph::buildGraph()
                 accessor.m_parent = stateVertex;
                 stateVertex->m_accessorChildren.emplace_back(&accessor);
             }
-            accessor.m_task = m_taskflow.emplace([a = &accessor] { a->task(); })
+            accessor.m_forwardTask = m_taskflow.emplace([a = &accessor] { a->forwardTask(); })
                 .name("fwd" + category<T>() + accessor.m_stateAccessor->getPathName());
-            setupSemaphore(accessor.m_task);
+            setupSemaphore(accessor.m_forwardTask);
+
+            accessor.m_backwardTask = m_taskflow.emplace([a = &accessor] { a->backwardTask(); })
+                .name("bwd" + category<T>() + accessor.m_stateAccessor->getPathName());
+            setupSemaphore(accessor.m_backwardTask);
         }
     };
 
@@ -195,15 +202,24 @@ void MappingGraph::buildGraph()
 
     for (auto& state : m_states)
     {
-        state.m_task = m_taskflow.emplace([s = &state]() { s->task(); })
-            .name("fwdState" + sofa::helper::join(state.m_states.begin(), state.m_states.end(),
-                [](core::behavior::BaseMechanicalState* s){return s->getPathName(); }, '-'));
-        setupSemaphore(state.m_task);
+        const auto taskName = sofa::helper::join(state.m_states.begin(), state.m_states.end(),
+                [](core::behavior::BaseMechanicalState* s){return s->getPathName(); }, '-');
+
+        state.m_forwardTask = m_taskflow.emplace([s = &state]() { s->forwardTask(); })
+            .name("fwdState" + taskName);
+        setupSemaphore(state.m_forwardTask);
+
+        state.m_backwardTask = m_taskflow.emplace([s = &state]() { s->backwardTask(); })
+            .name("bwdState" + taskName);
+        setupSemaphore(state.m_backwardTask);
 
         if (!state.m_accessorChildren.empty())
         {
-            state.m_exitTask = std::make_unique<tf::Task>(m_taskflow.emplace([](){}).name("exit"));
-            setupSemaphore(*state.m_exitTask);
+            state.m_forwardExitTask = std::make_unique<tf::Task>(m_taskflow.emplace([](){}).name("exit"));
+            setupSemaphore(*state.m_forwardExitTask);
+
+            state.m_backwardEntryTask = std::make_unique<tf::Task>(m_taskflow.emplace([](){}).name("entry"));
+            setupSemaphore(*state.m_backwardEntryTask);
         }
     }
 
@@ -230,8 +246,10 @@ void MappingGraph::buildTaskDependencies()
         {
             if (accessor.m_parent)
             {
-                accessor.m_task.precede(*accessor.m_parent->exitPoint());
-                accessor.m_task.succeed(accessor.m_parent->m_task);
+                accessor.m_forwardTask.precede(*accessor.m_parent->forwardExitPoint());
+                accessor.m_forwardTask.succeed(accessor.m_parent->m_forwardTask);
+
+                accessor.m_backwardTask.succeed(*accessor.m_parent->backwardEntryPoint());
             }
         }
     };
@@ -245,11 +263,13 @@ void MappingGraph::buildTaskDependencies()
     {
         for (auto* parent : mapping.m_parents)
         {
-            parent->exitPoint()->precede(mapping.m_task);
+            parent->forwardExitPoint()->precede(mapping.m_forwardTask);
+            parent->backwardEntryPoint()->succeed(mapping.m_backwardTask);
         }
-        for (auto* parent : mapping.m_children)
+        for (auto* child : mapping.m_children)
         {
-            parent->m_task.succeed(mapping.m_task);
+            child->m_forwardTask.succeed(mapping.m_forwardTask);
+            child->m_backwardTask.precede(mapping.m_backwardTask);
         }
     }
 
@@ -261,13 +281,23 @@ void MappingGraph::buildTaskDependencies()
             {
                 if (it1->m_states.size() > it2->m_states.size())
                 {
-                    it1->m_task.succeed(*it2->exitPoint());
+                    it1->m_forwardTask.succeed(*it2->forwardExitPoint());
+                    it1->m_backwardTask.precede(*it2->backwardEntryPoint());
                 }
                 else
                 {
-                    it1->m_task.precede(it2->m_task);
+                    it1->m_forwardTask.precede(it2->m_forwardTask);
+                    it1->m_backwardTask.precede(it2->m_backwardTask);
                 }
             }
+        }
+    }
+
+    for (auto& state : m_states)
+    {
+        // if (state.m_mappingChildren.empty())
+        {
+            state.forwardExitPoint()->precede(*state.backwardEntryPoint());
         }
     }
 }
