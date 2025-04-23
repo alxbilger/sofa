@@ -191,6 +191,7 @@ bool GenericConstraintSolver::buildSystem(const core::ConstraintParams *cParams,
     SOFA_UNUSED(res1);
     SOFA_UNUSED(res2);
 
+    //build the constraint jacobian matrices
     const unsigned int numConstraints = buildConstraintMatrix(cParams);
     sofa::helper::AdvancedTimer::valSet("numConstraints", numConstraints);
 

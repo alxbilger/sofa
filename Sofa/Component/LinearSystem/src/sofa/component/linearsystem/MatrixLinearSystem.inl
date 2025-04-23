@@ -660,7 +660,8 @@ void MatrixLinearSystem<TMatrix, TVector>::associateLocalMatrixToComponents(cons
         m_needClearLocalMatrices.setValue(false);
     }
 
-    const sofa::Size totalSize = m_mappingGraph.getTotalNbMainDofs();
+    const sofa::Size totalSize = computeSystemSize(mparams);
+
     this->d_matrixSize.setValue({totalSize, totalSize});
     m_discarder.m_globalMatrix = this->getSystemMatrix();
 
@@ -717,6 +718,13 @@ void MatrixLinearSystem<TMatrix, TVector>::associateLocalMatrixToComponents(cons
         makeLocalMatrixGroups(mparams);
         makeIndependentLocalMatrixGroups();
     }
+}
+
+template <class TMatrix, class TVector>
+std::size_t MatrixLinearSystem<TMatrix, TVector>::computeSystemSize(const core::MechanicalParams* mparams)
+{
+    const sofa::Size mechanicalSize = m_mappingGraph.getTotalNbMainDofs();
+    return mechanicalSize;
 }
 
 template <class TMatrix, class TVector>

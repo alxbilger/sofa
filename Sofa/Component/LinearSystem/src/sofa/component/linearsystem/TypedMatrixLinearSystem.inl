@@ -47,8 +47,7 @@ void TypedMatrixLinearSystem<TMatrix, TVector>::preAssembleSystem(const core::Me
         m_mechanicalMappings.clear();
         m_projectiveConstraints.clear();
 
-        auto* solveContext = getSolveContext();
-        if (solveContext)
+        if (auto* solveContext = getSolveContext())
         {
             solveContext->getObjects(m_forceFields, core::objectmodel::BaseContext::SearchDirection::SearchDown);
             solveContext->getObjects(m_masses, core::objectmodel::BaseContext::SearchDirection::SearchDown);

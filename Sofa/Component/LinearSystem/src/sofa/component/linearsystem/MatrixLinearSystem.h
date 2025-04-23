@@ -155,6 +155,8 @@ protected:
      */
     void associateLocalMatrixToComponents(const core::MechanicalParams* mparams) override;
 
+    virtual std::size_t computeSystemSize(const core::MechanicalParams* mparams);
+
     /**
      * Remove the matrix accumulators
      */
