@@ -43,7 +43,7 @@ void UniformLagrangianConstraint<DataTypes>::buildConstraintMatrix(const sofa::c
 {
     SOFA_UNUSED(cParams);
 
-    const auto N = Deriv::size(); // MatrixDeriv is a container of Deriv types.
+    static constexpr auto N = Deriv::size(); // MatrixDeriv is a container of Deriv types.
 
     auto jacobian = sofa::helper::getWriteAccessor(c);
     auto xVec     = sofa::helper::getReadAccessor(x);
