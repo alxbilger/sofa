@@ -118,25 +118,7 @@ void ConstraintSolverImpl::clearConstraintCorrections()
     l_constraintCorrections.clear();
 }
 
-void ConstraintSolverImpl::resetConstraints(const core::ConstraintParams* cParams)
-{
-    SCOPED_TIMER("Reset Constraint");
-    simulation::mechanicalvisitor::MechanicalResetConstraintVisitor(cParams).execute(getContext());
-}
 
-void ConstraintSolverImpl::buildLocalConstraintMatrix(const core::ConstraintParams* cparams, unsigned int &constraintId)
-{
-    SCOPED_TIMER("Build Local Constraint Matrix");
-    simulation::mechanicalvisitor::MechanicalBuildConstraintMatrix buildConstraintMatrix(cparams, cparams->j(), constraintId );
-    buildConstraintMatrix.execute(getContext());
-}
-
-void ConstraintSolverImpl::accumulateMatrixDeriv(const core::ConstraintParams* cparams)
-{
-    SCOPED_TIMER("Project Mapped Constraint Matrix");
-    simulation::mechanicalvisitor::MechanicalAccumulateMatrixDeriv accumulateMatrixDeriv(cparams, cparams->j());
-    accumulateMatrixDeriv.execute(getContext());
-}
 
 unsigned int ConstraintSolverImpl::buildConstraintMatrix(const core::ConstraintParams* cparams)
 {
@@ -148,17 +130,23 @@ unsigned int ConstraintSolverImpl::buildConstraintMatrix(const core::ConstraintP
     return constraintId;
 }
 
-void ConstraintSolverImpl::applyProjectiveConstraintOnConstraintMatrix(const core::ConstraintParams* cparams)
-{
-    core::MechanicalParams mparams = core::MechanicalParams(*cparams);
-    simulation::mechanicalvisitor::MechanicalProjectJacobianMatrixVisitor(&mparams).execute(getContext());
-}
-
 void ConstraintSolverImpl::getConstraintViolation(
     const core::ConstraintParams* cparams, sofa::linearalgebra::BaseVector* v)
 {
     SCOPED_TIMER("Get Constraint Value");
     MechanicalGetConstraintViolationVisitor(cparams, v).execute(getContext());
+}
+
+const core::objectmodel::BaseContext* ConstraintSolverImpl::
+getLagrangianConstraintsContext() const
+{
+    return this->getContext();
+}
+
+core::objectmodel::BaseContext* ConstraintSolverImpl::
+getLagrangianConstraintsContext()
+{
+    return this->getContext();
 }
 
 

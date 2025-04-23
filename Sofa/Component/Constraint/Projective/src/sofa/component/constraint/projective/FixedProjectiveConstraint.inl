@@ -221,9 +221,9 @@ void FixedProjectiveConstraint<DataTypes>::projectJacobianMatrix(const core::Mec
     else
     {
         const SetIndexArray& indices = d_indices.getValue();
-        for (SetIndexArray::const_iterator it = indices.begin(); it != indices.end(); ++it)
+        for (const Index index : indices)
         {
-            c->clearColBlock(*it);
+            c->clearColBlock(index);
         }
     }
 }

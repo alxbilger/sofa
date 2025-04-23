@@ -2483,7 +2483,7 @@ void MechanicalObject<DataTypes>::getConstraintJacobian(const core::ConstraintPa
         for (MatrixDerivColConstIterator colIt = rowIt.begin(); colIt != colItEnd; ++colIt)
         {
             const unsigned int dof = colIt.index();
-            const Deriv n = colIt.val();
+            const Deriv& n = colIt.val();
 
             for (unsigned int r = 0; r < N; ++r)
             {
