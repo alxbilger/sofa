@@ -151,6 +151,11 @@ void GenericConstraintProblem::gaussSeidel(SReal timeout, GenericConstraintSolve
 
     int iterCount = 0;
 
+    for (int i = 0; i < maxIterations; i++)
+    {
+
+    }
+
     for(int i=0; i<maxIterations; i++)
     {
         iterCount ++;
@@ -648,9 +653,9 @@ void GenericConstraintProblem::gaussSeidel_increment(bool measureError, SReal *d
         std::copy_n(&dfree[j], nb, &d[j]);
 
         //   (b) contribution of forces are added to d     => TODO => optimization (no computation when force= 0 !!)
-        for(int k=0; k<dim; k++)
+        for(unsigned int l=0; l<nb; l++)
         {
-            for(unsigned int l=0; l<nb; l++)
+            for(int k=0; k<dim; k++)
             {
                 d[j+l] += w[j+l][k] * force[k];
             }
