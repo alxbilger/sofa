@@ -20,10 +20,11 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <sofa/component/constraint/lagrangian/solver/GenericConstraintProblem.h>
-#include <sofa/core/behavior/ConstraintResolution.h>
-
 #include <sofa/component/constraint/lagrangian/solver/GenericConstraintSolver.h>
+#include <sofa/core/behavior/ConstraintResolution.h>
 #include <sofa/helper/AdvancedTimer.h>
+
+#include <thread>
 
 namespace sofa::component::constraint::lagrangian::solver
 {
@@ -156,70 +157,187 @@ void GenericConstraintProblem::gaussSeidel(SReal timeout, GenericConstraintSolve
 
     }
 
-    for(int i=0; i<maxIterations; i++)
+    int i_critique = 0;
+    // int i_block = 0;
+    int i_block_previous = 0;
+
+    std::vector linesProcessed(dimension, false);
+
+    std::array blockSizes = {0, 0};
+    std::array i_block = {0, 0};
+
+    constexpr std::size_t previous = 0;
+    constexpr std::size_t current = 1;
+
+    int nbThreads = 10;
+    bool hasConverged = false;
+
+    std::vector<std::thread> threads;
+    threads.reserve(nbThreads);
+
+    std::vector<int> startLine;
+    std::vector<int> endLine;
+
+    // traitement des lignes dans des threads
+    for (int i = 0; i < nbThreads; i++)
     {
-        iterCount ++;
-        bool constraintsAreVerified = true;
-
-        if(sor != 1.0)
+        threads.emplace_back([&hasConverged, threadId = i, nbThreads, &linesProcessed, d, w, force, dimension,
+             &startLine, &endLine, &i_critique]()
         {
-            std::copy_n(force, dimension, tempForces.begin());
-        }
-
-        error=0.0;
-        gaussSeidel_increment(true, dfree, force, w, tol, d, dimension, constraintsAreVerified, error, tabErrors);
-
-        if(showGraphs)
-        {
-            for(int j=0; j<dimension; j++)
+            int lineId = threadId;
+            while (true)
             {
-                std::ostringstream oss;
-                oss << "f" << j;
+                for(int k = startLine[lineId]; k < dimension; ++k)
+                {
+                    d[lineId] += w[lineId][k] * force[k];
+                }
 
-                sofa::type::vector<SReal>& graph_force = (*graph_forces)[oss.str()];
-                graph_force.push_back(force[j]);
+                for(int k = 0; k < endLine[lineId]; ++k)
+                {
+                    //synchro avec chemin critique
+                    while (k > i_critique)
+                    {
+                        //wait
+                    }
 
-                sofa::type::vector<SReal>& graph_violation = (*graph_violations)[oss.str()];
-                graph_violation.push_back(d[j]);
-            }
+                    d[lineId] += w[lineId][k] * force[k];
+                }
 
-            graph_residuals->push_back(error);
-        }
+                linesProcessed[lineId] = true;
 
-        if(sor != 1.0)
-        {
-            for(int j=0; j<dimension; j++)
-            {
-                force[j] = sor * force[j] + (1-sor) * tempForces[j];
+                if (hasConverged)
+                {
+                    break;
+                }
+
+                lineId += nbThreads;
+                lineId %= dimension;
             }
         }
+        );
+    }
 
-        const SReal t1 = (SReal)sofa::helper::system::thread::CTime::getTime();
-        const SReal dt = (t1 - t0)*timeScale;
+    while (true)
+    {
+        blockSizes[previous] = constraintsResolutions[i_block[previous]]->getNbLines();
+        blockSizes[current] = constraintsResolutions[i_block[current]]->getNbLines();
 
-        if(timeout && dt > timeout)
+        //traitement des lignes dans des threads
+        for (int l = i_block[current]; l < i_block[current] + blockSizes[current]; l++)
         {
-
-            msg_info_when(solver!=nullptr, solver) <<  "TimeOut" ;
-
-            currentError = error;
-            currentIterations = i+1;
-            return;
-        }
-        else if(allVerified)
-        {
-            if(constraintsAreVerified)
+            for(int k = i_block[current] + blockSizes[current];
+                k < dimension; ++k)
             {
-                convergence = true;
-                break;
+                d[i_block[current]+l] += w[i_block[current]+l][k] * force[k];
             }
+
+            //synchronisation avec le chemin critique
+            for(int k = 0; k < i_block[current] - blockSizes[previous]; ++k)
+            {
+                d[i_block[current]+l] += w[i_block[current]+l][k] * force[k];
+            }
+
+            linesProcessed[l] = true;
         }
-        else if(error < tol) // do not stop at the first iteration (that is used for initial guess computation)
+
+        //chemin critique: 2 blocs sur la diagonal
+        //faire cette boucle si les lignes sont traitées
+        if (std::all_of(linesProcessed.begin() + i_block[current],
+            linesProcessed.begin() + i_block[current] + blockSizes[1],
+            [](bool b) { return b; }))
         {
-            convergence = true;
+            for (unsigned int l = 0; l < blockSizes[current]; ++l)
+            {
+                for(int k = i_block[current] - blockSizes[previous]; // traiter le cas negatif => c'est le bloc tout à droite
+                    k < i_block[current] + blockSizes[current]; ++k)
+                {
+                    d[i_block[current]+l] += w[i_block[current]+l][k] * force[k];
+                }
+            }
+
+            constraintsResolutions[i_block[current]]->resolution(i_block[current], w, d, force, dfree);
+        }
+
+        ++i_critique;
+        i_block[previous] = i_block[current];
+        i_block[current] += blockSizes[current];
+
+        if (hasConverged)
+        {
             break;
         }
     }
+
+    //optional?
+    for (auto& thread : threads)
+    {
+        thread.join();
+    }
+
+    // for(int i=0; i<maxIterations; i++)
+    // {
+    //     iterCount ++;
+    //     bool constraintsAreVerified = true;
+    //
+    //     if(sor != 1.0)
+    //     {
+    //         std::copy_n(force, dimension, tempForces.begin());
+    //     }
+    //
+    //     error=0.0;
+    //     gaussSeidel_increment(true, dfree, force, w, tol, d, dimension, constraintsAreVerified, error, tabErrors);
+    //
+    //     if(showGraphs)
+    //     {
+    //         for(int j=0; j<dimension; j++)
+    //         {
+    //             std::ostringstream oss;
+    //             oss << "f" << j;
+    //
+    //             sofa::type::vector<SReal>& graph_force = (*graph_forces)[oss.str()];
+    //             graph_force.push_back(force[j]);
+    //
+    //             sofa::type::vector<SReal>& graph_violation = (*graph_violations)[oss.str()];
+    //             graph_violation.push_back(d[j]);
+    //         }
+    //
+    //         graph_residuals->push_back(error);
+    //     }
+    //
+    //     if(sor != 1.0)
+    //     {
+    //         for(int j=0; j<dimension; j++)
+    //         {
+    //             force[j] = sor * force[j] + (1-sor) * tempForces[j];
+    //         }
+    //     }
+    //
+    //     const SReal t1 = (SReal)sofa::helper::system::thread::CTime::getTime();
+    //     const SReal dt = (t1 - t0)*timeScale;
+    //
+    //     if(timeout && dt > timeout)
+    //     {
+    //
+    //         msg_info_when(solver!=nullptr, solver) <<  "TimeOut" ;
+    //
+    //         currentError = error;
+    //         currentIterations = i+1;
+    //         return;
+    //     }
+    //     else if(allVerified)
+    //     {
+    //         if(constraintsAreVerified)
+    //         {
+    //             convergence = true;
+    //             break;
+    //         }
+    //     }
+    //     else if(error < tol) // do not stop at the first iteration (that is used for initial guess computation)
+    //     {
+    //         convergence = true;
+    //         break;
+    //     }
+    // }
 
     sofa::helper::AdvancedTimer::valSet("GS iterations", currentIterations);
 
