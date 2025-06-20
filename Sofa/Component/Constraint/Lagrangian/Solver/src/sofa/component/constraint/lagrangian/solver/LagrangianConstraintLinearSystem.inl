@@ -22,17 +22,28 @@
 #pragma once
 
 #include <sofa/component/constraint/lagrangian/solver/LagrangianConstraintLinearSystem.h>
-#include <sofa/component/linearsystem/MatrixLinearSystem.inl>
 #include <sofa/core/behavior/MultiVec.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
 
+#include <sofa/component/linearsystem/MatrixLinearSystem.inl>
+
+#include "visitors/MechanicalGetConstraintViolationVisitor.h"
 
 namespace sofa::component::constraint::lagrangian::solver
 {
 
+template <class TMatrix, class TVector>
+LagrangianConstraintLinearSystem<TMatrix, TVector>::LagrangianConstraintLinearSystem()
+    : d_lambda(initData(&d_lambda, "lambda", "Lagrange multiplier"))
+{
+}
+
 template<class TMatrix>
 class ConstraintMatrixProxy;
+
+template<class TVector>
+class ConstraintViolationProxy;
 
 template< typename TMultiVecId >
 void clearMultiVecId(sofa::core::objectmodel::BaseContext* ctx, const sofa::core::ConstraintParams* cParams, const TMultiVecId& vid)
@@ -56,17 +67,26 @@ void LagrangianConstraintLinearSystem<TMatrix, TVector>::init()
 }
 
 template <class TMatrix, class TVector>
-void LagrangianConstraintLinearSystem<TMatrix, TVector>::assembleConstraints()
+void LagrangianConstraintLinearSystem<TMatrix, TVector>::assembleConstraintsJacobian()
 {
     const auto mechanicalSize = this->getMappingGraph().getTotalNbMainDofs();
 
     ConstraintMatrixProxy intermediate(this->getSystemMatrix(), mechanicalSize);
 
-    unsigned int offset {};
-    for (const auto& mstate : this->m_mappingGraph.getMainMechanicalStates())
-    {
-        mstate->getConstraintJacobian(&cparams, &intermediate, offset);
-    }
+    // unsigned int offset{};
+    // for (const auto& mstate : this->m_mappingGraph.getMechanicalStates())
+    // {
+    //     mstate->getConstraintJacobian(&cparams, &intermediate, offset);
+    // }
+}
+
+template <class TMatrix, class TVector>
+void LagrangianConstraintLinearSystem<TMatrix, TVector>::assembleConstraintViolation()
+{
+    const auto mechanicalSize = this->getMappingGraph().getTotalNbMainDofs();
+    ConstraintViolationProxy constraintViolation(this->getRHSVector(), mechanicalSize);
+    MechanicalGetConstraintViolationVisitor(&cparams, &constraintViolation)
+        .execute(this->getLagrangianConstraintsContext());
 }
 
 template <class TMatrix, class TVector>
@@ -75,8 +95,28 @@ void LagrangianConstraintLinearSystem<TMatrix, TVector>::assembleSystem(
 {
     Inherit1::assembleSystem(mparams);
 
-    assembleConstraints();
+    assembleConstraintsJacobian();
+    assembleConstraintViolation();
 }
+
+template <class TMatrix, class TVector>
+void LagrangianConstraintLinearSystem<TMatrix, TVector>::dispatchSystemSolution(
+    core::MultiVecDerivId v)
+{
+    linearsystem::MatrixLinearSystem<TMatrix, TVector>::dispatchSystemSolution(v);
+
+    if (auto* solution = this->getSolutionVector())
+    {
+        auto lambda = sofa::helper::getWriteOnlyAccessor(d_lambda);
+        lambda.resize(lagrangianConstraintsSize);
+        const auto mechanicalSize = this->getMappingGraph().getTotalNbMainDofs();
+        for (std::size_t i = 0; i < lagrangianConstraintsSize; ++i)
+        {
+            lambda[i] = solution->element(i + mechanicalSize);
+        }
+    }
+}
+
 
 template <class TMatrix, class TVector>
 sofa::Size LagrangianConstraintLinearSystem<TMatrix, TVector>::
@@ -84,6 +124,8 @@ computeLocalLagrangianConstraintMatrices(const core::MechanicalParams* mparams)
 {
     cparams = *mparams;
     cparams.setLambda(m_lambdaId);
+    cparams.setX(core::vec_id::read_access::position);
+    cparams.setV(core::vec_id::read_access::velocity);
 
     SCOPED_TIMER("Build Constraint Matrix");
     unsigned int constraintId {};
@@ -114,7 +156,7 @@ std::size_t LagrangianConstraintLinearSystem<TMatrix, TVector>::
 computeSystemSize(const core::MechanicalParams* mparams)
 {
     const sofa::Size mechanicalSize = this->m_mappingGraph.getTotalNbMainDofs();
-    const sofa::Size lagrangianConstraintsSize = computeLocalLagrangianConstraintMatrices(mparams);
+    lagrangianConstraintsSize = computeLocalLagrangianConstraintMatrices(mparams);
     return mechanicalSize + lagrangianConstraintsSize;
 }
 
@@ -127,7 +169,7 @@ public:
     ConstraintMatrixProxy(TMatrix* originalMatrix, sofa::Size offset) : m_originalMatrix(originalMatrix), m_offset(offset) {}
     ConstraintMatrixProxy() = delete;
     Index rowSize() const override { return m_originalMatrix->rowSize(); }
-    Index colSize() const override { return m_originalMatrix->colSize(); };
+    Index colSize() const override { return m_originalMatrix->colSize(); }
     SReal element(Index i, Index j) const override { return 0; }
     void resize(Index nbRow, Index nbCol) override {}
     void clear() override {}
@@ -138,11 +180,29 @@ public:
         //1) below the mechanical matrix (down-left)
         m_originalMatrix->add(row + m_offset, col, v);
         //2) right to the mechanical matrix (top-right)
-        m_originalMatrix->add(col, row + m_offset, -v);
+        m_originalMatrix->add(col, row + m_offset, v);
     }
 
 private:
     TMatrix* m_originalMatrix { nullptr };
+    const sofa::Size m_offset {};
+};
+
+template<class TVector>
+class ConstraintViolationProxy : public linearalgebra::BaseVector
+{
+public:
+    ConstraintViolationProxy(TVector* originalVector, sofa::Size offset) : m_originalVector(originalVector), m_offset(offset) {}
+    ConstraintViolationProxy() = delete;
+    Index size() const override { return m_originalVector->size(); }
+    SReal element(Index i) const override { return 0; }
+    void resize(Index dim) override { }
+    void clear() override {}
+    void set(Index i, SReal v) override {}
+    void add(Index i, SReal v) override { m_originalVector->add(i + m_offset, v); }
+
+private:
+    TVector* m_originalVector { nullptr };
     const sofa::Size m_offset {};
 };
 

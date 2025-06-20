@@ -29,8 +29,9 @@
     <CollisionResponse name="Response" response="FrictionContactConstraint" />
 
     <EulerImplicitSolver printLog="false" rayleighStiffness="0.1" rayleighMass="0.1"/>
+<!--    <MatrixLinearSystem template="CompressedRowSparseMatrix" name="system"/>-->
     <LagrangianConstraintLinearSystem template="CompressedRowSparseMatrix" name="system"/>
-<!--    <GlobalSystemMatrixExporter exportEveryNumberOfSteps="1" filename="constraints" printLog="true" format="bmp" precision="12" name="exporterBMP" linearSystem="@system"/>-->
+    <GlobalSystemMatrixExporter exportEveryNumberOfSteps="1" filename="constraints" printLog="true" format="bmp" precision="12" name="exporterBMP" linearSystem="@system"/>
 <!--    <GlobalSystemMatrixExporter exportEveryNumberOfSteps="1" filename="constraints" printLog="true" format="csv" precision="12" name="exporterCSV" linearSystem="@system"/>-->
     <SparseLDLSolver template="CompressedRowSparseMatrix"/>
 

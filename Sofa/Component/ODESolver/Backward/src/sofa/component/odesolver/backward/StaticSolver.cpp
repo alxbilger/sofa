@@ -38,7 +38,8 @@ void registerStaticSolver(sofa::core::ObjectFactory* factory)
 }
 
 StaticSolver::StaticSolver()
-    : l_newtonSolver(initLink("newtonSolver", "Link to a NewtonRaphsonSolver"))
+    : d_solveLagrangianConstraints(initData(&d_solveLagrangianConstraints, false, "solveLagrangianConstraints", "Consider geometric constraints to find the static equilibrium"))
+    , l_newtonSolver(initLink("newtonSolver", "Link to a NewtonRaphsonSolver"))
     , d_newton_iterations(this, "newton_iterations")
     , d_absolute_correction_tolerance_threshold(this, "absolute_correction_tolerance_threshold")
     , d_relative_correction_tolerance_threshold(this, "relative_correction_tolerance_threshold")
@@ -121,6 +122,14 @@ struct StaticResidualFunction : newton_raphson::BaseNonLinearFunction
 
         mop.computeForce(force, clearForcesBeforeComputingThem, applyBottomUpMappings);
         mop.projectResponse(force);
+
+        force.teq(-1_sreal);
+
+        if (solveLagrangianConstraints)
+        {
+            // force += J^T * lambda
+            // linearSolver->getSystemBaseMatrix()->
+        }
     }
 
     SReal squaredNormLastEvaluation() override
@@ -134,16 +143,21 @@ struct StaticResidualFunction : newton_raphson::BaseNonLinearFunction
 
         static constexpr core::MatricesFactors::M m(0);
         static constexpr core::MatricesFactors::B b(0);
-        static constexpr core::MatricesFactors::K k(-1);
+        static constexpr core::MatricesFactors::K k(1);
 
         mop.setSystemMBKMatrix(m, b, k, linearSolver);
     }
 
     void updateGuessFromLinearSolution(SReal alpha) override
     {
-        x.peq(dx, alpha);
-        mop.solveConstraint(x, sofa::core::ConstraintOrder::POS);
+        x.peq(dx, alpha);//non mappé
+
+
+        force.peq(dlambda, alpha); //mappé avec contraint
+
+        // mop.solveConstraint(x, sofa::core::ConstraintOrder::POS);
         mop.propagateX(x);
+        // mop.backPropagateF(force); //lambda
     }
 
     void solveLinearEquation() override
@@ -170,12 +184,14 @@ struct StaticResidualFunction : newton_raphson::BaseNonLinearFunction
     core::behavior::MultiVecDeriv& force;
     core::behavior::MultiVecDeriv& dx;
     core::behavior::LinearSolver* linearSolver { nullptr };
+    bool solveLagrangianConstraints { false };
 
     StaticResidualFunction(sofa::simulation::common::MechanicalOperations& mop,
                            core::behavior::MultiVecCoord& x, core::behavior::MultiVecDeriv& force,
                            core::behavior::MultiVecDeriv& dx,
-                           core::behavior::LinearSolver* linearSolver)
-        : mop(mop), x(x), force(force), dx(dx), linearSolver(linearSolver)
+                           core::behavior::LinearSolver* linearSolver,
+                           bool solveLagrangianConstraints)
+        : mop(mop), x(x), force(force), dx(dx), linearSolver(linearSolver), solveLagrangianConstraints(solveLagrangianConstraints)
     {
     }
 };
@@ -207,7 +223,7 @@ void StaticSolver::solve(const core::ExecParams* params, SReal dt, core::MultiVe
 
     SCOPED_TIMER("StaticSolver::Solve");
 
-    StaticResidualFunction staticResidualFunction(mop, x, force, dx, l_linearSolver.get());
+    StaticResidualFunction staticResidualFunction(mop, x, force, dx, l_linearSolver.get(), d_solveLagrangianConstraints.getValue());
     l_newtonSolver->solve(staticResidualFunction);
 }
 

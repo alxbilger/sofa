@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<Node name="root" dt="0.001" gravity="0 -9.81 0">
+
+    <VisualStyle displayFlags="showForceFields" />
+    <DefaultVisualManagerLoop />
+    <DefaultAnimationLoop />
+
+    <VisualGrid size="2"/>
+    <LineAxis size="2"/>
+
+    <EulerImplicitSolver printLog="false" rayleighStiffness="0.1" rayleighMass="0.1"/>
+<!--    <MatrixLinearSystem template="CompressedRowSparseMatrix" name="system"/>-->
+    <LagrangianConstraintLinearSystem template="CompressedRowSparseMatrix" name="system"/>
+<!--    <GlobalSystemMatrixExporter exportEveryNumberOfSteps="1" filename="constraints" printLog="true" format="bmp" precision="12" name="exporterBMP" linearSystem="@system"/>-->
+    <GlobalSystemMatrixExporter exportEveryNumberOfSteps="1" filename="constraints" printLog="true" format="csv" precision="12" name="exporterCSV" linearSystem="@system"/>
+    <SparseLDLSolver template="CompressedRowSparseMatrix"/>
+
+    <Node name="segment">
+        <MechanicalObject name="DoFs" template="Vec3" position="0 0 0  1 0 0" showObject="true" showObjectScale="20"/>
+        <FixedLagrangianConstraint indices="0"/>
+        <UniformMass totalMass="1"/>
+        <SpringForceField object1="@DoFs" object2="@DoFs" spring="0 1 100 1 1" showArrowSize="0.01" drawMode="2"/>
+    </Node>
+</Node>

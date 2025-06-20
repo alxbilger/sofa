@@ -100,8 +100,19 @@ void TypedMatrixLinearSystem<TMatrix, TVector>::copyLocalVectorToGlobalVector(co
             globalVector->resize(m_mappingGraph.getTotalNbMainDofs());
         }
 
-        AssembleGlobalVectorFromLocalVectorVisitor(core::execparams::defaultInstance(), m_mappingGraph, v, globalVector)
-            .execute(getSolveContext());
+        for (const auto& state : m_mappingGraph.getMainMechanicalStates())
+        {
+            auto pos = m_mappingGraph.getPositionInGlobalMatrix(state);
+            state->copyFromBaseVector(globalVector, v.getId(state), pos[0]);
+        }
+
+        //copier les lambdas des states avec contraintes
+
+
+
+        //
+        // AssembleGlobalVectorFromLocalVectorVisitor(core::execparams::defaultInstance(), m_mappingGraph, v, globalVector)
+        //     .execute(getSolveContext());
     }
 }
 

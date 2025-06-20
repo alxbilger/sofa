@@ -44,10 +44,15 @@ public:
 
     void init() override;
     void assembleSystem(const core::MechanicalParams* mparams) override;
+    void dispatchSystemSolution(core::MultiVecDerivId v) override;
 
 protected:
+
+    LagrangianConstraintLinearSystem();
+
     sofa::Size computeLocalLagrangianConstraintMatrices(const core::MechanicalParams* mparams);
-    void assembleConstraints();
+    void assembleConstraintsJacobian();
+    void assembleConstraintViolation();
 
     sofa::core::MultiVecDerivId m_lambdaId;
 
@@ -57,6 +62,10 @@ protected:
     core::objectmodel::BaseContext* getLagrangianConstraintsContext() override;
 
     std::size_t computeSystemSize(const core::MechanicalParams* mparams) override;
+
+    sofa::Size lagrangianConstraintsSize;
+
+    Data<sofa::type::vector<SReal> > d_lambda;
 };
 
 

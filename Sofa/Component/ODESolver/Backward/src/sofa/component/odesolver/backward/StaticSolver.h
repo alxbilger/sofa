@@ -38,6 +38,8 @@ public:
     SOFA_CLASS2(StaticSolver, core::behavior::OdeSolver, core::behavior::LinearSolverAccessor);
     StaticSolver();
 
+    Data<bool> d_solveLagrangianConstraints;
+
     void solve(
         const core::ExecParams* params,
         SReal dt,
