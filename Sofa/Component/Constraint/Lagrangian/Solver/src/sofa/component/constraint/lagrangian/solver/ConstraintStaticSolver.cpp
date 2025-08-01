@@ -36,9 +36,43 @@ ConstraintStaticSolver::ConstraintStaticSolver()
     : l_newtonSolver(initLink("newtonSolver", "Link to a NewtonRaphsonSolver"))
 {}
 
+struct ConstraintStaticResidualFunction : odesolver::backward::newton_raphson::BaseNonLinearFunction
+{
+    void evaluateCurrentGuess() override
+    {}
+    SReal squaredNormLastEvaluation() override
+    {
+        return 0;
+    }
+    void computeGradientFromCurrentGuess() override
+    {}
+    void solveLinearEquation() override
+    {}
+    void updateGuessFromLinearSolution(SReal alpha) override
+    {}
+    SReal squaredNormDx() override
+    {
+        return 0;
+    }
+    SReal squaredLastEvaluation() override
+    {
+        return 0;
+    }
+};
+
 void ConstraintStaticSolver::solve(const core::ExecParams* params, SReal dt,
                                    core::MultiVecCoordId x, core::MultiVecDerivId v)
 {
+    if (!isComponentStateValid())
+    {
+        return;
+    }
+
+    SOFA_UNUSED(dt);
+    SOFA_UNUSED(v);
+
+    ConstraintStaticResidualFunction staticResidualFunction;
+    l_newtonSolver->solve(staticResidualFunction);
 }
 
 
