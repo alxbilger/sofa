@@ -8,6 +8,7 @@ set(HEADER_FILES
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/init.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/AssembleConstraints.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/ConstraintSolverImpl.h
+    ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/ConstraintStaticSolver.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/GenericConstraintProblem.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/GenericConstraintSolver.h
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/LagrangianConstraintLinearSystem.h
@@ -23,6 +24,7 @@ set(SOURCE_FILES
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/init.cpp
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/AssembleConstraints.cpp
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/ConstraintSolverImpl.cpp
+    ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/ConstraintStaticSolver.cpp
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/GenericConstraintProblem.cpp
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/GenericConstraintSolver.cpp
     ${SOFACOMPONENTCONSTRAINTLAGRANGIANSOLVER_SOURCE_DIR}/LagrangianConstraintLinearSystem.cpp
@@ -35,9 +37,13 @@ set(SOURCE_FILES
 
 sofa_find_package(Sofa.Simulation.Core REQUIRED)
 sofa_find_package(Sofa.Component.LinearSystem REQUIRED)
+sofa_find_package(Sofa.Component.ODESolver.Backward REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Simulation.Core Sofa.Component.LinearSystem)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Sofa.Simulation.Core
+    Sofa.Component.LinearSystem
+    Sofa.Component.ODESolver.Backward)
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}

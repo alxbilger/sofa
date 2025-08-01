@@ -7,9 +7,9 @@
     <DefaultVisualManagerLoop />
     <DefaultAnimationLoop />
 
-    <NewtonRaphsonSolver name="newtonSolver_springs" maxNbIterationsNewton="1" printLog="true"
+    <NewtonRaphsonSolver name="newtonSolver" maxNbIterationsNewton="1" printLog="true"
                          maxNbIterationsLineSearch="1" warnWhenLineSearchFails="false"/>
-    <StaticSolver newtonSolver="@newtonSolver_springs"/>
+    <ConstraintStaticSolver newtonSolver="@newtonSolver"/>
 
 <!--    <MatrixLinearSystem/>-->
     <LagrangianConstraintLinearSystem template="CompressedRowSparseMatrix" name="system" printLog="true"/>

@@ -19,58 +19,27 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <sofa/component/constraint/lagrangian/solver/init.h>
+#include <sofa/component/constraint/lagrangian/solver/ConstraintStaticSolver.h>
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/helper/system/PluginManager.h>
 
 namespace sofa::component::constraint::lagrangian::solver
 {
 
-extern void registerGenericConstraintSolver(sofa::core::ObjectFactory* factory);
-extern void registerLCPConstraintSolver(sofa::core::ObjectFactory* factory);
-extern void registerConstraintStaticSolver(sofa::core::ObjectFactory* factory);
-extern void registerLagrangianConstraintLinearSystem(sofa::core::ObjectFactory* factory);
-
-extern "C" {
-    SOFA_EXPORT_DYNAMIC_LIBRARY void initExternalModule();
-    SOFA_EXPORT_DYNAMIC_LIBRARY const char* getModuleName();
-    SOFA_EXPORT_DYNAMIC_LIBRARY const char* getModuleVersion();
-    SOFA_EXPORT_DYNAMIC_LIBRARY void registerObjects(sofa::core::ObjectFactory* factory);
-}
-
-void initExternalModule()
+void registerConstraintStaticSolver(sofa::core::ObjectFactory* factory)
 {
-    init();
+    factory->registerObjects(
+        core::ObjectRegistrationData("Static solver with lagrangian constraints")
+            .add<ConstraintStaticSolver>());
 }
 
-const char* getModuleName()
+ConstraintStaticSolver::ConstraintStaticSolver()
+    : l_newtonSolver(initLink("newtonSolver", "Link to a NewtonRaphsonSolver"))
+{}
+
+void ConstraintStaticSolver::solve(const core::ExecParams* params, SReal dt,
+                                   core::MultiVecCoordId x, core::MultiVecDerivId v)
 {
-    return MODULE_NAME;
 }
 
-const char* getModuleVersion()
-{
-    return MODULE_VERSION;
-}
 
-void registerObjects(sofa::core::ObjectFactory* factory)
-{
-    registerGenericConstraintSolver(factory);
-    registerLCPConstraintSolver(factory);
-    registerConstraintStaticSolver(factory);
-    registerLagrangianConstraintLinearSystem(factory);
-}
-
-void init()
-{
-    static bool first = true;
-    if (first)
-    {
-        // make sure that this plugin is registered into the PluginManager
-        sofa::helper::system::PluginManager::getInstance().registerPlugin(MODULE_NAME);
-
-        first = false;
-    }
-}
-
-} // namespace sofa::component::constraint::lagrangian::solver
+}  // namespace sofa::component::constraint::lagrangian::solver

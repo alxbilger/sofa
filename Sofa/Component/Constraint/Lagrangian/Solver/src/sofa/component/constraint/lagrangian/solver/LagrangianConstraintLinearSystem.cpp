@@ -35,12 +35,14 @@ template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_SOLVER_API LagrangianConstra
 template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_SOLVER_API LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<6,6,SReal> >, FullVector<SReal> >;
 template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_SOLVER_API LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<8,8,SReal> >, FullVector<SReal> >;
 
-int LagrangianConstraintLinearSystemClass = sofa::core::RegisterObject("Linear system including lagrangian constraints")
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<SReal>, FullVector<SReal> > >(true)
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<2,2,SReal> >, FullVector<SReal> > >()
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<3,3,SReal> >, FullVector<SReal> > >()
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<4,4,SReal> >, FullVector<SReal> > >()
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<6,6,SReal> >, FullVector<SReal> > >()
-    .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<8,8,SReal> >, FullVector<SReal> > >()
-;
+void registerLagrangianConstraintLinearSystem(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Linear system including lagrangian constraints")
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<SReal>, FullVector<SReal> > >(true)
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<2, 2, SReal> >, FullVector<SReal> > >()
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<3, 3, SReal> >, FullVector<SReal> > >()
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<4, 4, SReal> >, FullVector<SReal> > >()
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<6, 6, SReal> >, FullVector<SReal> > >()
+        .add<LagrangianConstraintLinearSystem< CompressedRowSparseMatrix<type::Mat<8, 8, SReal> >, FullVector<SReal> > >());
+}
 }
