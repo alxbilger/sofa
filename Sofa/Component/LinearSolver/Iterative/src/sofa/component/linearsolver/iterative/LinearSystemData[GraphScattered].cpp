@@ -48,6 +48,12 @@ void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::resizeSystem(
 }
 
 template<> SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_API
+void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::extendSystem(sofa::Size n)
+{
+    SOFA_UNUSED(n);
+}
+
+template<> SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_API
 void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::clearSystem()
 {
     allocateSystem();

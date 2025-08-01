@@ -47,7 +47,8 @@ void TypedMatrixLinearSystem<TMatrix, TVector>::preAssembleSystem(const core::Me
         m_mechanicalMappings.clear();
         m_projectiveConstraints.clear();
 
-        if (auto* solveContext = getSolveContext())
+        auto* solveContext = getSolveContext();
+        if (solveContext)
         {
             solveContext->getObjects(m_forceFields, core::objectmodel::BaseContext::SearchDirection::SearchDown);
             solveContext->getObjects(m_masses, core::objectmodel::BaseContext::SearchDirection::SearchDown);
@@ -100,19 +101,8 @@ void TypedMatrixLinearSystem<TMatrix, TVector>::copyLocalVectorToGlobalVector(co
             globalVector->resize(m_mappingGraph.getTotalNbMainDofs());
         }
 
-        for (const auto& state : m_mappingGraph.getMainMechanicalStates())
-        {
-            auto pos = m_mappingGraph.getPositionInGlobalMatrix(state);
-            state->copyFromBaseVector(globalVector, v.getId(state), pos[0]);
-        }
-
-        //copier les lambdas des states avec contraintes
-
-
-
-        //
-        // AssembleGlobalVectorFromLocalVectorVisitor(core::execparams::defaultInstance(), m_mappingGraph, v, globalVector)
-        //     .execute(getSolveContext());
+        AssembleGlobalVectorFromLocalVectorVisitor(core::execparams::defaultInstance(), m_mappingGraph, v, globalVector)
+            .execute(getSolveContext());
     }
 }
 

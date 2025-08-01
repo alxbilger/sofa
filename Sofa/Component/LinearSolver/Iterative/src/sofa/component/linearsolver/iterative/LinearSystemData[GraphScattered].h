@@ -38,6 +38,9 @@ template<>
 void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::resizeSystem(sofa::Size n);
 
 template<>
+void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::extendSystem(sofa::Size n);
+
+template<>
 void LinearSystemData<GraphScatteredMatrix, GraphScatteredVector>::clearSystem();
 
 #if !defined(SOFA_COMPONENT_LINEARSOLVER_ITERATIVE_LINEARSYSTEMDATA_GRAPHSCATTERED_CPP)

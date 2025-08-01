@@ -109,6 +109,8 @@ public:
 
     void fastResize(Index dim);
 
+    void extend(Index dim);
+
     void resize(Index dim) override;
     void clear() override;
 

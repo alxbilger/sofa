@@ -43,6 +43,7 @@ public:
     using Real = typename TMatrix::Real;
 
     void init() override;
+    void reset() override;
     void assembleSystem(const core::MechanicalParams* mparams) override;
     void dispatchSystemSolution(core::MultiVecDerivId v) override;
 
@@ -63,7 +64,7 @@ protected:
 
     std::size_t computeSystemSize(const core::MechanicalParams* mparams) override;
 
-    sofa::Size lagrangianConstraintsSize;
+    sofa::Size lagrangianConstraintsSize {};
 
     Data<sofa::type::vector<SReal> > d_lambda;
 };

@@ -19,41 +19,42 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <sofa/core/MultiVecId.h>
-#include <sofa/core/ObjectFactory.h>
-#include <sofa/core/VecId.h>
-#include <sofa/core/behavior/BaseMatrixLinearSystem.h>
-#include <sofa/core/behavior/ConstraintSolver.h>
-#include <sofa/core/behavior/LinearSolver.h>
-#include <sofa/linearalgebra/BaseMatrix.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/MechanicalVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalAccFromFVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalAddMBK_ToMatrixVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalAddMBKdxVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalAddMDxVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalAddSeparateGravityVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalApplyConstraintsVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalApplyProjectiveConstraint_ToMatrixVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalComputeContactForceVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalComputeDfVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalComputeEnergyVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalComputeForceVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalGetMatrixDimensionVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorToBaseVectorVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorFromBaseVectorVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorPeqBaseVectorVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalMultiVectorToBaseVectorVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalProjectPositionAndVelocityVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalProjectPositionVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalProjectVelocityVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateDxAndResetForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalComputeEnergyVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateDxVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndResetForceVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateDxAndResetForceVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyVelocityVisitor.h>
-#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndResetForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalProjectPositionVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalProjectVelocityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalApplyConstraintsVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalProjectPositionAndVelocityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalAddMDxVisitor.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalAccFromFVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalResetForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalComputeForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalComputeDfVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalAddMBKdxVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalAddSeparateGravityVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalComputeContactForceVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalGetMatrixDimensionVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalAddMBK_ToMatrixVisitor.h>
+#include <sofa/simulation/mechanicalvisitor/MechanicalApplyProjectiveConstraint_ToMatrixVisitor.h>
+#include <sofa/core/MultiVecId.h>
+#include <sofa/core/VecId.h>
+
+#include <sofa/core/behavior/LinearSolver.h>
+#include <sofa/linearalgebra/BaseMatrix.h>
+#include <sofa/core/behavior/ConstraintSolver.h>
+
+#include <sofa/core/ObjectFactory.h>
 
 #include <numeric>
 
@@ -247,7 +248,7 @@ void MechanicalOperations::accFromF(core::MultiVecDerivId a, core::ConstMultiVec
 }
 
 /// Compute the current force (given the latest propagated position and velocity)
-void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear, bool accumulate, behavior::BaseMatrixLinearSystem* linearSystem)
+void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear, bool accumulate)
 {
     setF(result);
     if (clear)
@@ -256,8 +257,6 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
         //finish();
     }
     executeVisitor( MechanicalComputeForceVisitor(&mparams, result, accumulate) );
-
-    linearSystem->projectVector(result);
 }
 
 

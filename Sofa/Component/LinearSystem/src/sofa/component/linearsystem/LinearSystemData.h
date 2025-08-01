@@ -62,6 +62,9 @@ struct LinearSystemData
 
     void resizeSystem(sofa::Size n);
 
+    // resize, but keep the content
+    void extendSystem(sofa::Size n);
+
     void clearSystem();
 };
 
@@ -118,6 +121,26 @@ void LinearSystemData<TMatrix, TVector>::resizeSystem(sofa::Size n)
     if (solution)
     {
         solution->resize(n);
+    }
+}
+template <typename TMatrix, typename TVector>
+void LinearSystemData<TMatrix, TVector>::extendSystem(sofa::Size n)
+{
+    allocateSystem();
+
+    if (matrix)
+    {
+        matrix->extend(n, n);
+    }
+
+    if (rhs)
+    {
+        rhs->extend(n);
+    }
+
+    if (solution)
+    {
+        solution->extend(n);
     }
 }
 

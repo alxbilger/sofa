@@ -60,7 +60,7 @@ void FullVector<Real>::operator=(const Real& a)
     std::fill(begin(), end(), a);
 }
 
-template<typename Real>
+template <typename Real>
 void FullVector<Real>::fastResize(Index dim)
 {
     if (dim == cursize) return;
@@ -68,8 +68,7 @@ void FullVector<Real>::fastResize(Index dim)
     {
         if (dim > allocsize)
         {
-            if (allocsize > 0)
-                delete[] data;
+            if (allocsize > 0) delete[] data;
             allocsize = dim;
             data = new Real[dim];
         }
@@ -78,14 +77,45 @@ void FullVector<Real>::fastResize(Index dim)
     {
         if (dim > -allocsize)
         {
-            msg_error("FullVector") << "Cannot resize preallocated vector to size "<<dim ;
+            msg_error("FullVector") << "Cannot resize preallocated vector to size " << dim;
             return;
         }
     }
     cursize = dim;
 }
 
-template<typename Real>
+template <typename T>
+void FullVector<T>::extend(Index dim)
+{
+    assert(dim >= cursize);
+    if (dim == cursize) return;
+    if (allocsize >= 0)
+    {
+        if (dim > allocsize)
+        {
+            // realloc
+            allocsize = dim;
+            T* temp = new T[allocsize];
+            if (allocsize > 0)
+            {
+                std::copy(data, data + cursize, temp);
+                delete[] data;
+            }
+            data = temp;
+        }
+    }
+    else
+    {
+        if (dim > -allocsize)
+        {
+            msg_error("FullVector") << "ERROR: cannot extend preallocated vector to size " << dim;
+            return;
+        }
+    }
+    cursize = dim;
+}
+
+template <typename Real>
 std::ostream& readFromStream(std::ostream& out, const FullVector<Real>& v )
 {
     for (Index i=0,s=v.size(); i<s; ++i)
