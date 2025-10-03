@@ -1307,6 +1307,7 @@ void MechanicalObject<DataTypes>::endIntegration(const core::ExecParams* /*param
 template <class DataTypes>
 void MechanicalObject<DataTypes>::accumulateForce(const core::ExecParams* params, core::VecDerivId fId)
 {
+    SCOPED_TIMER_TR("accumulateForce");
     SOFA_UNUSED(params);
 
     helper::ReadAccessor< Data<VecDeriv> > extForces_rA( *this->read(core::vec_id::read_access::externalForce) );

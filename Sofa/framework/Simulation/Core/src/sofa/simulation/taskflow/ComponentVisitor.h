@@ -1,6 +1,7 @@
 #pragma once
 #include <sofa/simulation/taskflow/TaskflowVisitor.h>
 #include <sofa/simulation/Node.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::simulation::taskflow
 {
@@ -40,6 +41,7 @@ struct ComponentVisitor : public TaskflowVisitor
 
     void run(Node* node) override
     {
+        SCOPED_TIMER_TR("ComponentVisitor");
         s_executor.silent_async([this, node]()
         {
             processNode(node);
