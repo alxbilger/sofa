@@ -1,37 +1,10 @@
 #pragma once
 #include <sofa/simulation/taskflow/TaskflowVisitor.h>
-#include <sofa/simulation/Node.h>
+#include <sofa/simulation/taskflow/detail.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::simulation::taskflow
 {
-
-namespace detail
-{
-template<class Component>
-struct ComponentInNode
-{};
-
-template<> struct ComponentInNode<core::behavior::BaseMechanicalState>
-{
-    static auto get(const Node* node)
-    {
-        return node->getMechanicalState();
-    }
-};
-
-template <typename T>
-concept is_iterable_impl = requires(T& t)
-{
-    begin(t) != end(t); // begin/end and operator !=
-    ++std::declval<decltype(begin(t))&>(); // operator ++
-    *begin(t); // operator*
-};
-
-template <typename T>
-concept is_iterable = detail::is_iterable_impl<T>;
-
-}
 
 template<class Component>
 struct ComponentVisitor : public TaskflowVisitor
@@ -87,8 +60,6 @@ private:
             });
         }
     }
-
-    tf::Taskflow m_taskflow;
 };
 
 

@@ -140,9 +140,12 @@ set(HEADER_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVReallocVisitor.h
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.h
 
+    ${SRC_ROOT}/taskflow/detail.h
     ${SRC_ROOT}/taskflow/AccumulateForceVisitor.h
+    ${SRC_ROOT}/taskflow/AddForceVisitor.h
     ${SRC_ROOT}/taskflow/ComponentVisitor.h
     ${SRC_ROOT}/taskflow/ResetForceVisitor.h
+    ${SRC_ROOT}/taskflow/StateGroupVisitor.h
     ${SRC_ROOT}/taskflow/TaskflowVisitor.h
 )
 
@@ -276,6 +279,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVReallocVisitor.cpp
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.cpp
 
+    ${SRC_ROOT}/taskflow/StateGroupVisitor.cpp
     ${SRC_ROOT}/taskflow/TaskflowVisitor.cpp
 )
 

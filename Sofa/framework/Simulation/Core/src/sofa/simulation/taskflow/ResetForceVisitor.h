@@ -9,9 +9,9 @@ namespace sofa::simulation::taskflow
 
 struct SOFA_SIMULATION_CORE_API ResetForceVisitor final : public ComponentVisitor<core::behavior::BaseMechanicalState>
 {
-    explicit ResetForceVisitor(const sofa::core::ExecParams* params, sofa::core::MultiVecDerivId m_res)
+    explicit ResetForceVisitor(const sofa::core::ExecParams* params, sofa::core::MultiVecDerivId res)
         : ComponentVisitor(params)
-        , m_res(m_res)
+        , m_res(res)
     {}
 
     void apply(core::behavior::BaseMechanicalState* state) override

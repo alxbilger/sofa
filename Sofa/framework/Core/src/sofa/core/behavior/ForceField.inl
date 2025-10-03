@@ -26,6 +26,7 @@
 #include <sofa/core/MechanicalParams.h>
 #include <iostream>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::core::behavior
 {
@@ -43,6 +44,7 @@ ForceField<DataTypes>::~ForceField() = default;
 template<class DataTypes>
 void ForceField<DataTypes>::addForce(const MechanicalParams* mparams, MultiVecDerivId fId )
 {
+    SCOPED_TIMER_TR("addForce");
     auto mstate = this->mstate.get();
     if (mparams && mstate)
     {
