@@ -186,6 +186,11 @@ void BaseContext::propagateEvent( const core::ExecParams*, Event* )
     msg_warning("propagateEvent not overloaded, does nothing");
 }
 
+void BaseContext::executeTaskflowVisitor(simulation::taskflow::TaskflowVisitor* visitor)
+{
+    msg_warning("executeTaskflowVisitor not overloaded, does nothing");
+}
+
 void BaseContext::executeVisitor(simulation::Visitor*, bool)
 {
     msg_warning("executeVisitor not overloaded, does nothing");

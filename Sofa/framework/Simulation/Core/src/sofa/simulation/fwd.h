@@ -44,6 +44,11 @@ namespace sofa::simulation
     class MutationListener;
     class Visitor;
 
+    namespace taskflow
+    {
+        struct TaskflowVisitor;
+    }
+
     class DefaultVisualManagerLoop;
 }
 

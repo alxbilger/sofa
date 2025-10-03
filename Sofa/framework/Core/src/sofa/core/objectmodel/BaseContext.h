@@ -30,6 +30,10 @@
 namespace sofa::simulation
 {
     class Visitor;
+    namespace taskflow
+    {
+        struct TaskflowVisitor;
+    }
 }
 
 namespace sofa::core::objectmodel
@@ -389,6 +393,7 @@ public:
 
     /// @}
 
+    virtual void executeTaskflowVisitor(simulation::taskflow::TaskflowVisitor* visitor);
 
     /// @name Notifications for graph change listeners
     /// @{

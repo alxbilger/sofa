@@ -41,7 +41,7 @@
 #include <algorithm>
 #include <cassert>
 #include <sofa/linearalgebra/CompressedRowSparseMatrixMechanical.h>
-
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace
 {
@@ -2434,6 +2434,7 @@ unsigned MechanicalObject<DataTypes>::printDOFWithElapsedTime(core::ConstVecId v
 template <class DataTypes>
 void MechanicalObject<DataTypes>::resetForce(const core::ExecParams* params, core::VecDerivId fid)
 {
+    SCOPED_TIMER_TR("resetForce");
     SOFA_UNUSED(params);
 
     {

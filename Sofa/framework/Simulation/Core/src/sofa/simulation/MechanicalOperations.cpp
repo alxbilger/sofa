@@ -58,6 +58,8 @@
 
 #include <numeric>
 
+#include <sofa/simulation/taskflow/ResetForceVisitor.h>
+
 using namespace sofa::core;
 
 namespace sofa::simulation::common
@@ -253,7 +255,9 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
     setF(result);
     if (clear)
     {
-        executeVisitor( MechanicalResetForceVisitor(&mparams, result, false) );
+        // executeVisitor( MechanicalResetForceVisitor(&mparams, result, false) );
+        sofa::simulation::taskflow::ResetForceVisitor v(&mparams, result);
+        ctx->executeTaskflowVisitor(&v);
         //finish();
     }
     executeVisitor( MechanicalComputeForceVisitor(&mparams, result, accumulate) );

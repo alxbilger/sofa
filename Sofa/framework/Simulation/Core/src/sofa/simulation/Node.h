@@ -214,6 +214,9 @@ public:
 
     /// @}
 
+
+    void executeTaskflowVisitor(simulation::taskflow::TaskflowVisitor* visitor) override;
+
     template<class A, bool B=false>
     using Sequence = NodeSequence<A,B>;
 

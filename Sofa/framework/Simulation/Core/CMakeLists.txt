@@ -139,6 +139,10 @@ set(HEADER_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVOpVisitor.h
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVReallocVisitor.h
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.h
+
+    ${SRC_ROOT}/taskflow/ComponentVisitor.h
+    ${SRC_ROOT}/taskflow/ResetForceVisitor.h
+    ${SRC_ROOT}/taskflow/TaskflowVisitor.h
 )
 
 set(SOURCE_FILES
@@ -270,6 +274,8 @@ set(SOURCE_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVOpVisitor.cpp
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVReallocVisitor.cpp
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.cpp
+
+    ${SRC_ROOT}/taskflow/TaskflowVisitor.cpp
 )
 
 sofa_find_package(Sofa.Core REQUIRED)

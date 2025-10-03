@@ -61,6 +61,7 @@
 #include <sofa/helper/Factory.inl>
 #include <sofa/helper/cast.h>
 #include <iostream>
+#include <sofa/simulation/taskflow/TaskflowVisitor.h>
 
 /// If you want to activate/deactivate that please set them to true/false
 #define DEBUG_VISITOR false
@@ -1518,7 +1519,10 @@ void Node::precomputeTraversalOrder( const sofa::core::ExecParams* params )
     executeVisitor( &tov, false );
 }
 
-
+void Node::executeTaskflowVisitor(simulation::taskflow::TaskflowVisitor* visitor)
+{
+    visitor->run(this);
+}
 
 /// Execute a recursive action starting from this node
 void Node::doExecuteVisitor(simulation::Visitor* action, bool precomputedOrder)
