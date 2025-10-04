@@ -8,29 +8,44 @@ template<class Component>
 struct ComponentInNode
 {};
 
-template<> struct ComponentInNode<core::behavior::BaseMechanicalState>
-{
-    static auto get(const Node* node)
-    {
-        return node->getMechanicalState();
-    }
-};
+#define ADD_COMPONENTINNODE_ENTRY(Component, fieldName) \
+    template<> struct ComponentInNode<Component> \
+    { \
+        static auto get(const Node* node) \
+        { \
+            return node->fieldName; \
+        } \
+    };
 
-template<> struct ComponentInNode<core::behavior::BaseForceField>
-{
-    static const auto& get(const Node* node)
-    {
-        return node->forceField;
-    }
-};
+ADD_COMPONENTINNODE_ENTRY(core::BehaviorModel, behaviorModel)
+// ADD_COMPONENTINNODE_ENTRY(core::BaseMapping, mapping) //There is a conflict with mechanicalMapping preventing the template specialization
+ADD_COMPONENTINNODE_ENTRY(core::behavior::OdeSolver, solver)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::ConstraintSolver, constraintSolver)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::BaseLinearSolver, linearSolver)
+ADD_COMPONENTINNODE_ENTRY(core::topology::BaseTopologyObject, topologyObject)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::BaseForceField, forceField)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::BaseInteractionForceField, interactionForceField)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::BaseProjectiveConstraintSet, projectiveConstraintSet)
+ADD_COMPONENTINNODE_ENTRY(core::behavior::BaseConstraintSet, constraintSet)
+ADD_COMPONENTINNODE_ENTRY(core::objectmodel::ContextObject, contextObject)
+ADD_COMPONENTINNODE_ENTRY(core::objectmodel::ConfigurationSetting, configurationSetting)
+ADD_COMPONENTINNODE_ENTRY(core::visual::Shader, shaders)
+ADD_COMPONENTINNODE_ENTRY(core::visual::VisualModel, visualModel)
+ADD_COMPONENTINNODE_ENTRY(core::visual::VisualManager, visualManager)
+ADD_COMPONENTINNODE_ENTRY(core::CollisionModel, collisionModel)
 
-template<> struct ComponentInNode<core::behavior::BaseInteractionForceField>
-{
-    static const auto& get(const Node* node)
-    {
-        return node->interactionForceField;
-    }
-};
+ADD_COMPONENTINNODE_ENTRY(sofa::core::behavior::BaseAnimationLoop, animationManager)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::visual::VisualLoop, visualLoop)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::visual::BaseVisualStyle, visualStyle)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::topology::Topology, topology)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::topology::BaseMeshTopology, meshTopology)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::BaseState, state)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::behavior::BaseMechanicalState, mechanicalState)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::BaseMapping, mechanicalMapping)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::behavior::BaseMass, mass)
+ADD_COMPONENTINNODE_ENTRY(sofa::core::collision::Pipeline, collisionPipeline)
+
+#undef ADD_COMPONENTINNODE_ENTRY
 
 template <typename T>
 concept is_iterable_impl = requires(T& t)
