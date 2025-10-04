@@ -29,21 +29,21 @@ namespace sofa::simulation::mechanicalvisitor
 
 Visitor::Result MechanicalComputeForceVisitor::fwdMechanicalState(simulation::Node* /*node*/, core::behavior::BaseMechanicalState* mm)
 {
-    // mm->accumulateForce(this->params, res.getId(mm));
+    mm->accumulateForce(this->params, res.getId(mm));
     return RESULT_CONTINUE;
 }
 
 
 Visitor::Result MechanicalComputeForceVisitor::fwdMappedMechanicalState(simulation::Node* /*node*/, core::behavior::BaseMechanicalState* mm)
 {
-    // mm->accumulateForce(this->params, res.getId(mm));
+    mm->accumulateForce(this->params, res.getId(mm));
     return RESULT_CONTINUE;
 }
 
 
 Visitor::Result MechanicalComputeForceVisitor::fwdForceField(simulation::Node* /*node*/, core::behavior::BaseForceField* ff)
 {
-    // ff->addForce(this->mparams, res);
+    ff->addForce(this->mparams, res);
 
     return RESULT_CONTINUE;
 }
