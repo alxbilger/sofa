@@ -272,6 +272,7 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
         ctx->executeTaskflowVisitor(&v);
     }
 
+    if (accumulate)
     {
         sofa::simulation::taskflow::ApplyJTVisitor v(&mparams, result);
         ctx->executeTaskflowVisitor(&v);
