@@ -61,6 +61,7 @@
 #include <sofa/simulation/taskflow/ResetForceVisitor.h>
 #include <sofa/simulation/taskflow/AccumulateForceVisitor.h>
 #include <sofa/simulation/taskflow/AddForceVisitor.h>
+#include <sofa/simulation/taskflow/ApplyJTVisitor.h>
 
 using namespace sofa::core;
 
@@ -257,10 +258,8 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
     setF(result);
     if (clear)
     {
-        // executeVisitor( MechanicalResetForceVisitor(&mparams, result, false) );
         sofa::simulation::taskflow::ResetForceVisitor v(&mparams, result);
         ctx->executeTaskflowVisitor(&v);
-        //finish();
     }
 
     {
@@ -273,7 +272,10 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
         ctx->executeTaskflowVisitor(&v);
     }
 
-    executeVisitor( MechanicalComputeForceVisitor(&mparams, result, accumulate) );
+    {
+        sofa::simulation::taskflow::ApplyJTVisitor v(&mparams, result);
+        ctx->executeTaskflowVisitor(&v);
+    }
 }
 
 

@@ -25,6 +25,7 @@
 #include <sofa/core/behavior/PairInteractionForceField.h>
 #include <sofa/core/objectmodel/BaseContext.h>
 #include <sofa/core/objectmodel/BaseNode.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <iostream>
 
 namespace sofa::core::behavior
@@ -48,6 +49,7 @@ PairInteractionForceField<DataTypes>::~PairInteractionForceField()
 template<class DataTypes>
 void PairInteractionForceField<DataTypes>::addForce(const MechanicalParams* mparams, MultiVecDerivId fId )
 {
+    SCOPED_TIMER_TR("addForce");
     auto state1 = this->mstate1.get();
     auto state2 = this->mstate2.get();
     if (state1 && state2)

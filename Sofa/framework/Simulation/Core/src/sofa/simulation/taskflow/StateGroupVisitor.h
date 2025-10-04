@@ -56,7 +56,7 @@ private:
 
                 tf::Task task = m_taskflow.emplace([this, component]()
                 {
-                    this->apply((Component*)component);
+                    this->apply(static_cast<Component*>(component));
                 });
 
                 for (auto* mstate : mstates)

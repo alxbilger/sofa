@@ -143,10 +143,13 @@ set(HEADER_FILES
     ${SRC_ROOT}/taskflow/detail.h
     ${SRC_ROOT}/taskflow/AccumulateForceVisitor.h
     ${SRC_ROOT}/taskflow/AddForceVisitor.h
+    ${SRC_ROOT}/taskflow/ApplyJTVisitor.h
     ${SRC_ROOT}/taskflow/ComponentVisitor.h
+    ${SRC_ROOT}/taskflow/MappingVisitor.h
     ${SRC_ROOT}/taskflow/ResetForceVisitor.h
     ${SRC_ROOT}/taskflow/StateGroupVisitor.h
     ${SRC_ROOT}/taskflow/TaskflowVisitor.h
+    ${SRC_ROOT}/taskflow/VisitDirection.h
 )
 
 set(SOURCE_FILES

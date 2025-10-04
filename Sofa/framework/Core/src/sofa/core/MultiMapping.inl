@@ -23,6 +23,7 @@
 
 #include <sofa/core/MultiMapping.h>
 #include <sofa/core/behavior/BaseMechanicalState.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::core
 {
@@ -157,6 +158,7 @@ void MultiMapping<In,Out>::applyJ(const MechanicalParams* mparams, MultiVecDeriv
 template <class In, class Out>
 void MultiMapping<In,Out>::applyJT(const MechanicalParams* mparams, MultiVecDerivId inForce, ConstMultiVecDerivId outForce)
 {
+    SCOPED_TIMER_TR("applyJT");
     type::vector<InDataVecDeriv*> vecOutForce;
     getVecInDeriv(inForce, vecOutForce);
     type::vector<const OutDataVecDeriv*> vecInForce;

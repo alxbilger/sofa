@@ -23,6 +23,7 @@
 
 #include <sofa/core/Multi2Mapping.h>
 #include <sofa/core/behavior/BaseMechanicalState.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::core
 {
@@ -166,6 +167,7 @@ void Multi2Mapping<In1,In2,Out>::applyJ (const MechanicalParams* mparams, MultiV
 template < class In1, class In2,class Out>
 void Multi2Mapping<In1,In2,Out>::applyJT (const MechanicalParams* mparams, MultiVecDerivId inForce, ConstMultiVecDerivId outForce )
 {
+    SCOPED_TIMER_TR("applyJT");
     type::vector<DataVecDeriv_t<In1>*> vecOut1Force;
     getVecIn1Deriv(inForce, vecOut1Force);
     type::vector<DataVecDeriv_t<In2>*> vecOut2Force;

@@ -24,6 +24,7 @@
 #include <sofa/core/State.h>
 #include <sofa/core/behavior/BaseMechanicalState.h>
 #include <sofa/core/Mapping.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <iostream>
 
 namespace sofa::core
@@ -167,6 +168,7 @@ void Mapping<In,Out>::applyJ(const MechanicalParams* mparams, MultiVecDerivId ou
 template <class In, class Out>
 void Mapping<In,Out>::applyJT(const MechanicalParams *mparams, MultiVecDerivId inForce, ConstMultiVecDerivId outForce)
 {
+    SCOPED_TIMER_TR("applyJT");
     State<In>* fromModel = this->fromModel.get();
     State<Out>*  toModel = this->toModel.get();
     if(fromModel && toModel)

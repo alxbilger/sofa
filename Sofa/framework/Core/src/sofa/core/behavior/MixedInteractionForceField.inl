@@ -23,6 +23,7 @@
 
 #include <sofa/core/behavior/MixedInteractionForceField.h>
 #include <sofa/core/MechanicalParams.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::core::behavior
 {
@@ -45,7 +46,7 @@ MixedInteractionForceField<DataTypes1, DataTypes2>::~MixedInteractionForceField(
 template<class DataTypes1, class DataTypes2>
 void MixedInteractionForceField<DataTypes1, DataTypes2>::addForce(const MechanicalParams* mparams, MultiVecDerivId fId )
 {
-    
+    SCOPED_TIMER_TR("addForce");
     if (this->mstate1 && this->mstate2)
     {
         auto state1 = this->mstate1.get();
