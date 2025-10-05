@@ -19,8 +19,7 @@ struct MappingVisitor : public TaskflowVisitor
     {
         SCOPED_TIMER_TR("MappingVisitor");
         processNode(node);
-        sortTasks();
-        // m_taskflow.dump(std::cout);
+        //m_taskflow.dump(std::cout);
         s_executor.run(m_taskflow).wait();
     }
 
@@ -28,61 +27,71 @@ struct MappingVisitor : public TaskflowVisitor
 
 private:
 
+    enum class MappingIO : bool { INPUT, OUTPUT};
+
+    template<MappingIO io>
+    static type::vector<core::behavior::BaseMechanicalState*> getMappingIO(core::BaseMapping* mapping)
+    {
+        if constexpr (io == MappingIO::INPUT)
+        {
+            return mapping->getMechFrom();
+        }
+        else
+        {
+            return mapping->getMechTo();
+        }
+    }
+
+    template<MappingIO io>
+    void linkMappingTaskAndStateTasks(tf::Task& mappingTask, core::BaseMapping* mapping)
+    {
+        for (auto* state : getMappingIO<io>(mapping))
+        {
+            if (state)
+            {
+                auto stateTaskIt = findOrCreateStateTask(state);
+                if constexpr ((io == MappingIO::INPUT) == (Direction == VisitDirection::Forward))
+                {
+                    mappingTask.succeed(stateTaskIt->second);
+                }
+                else
+                {
+                    mappingTask.precede(stateTaskIt->second);
+                }
+            }
+        }
+    }
+
+    auto findOrCreateStateTask(core::behavior::BaseMechanicalState* state)
+    {
+        auto stateTaskIt = m_stateTasks.find(state);
+        if (stateTaskIt == m_stateTasks.end())
+        {
+            stateTaskIt = m_stateTasks.emplace(state,
+                m_taskflow.emplace([](){}).name(state->getPathName())).first;
+        }
+        return stateTaskIt;
+    }
+
     void processNode(Node* node)
     {
         if (auto* mapping = node->mechanicalMapping.get())
         {
-            m_mappingTasks[mapping] = m_taskflow.emplace([this, mapping]()
-           {
-               this->apply(mapping);
-           }).name(mapping->getPathName());
+            tf::Task mappingTask =
+                m_taskflow.emplace([this, mapping]() { this->apply(mapping); })
+                .name(mapping->getPathName());
+            linkMappingTaskAndStateTasks<MappingIO::INPUT>(mappingTask, mapping);
+            linkMappingTaskAndStateTasks<MappingIO::OUTPUT>(mappingTask, mapping);
         }
 
         if (auto* mstate = node->mechanicalState.get())
         {
-            m_stateTasks[mstate] = m_taskflow.emplace([](){}).name(mstate->getPathName());;
+            findOrCreateStateTask(mstate);
         }
 
         for (auto& child : node->child)
         {
             this->processNode(child.get());
-        }
-    }
-
-    void sortTasks()
-    {
-        for (auto& [mapping, mappingTask] : m_mappingTasks)
-        {
-            for (auto* input : mapping->getMechFrom())
-            {
-                if (auto stateTaskIt = m_stateTasks.find(input); stateTaskIt != m_stateTasks.end())
-                {
-                    if constexpr (Direction == VisitDirection::Forward)
-                    {
-                        mappingTask.succeed(stateTaskIt->second);
-                    }
-                    else
-                    {
-                        mappingTask.precede(stateTaskIt->second);
-                    }
-                }
-            }
-
-
-            for (auto* output : mapping->getMechTo())
-            {
-                if (auto stateTaskIt = m_stateTasks.find(output); stateTaskIt != m_stateTasks.end())
-                {
-                    if constexpr (Direction == VisitDirection::Forward)
-                    {
-                        mappingTask.precede(stateTaskIt->second);
-                    }
-                    else
-                    {
-                        mappingTask.succeed(stateTaskIt->second);
-                    }
-                }
-            }
         }
     }
 
