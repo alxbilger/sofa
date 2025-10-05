@@ -68,7 +68,9 @@ private:
         if (stateTaskIt == m_stateTasks.end())
         {
             stateTaskIt = m_stateTasks.emplace(state,
-                m_taskflow.emplace([](){}).name(state->getPathName())).first;
+                m_taskflow.emplace([](){})
+                    .name(state->getPathName())
+                ).first;
         }
         return stateTaskIt;
     }
@@ -84,11 +86,6 @@ private:
             linkMappingTaskAndStateTasks<MappingIO::OUTPUT>(mappingTask, mapping);
         }
 
-        if (auto* mstate = node->mechanicalState.get())
-        {
-            findOrCreateStateTask(mstate);
-        }
-
         for (auto& child : node->child)
         {
             this->processNode(child.get());
@@ -98,7 +95,6 @@ private:
     tf::Taskflow m_taskflow;
 
     std::unordered_map<core::behavior::BaseMechanicalState*, tf::Task> m_stateTasks;
-    std::unordered_map<core::BaseMapping*, tf::Task> m_mappingTasks;
 };
 
 }
