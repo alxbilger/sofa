@@ -48,21 +48,16 @@ private:
         {
             if (component)
             {
+                tf::Task task = m_taskflow.emplace([this, component]()
+                {
+                    this->apply(component);
+                });
+
                 const auto& mstates = component->getMechanicalStates();
                 for (auto* mstate : mstates)
                 {
-                    m_semaphores.emplace(mstate, 1);
-                }
-
-                tf::Task task = m_taskflow.emplace([this, component]()
-                {
-                    this->apply(static_cast<Component*>(component));
-                });
-
-                for (auto* mstate : mstates)
-                {
-                    task.acquire(m_semaphores[mstate]);
-                    task.release(m_semaphores[mstate]);
+                    auto [it, success] = m_semaphores.emplace(mstate, 1);
+                    task.acquire(it->second).release(it->second);
                 }
             }
         }
