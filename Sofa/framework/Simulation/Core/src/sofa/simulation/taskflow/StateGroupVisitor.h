@@ -7,19 +7,12 @@
 namespace sofa::simulation::taskflow
 {
 
-template<class Component>
-struct ComponentFunction
-{
-    virtual ~ComponentFunction() = default;
-    virtual void apply(Component* /*component*/) = 0;
-};
-
 template<class... Components>
-struct StateGroupVisitor : public TaskflowVisitor, public ComponentFunction<Components>...
+struct StateGroupVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
     using TaskflowVisitor::s_executor;
-    using ComponentFunction<Components>::apply...;
+    using detail::ComponentFunction<Components>::apply...;
 
     void run(Node* node) override
     {
@@ -66,10 +59,5 @@ private:
     std::unordered_map<core::behavior::BaseMechanicalState*, tf::Semaphore> m_semaphores;
     tf::Taskflow m_taskflow;
 };
-
-#if !defined(SOFA_SIMULATION_TASKFLOW_STATEGROUPVISITOR_CPP)
-extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseForceField>;
-extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseInteractionForceField>;
-#endif
 
 }

@@ -282,7 +282,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVReallocVisitor.cpp
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.cpp
 
-    ${SRC_ROOT}/taskflow/StateGroupVisitor.cpp
+    ${SRC_ROOT}/taskflow/detail.cpp
     ${SRC_ROOT}/taskflow/TaskflowVisitor.cpp
 )
 

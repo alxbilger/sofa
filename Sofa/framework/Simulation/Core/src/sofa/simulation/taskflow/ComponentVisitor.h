@@ -6,11 +6,12 @@
 namespace sofa::simulation::taskflow
 {
 
-template<class Component>
-struct ComponentVisitor : public TaskflowVisitor
+template<class... Components>
+struct ComponentVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
     using TaskflowVisitor::s_executor;
+    using detail::ComponentFunction<Components>::apply...;
 
     void run(Node* node) override
     {
@@ -22,15 +23,27 @@ struct ComponentVisitor : public TaskflowVisitor
         s_executor.wait_for_all();
     }
 
-    virtual void apply(Component* /*component*/) = 0;
-
 private:
     void processNode(Node* node)
     {
-        auto componentList = detail::ComponentInNode<Component>::get(node);
+        (processComponents<Components>(node), ...);
+
+        for (auto& child : node->child)
+        {
+            s_executor.silent_async([this, c = child.get()]()
+            {
+                this->processNode(c);
+            });
+        }
+    }
+
+    template<class Component>
+    void processComponents(Node* node)
+    {
+        const auto& componentList = detail::ComponentInNode<Component>::get(node);
         if constexpr (detail::is_iterable<decltype(componentList)>)
         {
-            for (const auto component : componentList)
+            for (const auto& component : componentList)
             {
                 if (component)
                 {
@@ -50,14 +63,6 @@ private:
                     apply(componentList);
                 });
             }
-        }
-
-        for (auto& child : node->child)
-        {
-            s_executor.silent_async([this, c = child.get()]()
-            {
-                this->processNode(c);
-            });
         }
     }
 };

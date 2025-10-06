@@ -5,7 +5,7 @@
 namespace sofa::simulation::taskflow
 {
 
-struct SOFA_SIMULATION_CORE_API ApplyJTVisitor : public MappingVisitor<VisitDirection::Backward>
+struct SOFA_SIMULATION_CORE_API ApplyJTVisitor final : public MappingVisitor<VisitDirection::Backward>
 {
     using MappingVisitor::MappingVisitor;
 

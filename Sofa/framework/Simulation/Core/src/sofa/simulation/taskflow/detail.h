@@ -11,7 +11,7 @@ struct ComponentInNode
 #define ADD_COMPONENTINNODE_ENTRY(Component, fieldName) \
     template<> struct ComponentInNode<Component> \
     { \
-        static auto get(const Node* node) \
+        static const auto& get(const Node* node) \
         { \
             return node->fieldName; \
         } \
@@ -61,4 +61,19 @@ concept is_iterable = detail::is_iterable_impl<T>;
 
 
 static_assert(is_iterable<NodeSequence<core::behavior::BaseForceField>>);
+
+
+
+
+template<class Component>
+struct ComponentFunction
+{
+    virtual ~ComponentFunction() = default;
+    virtual void apply(Component* /*component*/) = 0;
+};
+
+#if !defined(SOFA_SIMULATION_CORE_TASKFLOW_DETAIL_CPP)
+extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseForceField>;
+extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseInteractionForceField>;
+#endif
 }
