@@ -256,16 +256,15 @@ void MechanicalOperations::accFromF(core::MultiVecDerivId a, core::ConstMultiVec
 void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear, bool accumulate)
 {
     setF(result);
-    if (clear)
-    {
-        sofa::simulation::taskflow::ResetForceVisitor v(&mparams, result);
-        ctx->executeTaskflowVisitor(&v);
-    }
 
+    taskflow::executeVisitor(ctx, [&](behavior::BaseMechanicalState* state)
     {
-        sofa::simulation::taskflow::AccumulateForceVisitor v(&mparams, result);
-        ctx->executeTaskflowVisitor(&v);
-    }
+        if (clear)
+        {
+            state->resetForce(&mparams, result.getId(state));
+        }
+        state->accumulateForce(&mparams, result.getId(state));
+    });
 
     {
         sofa::simulation::taskflow::AddForceVisitor v(&mparams, result);

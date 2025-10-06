@@ -67,5 +67,27 @@ private:
     }
 };
 
+template<class Callable>
+struct CallableComponentVisitor : public ComponentVisitor<detail::callable_argument_t<Callable>>
+{
+    using Component = detail::callable_argument_t<Callable>;
+    CallableComponentVisitor(const sofa::core::ExecParams* params, Callable callable)
+        : ComponentVisitor<Component>(params), m_callable(callable) {}
+
+    void apply(Component* component) override
+    {
+        this->m_callable(component);
+    }
+protected:
+    Callable m_callable;
+};
+
+
+template<class Callable>
+void executeVisitor(core::objectmodel::BaseContext* context, Callable callable)
+{
+    CallableComponentVisitor<Callable> v(nullptr, callable);
+    context->executeTaskflowVisitor(&v);
+}
 
 }

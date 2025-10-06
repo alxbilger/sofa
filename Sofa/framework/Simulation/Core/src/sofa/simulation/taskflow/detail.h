@@ -76,4 +76,50 @@ struct ComponentFunction
 extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseForceField>;
 extern template SOFA_SIMULATION_CORE_API struct ComponentFunction<core::behavior::BaseInteractionForceField>;
 #endif
+
+
+
+
+
+// Helper to extract the argument type from a callable
+template <typename T>
+struct callable_argument;
+
+// Specialization for function pointers
+template <typename T>
+struct callable_argument<void(*)(T*)>
+{
+    using argument_type = T;
+};
+
+// Specialization for std::function
+template <typename T>
+struct callable_argument<std::function<void(T*)>>
+{
+    using argument_type = T;
+};
+
+// Specialization for member function pointers
+template <typename C, typename T>
+struct callable_argument<void(C::*)(T*)>
+{
+    using argument_type = T;
+};
+
+// Specialization for const member function pointers
+template <typename C, typename T>
+struct callable_argument<void(C::*)(T*) const>
+{
+    using argument_type = T;
+};
+
+// Specialization for functors and lambdas
+template <typename F>
+struct callable_argument : public callable_argument<decltype(&F::operator())> {};
+
+template <typename T>
+using callable_argument_t = typename callable_argument<T>::argument_type;
+
+
+
 }
