@@ -2,6 +2,7 @@
 
 #include <sofa/simulation/taskflow/TaskflowVisitor.h>
 #include <sofa/simulation/taskflow/detail.h>
+#include <sofa/simulation/taskflow/GlobalExecutor.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::simulation::taskflow
@@ -11,14 +12,13 @@ template<class... Components>
 struct StateGroupVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
-    using TaskflowVisitor::s_executor;
     using detail::ComponentFunction<Components>::apply...;
 
     void run(Node* node) override
     {
         SCOPED_TIMER_TR("StateGroupVisitor");
         processNode(node);
-        s_executor.run(m_taskflow).wait();
+        getExecutor().run(m_taskflow).wait();
     }
 
 private:

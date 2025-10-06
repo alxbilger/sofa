@@ -1,6 +1,7 @@
 #pragma once
 #include <sofa/simulation/taskflow/TaskflowVisitor.h>
 #include <sofa/simulation/taskflow/detail.h>
+#include <sofa/simulation/taskflow/GlobalExecutor.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa::simulation::taskflow
@@ -10,17 +11,16 @@ template<class... Components>
 struct ComponentVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
-    using TaskflowVisitor::s_executor;
     using detail::ComponentFunction<Components>::apply...;
 
     void run(Node* node) override
     {
         SCOPED_TIMER_TR("ComponentVisitor");
-        s_executor.silent_async([this, node]()
+        getExecutor().silent_async([this, node]()
         {
             processNode(node);
         });
-        s_executor.wait_for_all();
+        getExecutor().wait_for_all();
     }
 
 private:
@@ -30,7 +30,7 @@ private:
 
         for (auto& child : node->child)
         {
-            s_executor.silent_async([this, c = child.get()]()
+            getExecutor().silent_async([this, c = child.get()]()
             {
                 this->processNode(c);
             });
@@ -47,7 +47,7 @@ private:
             {
                 if (component)
                 {
-                    s_executor.silent_async([this, component]()
+                    getExecutor().silent_async([this, component]()
                     {
                         apply(component);
                     });
@@ -58,7 +58,7 @@ private:
         {
             if (componentList)
             {
-                s_executor.silent_async([this, componentList]()
+                getExecutor().silent_async([this, componentList]()
                 {
                     apply(componentList);
                 });

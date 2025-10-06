@@ -15,8 +15,6 @@ struct SOFA_SIMULATION_CORE_API TaskflowVisitor
 
 protected:
     const sofa::core::ExecParams* m_params = nullptr;
-
-    static tf::Executor s_executor;
 };
 
 }

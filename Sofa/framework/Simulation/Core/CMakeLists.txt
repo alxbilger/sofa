@@ -145,6 +145,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/taskflow/AddForceVisitor.h
     ${SRC_ROOT}/taskflow/ApplyJTVisitor.h
     ${SRC_ROOT}/taskflow/ComponentVisitor.h
+    ${SRC_ROOT}/taskflow/GlobalExecutor.h
     ${SRC_ROOT}/taskflow/MappingVisitor.h
     ${SRC_ROOT}/taskflow/ResetForceVisitor.h
     ${SRC_ROOT}/taskflow/StateGroupVisitor.h
@@ -284,6 +285,7 @@ set(SOURCE_FILES
 
     ${SRC_ROOT}/taskflow/detail.cpp
     ${SRC_ROOT}/taskflow/TaskflowVisitor.cpp
+    ${SRC_ROOT}/taskflow/GlobalExecutor.cpp
 )
 
 sofa_find_package(Sofa.Core REQUIRED)

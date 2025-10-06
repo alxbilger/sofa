@@ -13,14 +13,13 @@ template<VisitDirection Direction>
 struct MappingVisitor : public TaskflowVisitor
 {
     using TaskflowVisitor::TaskflowVisitor;
-    using TaskflowVisitor::s_executor;
 
     void run(Node* node) override
     {
         SCOPED_TIMER_TR("MappingVisitor");
         processNode(node);
         //m_taskflow.dump(std::cout);
-        s_executor.run(m_taskflow).wait();
+        getExecutor().run(m_taskflow).wait();
     }
 
     virtual void apply(core::BaseMapping* mapping) = 0;
