@@ -8,7 +8,9 @@ namespace sofa::simulation::taskflow
 {
 
 template<class... Components>
-struct ComponentVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
+struct ComponentVisitor :
+    public TaskflowVisitor,
+    public virtual detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
     using detail::ComponentFunction<Components>::apply...;
@@ -67,26 +69,40 @@ private:
     }
 };
 
+namespace detail
+{
+
 template<class Callable>
-struct CallableComponentVisitor : public ComponentVisitor<detail::callable_argument_t<Callable>>
+struct CallableComponentFunction :
+    public virtual detail::ComponentFunction<detail::callable_argument_t<Callable>>
 {
     using Component = detail::callable_argument_t<Callable>;
-    CallableComponentVisitor(const sofa::core::ExecParams* params, Callable callable)
-        : ComponentVisitor<Component>(params), m_callable(callable) {}
-
+    explicit CallableComponentFunction(Callable callable) : m_callable(callable) {}
+    ~CallableComponentFunction() override = default;
     void apply(Component* component) override
     {
         this->m_callable(component);
     }
-protected:
+private:
     Callable m_callable;
 };
 
-
-template<class Callable>
-void executeVisitor(core::objectmodel::BaseContext* context, Callable callable)
+template<class... Callable>
+struct CallableComponentVisitor :
+    public ComponentVisitor<detail::callable_argument_t<Callable> ...>,
+    public CallableComponentFunction<Callable>...
 {
-    CallableComponentVisitor<Callable> v(nullptr, callable);
+    CallableComponentVisitor(const sofa::core::ExecParams* params, Callable... callable) :
+        ComponentVisitor<detail::callable_argument_t<Callable> ...>(params),
+        CallableComponentFunction<Callable>(callable)...
+    {}
+};
+}
+
+template<class... Callable>
+void executeThreadSafeParallelVisitor(core::objectmodel::BaseContext* context, Callable... callable)
+{
+    detail::CallableComponentVisitor<Callable...> v(nullptr, callable...);
     context->executeTaskflowVisitor(&v);
 }
 

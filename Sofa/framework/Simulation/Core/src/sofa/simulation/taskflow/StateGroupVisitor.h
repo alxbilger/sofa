@@ -9,7 +9,9 @@ namespace sofa::simulation::taskflow
 {
 
 template<class... Components>
-struct StateGroupVisitor : public TaskflowVisitor, public detail::ComponentFunction<Components>...
+struct StateGroupVisitor :
+    public TaskflowVisitor,
+    public detail::ComponentFunction<Components>...
 {
     using TaskflowVisitor::TaskflowVisitor;
     using detail::ComponentFunction<Components>::apply...;

@@ -257,7 +257,7 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
 {
     setF(result);
 
-    taskflow::executeVisitor(ctx, [&](behavior::BaseMechanicalState* state)
+    taskflow::executeThreadSafeParallelVisitor(ctx, [&](behavior::BaseMechanicalState* state)
     {
         if (clear)
         {
