@@ -18,7 +18,6 @@ struct MappingVisitor : public TaskflowVisitor
     {
         SCOPED_TIMER_TR("MappingVisitor");
         processNode(node);
-        //m_taskflow.dump(std::cout);
         getExecutor().run(m_taskflow).wait();
     }
 
