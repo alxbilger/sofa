@@ -61,11 +61,6 @@ void LagrangianConstraintLinearSystem<TMatrix, TVector>::init()
 
     simulation::common::VectorOperations vop(sofa::core::execparams::defaultInstance(),
                                              this->getContext());
-    {
-        sofa::core::behavior::MultiVecDeriv lambda(&vop, m_lambdaId);
-        lambda.realloc(&vop, false, true, core::VecIdProperties{"lambda", GetClass()->className});
-        m_lambdaId = lambda.id();
-    }
 }
 template <class TMatrix, class TVector>
 void LagrangianConstraintLinearSystem<TMatrix, TVector>::reset()
@@ -147,23 +142,28 @@ void LagrangianConstraintLinearSystem<TMatrix, TVector>::dispatchSystemSolution(
         }
     }
 }
-
+template <class TMatrix, class TVector>
+void LagrangianConstraintLinearSystem<TMatrix, TVector>::setLambda(
+    sofa::core::MultiVecDerivId lambdaId)
+{
+    m_lambdaId = lambdaId;
+}
 
 template <class TMatrix, class TVector>
 sofa::Size LagrangianConstraintLinearSystem<TMatrix, TVector>::
 computeLocalLagrangianConstraintMatrices(const core::MechanicalParams* mparams)
 {
-    cparams = *mparams;
-    cparams.setLambda(m_lambdaId);
-    cparams.setX(core::vec_id::read_access::position);
-    cparams.setV(core::vec_id::read_access::velocity);
+    // cparams.setLambda(m_lambdaId);
+    // m_cparams.setJ();
+    // m_cparams.setX(core::vec_id::read_access::position);
+    // m_cparams.setV(core::vec_id::read_access::velocity);
 
     SCOPED_TIMER("Build Constraint Matrix");
     unsigned int constraintId {};
-    resetConstraints(&cparams);
-    buildLocalConstraintMatrix(&cparams, constraintId);
-    accumulateMatrixDeriv(&cparams);
-    applyProjectiveConstraintOnConstraintMatrix(&cparams);
+    resetConstraints(m_cparams);
+    buildLocalConstraintMatrix(m_cparams, constraintId);
+    accumulateMatrixDeriv(m_cparams);
+    applyProjectiveConstraintOnConstraintMatrix(m_cparams);
 
     return constraintId;
 }
@@ -217,22 +217,30 @@ private:
     const sofa::Size m_offset {};
 };
 
-template<class TVector>
+template <class TVector>
 class ConstraintViolationProxy : public linearalgebra::BaseVector
 {
-public:
-    ConstraintViolationProxy(TVector* originalVector, sofa::Size offset) : m_originalVector(originalVector), m_offset(offset) {}
+   public:
+    ConstraintViolationProxy(TVector* originalVector, sofa::Size offset)
+        : m_originalVector(originalVector), m_offset(offset)
+    {
+    }
     ConstraintViolationProxy() = delete;
     Index size() const override { return m_originalVector->size(); }
     SReal element(Index i) const override { return 0; }
-    void resize(Index dim) override { }
+    void resize(Index dim) override {}
     void clear() override {}
     void set(Index i, SReal v) override {}
     void add(Index i, SReal v) override { m_originalVector->add(i + m_offset, v); }
 
 private:
-    TVector* m_originalVector { nullptr };
-    const sofa::Size m_offset {};
+    TVector* m_originalVector{nullptr};
+    const sofa::Size m_offset{};
 };
 
+inline void BaseLagrangianConstraintLinearSystem::setConstraintParams(
+    const core::ConstraintParams* cparams)
+{
+    m_cparams = cparams;
 }
+}  // namespace sofa::component::constraint::lagrangian::solver

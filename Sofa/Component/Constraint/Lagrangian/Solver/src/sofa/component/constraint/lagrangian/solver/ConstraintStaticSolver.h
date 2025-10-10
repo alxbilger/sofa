@@ -22,9 +22,11 @@
 #pragma once
 
 #include <sofa/component/constraint/lagrangian/solver/config.h>
+#include <sofa/component/odesolver/backward/NewtonRaphsonSolver.h>
 #include <sofa/core/behavior/LinearSolverAccessor.h>
 #include <sofa/core/behavior/OdeSolver.h>
-#include <sofa/component/odesolver/backward/NewtonRaphsonSolver.h>
+
+#include "LagrangianConstraintLinearSystem.h"
 
 namespace sofa::component::odesolver::backward
 {
@@ -43,15 +45,20 @@ public:
         core::behavior::OdeSolver,
         core::behavior::LinearSolverAccessor);
 
+    void init() override;
     void solve(const core::ExecParams* params, SReal dt, core::MultiVecCoordId x, core::MultiVecDerivId v) override;
 
     SingleLink<ConstraintStaticSolver, odesolver::backward::NewtonRaphsonSolver,
-           BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK>
-    l_newtonSolver;
+           BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_newtonSolver;
+
+    SingleLink<ConstraintStaticSolver, BaseLagrangianConstraintLinearSystem,
+       BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_linearSystem;
 
 protected:
 
     ConstraintStaticSolver();
+
+    sofa::core::MultiVecDerivId m_lambdaId;
 };
 
 }

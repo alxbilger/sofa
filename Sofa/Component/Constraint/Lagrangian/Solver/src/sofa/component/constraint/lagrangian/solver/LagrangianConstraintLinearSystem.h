@@ -28,15 +28,30 @@
 namespace sofa::component::constraint::lagrangian::solver
 {
 
-template<class TMatrix, class TVector>
-class LagrangianConstraintLinearSystem
-    : public sofa::component::linearsystem::MatrixLinearSystem<TMatrix, TVector >
+class BaseLagrangianConstraintLinearSystem
+    : virtual public core::objectmodel::BaseObject
     , public AssembleConstraints
 {
 public:
-    SOFA_CLASS(
+    SOFA_CLASS(BaseLagrangianConstraintLinearSystem,
+        core::objectmodel::BaseObject);
+
+    void setConstraintParams(const core::ConstraintParams* cparams);
+
+protected:
+    const core::ConstraintParams* m_cparams { nullptr };
+};
+
+template<class TMatrix, class TVector>
+class LagrangianConstraintLinearSystem
+    : public sofa::component::linearsystem::MatrixLinearSystem<TMatrix, TVector >
+    , public BaseLagrangianConstraintLinearSystem
+{
+public:
+    SOFA_CLASS2(
         SOFA_TEMPLATE2(LagrangianConstraintLinearSystem, TMatrix, TVector),
-        SOFA_TEMPLATE2(sofa::component::linearsystem::MatrixLinearSystem, TMatrix, TVector));
+        SOFA_TEMPLATE2(sofa::component::linearsystem::MatrixLinearSystem, TMatrix, TVector),
+        BaseLagrangianConstraintLinearSystem);
 
     using Matrix = TMatrix;
     using Vector = TVector;
@@ -47,6 +62,8 @@ public:
     void assembleSystem(const core::MechanicalParams* mparams) override;
     void dispatchSystemSolution(core::MultiVecDerivId v) override;
 
+    void setLambda(sofa::core::MultiVecDerivId lambdaId);
+
 protected:
 
     LagrangianConstraintLinearSystem();
@@ -54,10 +71,6 @@ protected:
     sofa::Size computeLocalLagrangianConstraintMatrices(const core::MechanicalParams* mparams);
     void assembleConstraintsJacobian();
     void assembleConstraintViolation();
-
-    sofa::core::MultiVecDerivId m_lambdaId;
-
-    core::ConstraintParams cparams;
 
     const core::objectmodel::BaseContext* getLagrangianConstraintsContext() const override;
     core::objectmodel::BaseContext* getLagrangianConstraintsContext() override;
