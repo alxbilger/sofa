@@ -58,10 +58,11 @@
 
 #include <numeric>
 
-#include <sofa/simulation/taskflow/ResetForceVisitor.h>
-#include <sofa/simulation/taskflow/AccumulateForceVisitor.h>
-#include <sofa/simulation/taskflow/AddForceVisitor.h>
+#include <sofa/simulation/taskflow/AbstractTaskflowVisitor.h>
 #include <sofa/simulation/taskflow/ApplyJTVisitor.h>
+
+#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/behavior/BaseInteractionForceField.h>
 
 using namespace sofa::core;
 
@@ -257,19 +258,24 @@ void MechanicalOperations::computeForce(core::MultiVecDerivId result, bool clear
 {
     setF(result);
 
-    taskflow::executeThreadSafeParallelVisitor(ctx, [&](behavior::BaseMechanicalState* state)
-    {
-        if (clear)
-        {
-            state->resetForce(&mparams, result.getId(state));
-        }
-        state->accumulateForce(&mparams, result.getId(state));
-    });
+    auto v1 = taskflow::make<taskflow::TaskflowType::TrivialParallelism>(&mparams)
+       .from(
+           [&](behavior::BaseMechanicalState* state)
+           {
+               if (clear)
+               {
+                   state->resetForce(&mparams, result.getId(state));
+               }
+               state->accumulateForce(&mparams, result.getId(state));
+           });
+    ctx->executeTaskflowVisitor(&v1);
 
-    {
-        sofa::simulation::taskflow::AddForceVisitor v(&mparams, result);
-        ctx->executeTaskflowVisitor(&v);
-    }
+    auto v2 = taskflow::make<taskflow::TaskflowType::StateSemaphoreParallelism>(&mparams).from(
+        [&](behavior::BaseForceField* forcefield)
+        { forcefield->addForce(&mparams, result); },
+        [&](behavior::BaseInteractionForceField* forcefield)
+        { forcefield->addForce(&mparams, result); });
+    ctx->executeTaskflowVisitor(&v2);
 
     if (accumulate)
     {
