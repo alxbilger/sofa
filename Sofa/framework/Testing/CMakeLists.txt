@@ -46,10 +46,6 @@ elseif (NOT GTest_FOUND)
 endif()
 
 
-
-# add custom googletest main
-add_subdirectory(SofaGTestMain)
-
 set(SOFATESTINGSRC_ROOT "src/sofa/testing")
 
 set(HEADER_FILES
@@ -81,7 +77,7 @@ sofa_find_package(Sofa.Simulation.Graph REQUIRED)
 sofa_find_package(Sofa.SimpleApi REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Helper Sofa.DefaultType Sofa.Core Sofa.Simulation.Graph Sofa.SimpleApi GTest::gtest SofaGTestMain )
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Helper Sofa.DefaultType Sofa.Core Sofa.Simulation.Graph Sofa.SimpleApi GTest::gtest)
 target_compile_options(${PROJECT_NAME} PUBLIC "-DGTEST_LINKED_AS_SHARED_LIBRARY=1")
 
 set(SOFA_TESTING_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/resources")
