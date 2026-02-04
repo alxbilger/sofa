@@ -154,10 +154,6 @@ class GearSpringForceFieldInternalData
 public:
 };
 
-/** GearSpringForceField simulates 6D springs between Rigid DOFS
-  Use kst vector to specify the directionnal stiffnesses (on each local axe)
-  Use ksr vector to specify the rotational stiffnesses (on each local axe)
-*/
 template<class DataTypes>
 class GearSpringForceField : public core::behavior::PairInteractionForceField<DataTypes>
 {
