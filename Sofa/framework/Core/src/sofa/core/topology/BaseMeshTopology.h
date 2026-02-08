@@ -57,6 +57,9 @@ public:
     typedef sofa::type::fixed_array<EdgeID,6>		EdgesInTetrahedron;
     typedef sofa::type::fixed_array<QuadID,6>		QuadsInHexahedron;
     typedef sofa::type::fixed_array<EdgeID,12>    EdgesInHexahedron;
+    typedef sofa::type::fixed_array<EdgeID,9>       EdgesInPrism;
+    typedef sofa::type::fixed_array<TriangleID,2>   TrianglesInPrism;
+    typedef sofa::type::fixed_array<QuadID,3>       QuadsInPrism;
 
     static constexpr EdgesInTriangle        InvalidEdgesInTriangles       = type::makeHomogeneousArray<EdgesInTriangle>(sofa::InvalidID);
     static constexpr EdgesInQuad            InvalidEdgesInQuad            = type::makeHomogeneousArray<EdgesInQuad>(sofa::InvalidID);
@@ -64,6 +67,9 @@ public:
     static constexpr EdgesInTetrahedron     InvalidEdgesInTetrahedron     = type::makeHomogeneousArray<EdgesInTetrahedron>(sofa::InvalidID);
     static constexpr QuadsInHexahedron      InvalidQuadsInHexahedron      = type::makeHomogeneousArray<QuadsInHexahedron>(sofa::InvalidID);
     static constexpr EdgesInHexahedron      InvalidEdgesInHexahedron      = type::makeHomogeneousArray<EdgesInHexahedron>(sofa::InvalidID);
+    static constexpr EdgesInPrism           InvalidEdgesInPrism           = type::makeHomogeneousArray<EdgesInPrism>(sofa::InvalidID);
+    static constexpr TrianglesInPrism       InvalidTrianglesInPrism       = type::makeHomogeneousArray<TrianglesInPrism>(sofa::InvalidID);
+    static constexpr QuadsInPrism           InvalidQuadsInPrism           = type::makeHomogeneousArray<QuadsInPrism>(sofa::InvalidID);
 
     /// @}
 
@@ -81,6 +87,10 @@ public:
     typedef sofa::type::vector<HexaID>			HexahedraAroundEdge;
     typedef sofa::type::vector<TetraID>		    TetrahedraAroundTriangle;
     typedef sofa::type::vector<HexaID>			HexahedraAroundQuad;
+    typedef sofa::type::vector<PrismID>         PrismsAroundVertex;
+    typedef sofa::type::vector<PrismID>         PrismsAroundEdge;
+    typedef sofa::type::vector<PrismID>         PrismsAroundTriangle;
+    typedef sofa::type::vector<PrismID>         PrismsAroundQuad;
     /// @}
 protected:
     BaseMeshTopology()	;
@@ -143,6 +153,25 @@ public:
     virtual const Hexa getHexahedron(HexaID i)       { return getHexahedra()[i]; }
     virtual const Prism getPrism(PrismID i)          { return getPrisms()[i]; }
     virtual const Pyramid getPyramid(PyramidID i)    { return getPyramids()[i]; }
+
+    virtual void addPrism(Index a, Index b, Index c, Index d, Index e, Index f) = 0;
+    virtual PrismID getPrismIndex(PointID v1, PointID v2, PointID v3, PointID v4, PointID v5, PointID v6) = 0;
+    virtual const EdgesInPrism& getEdgesInPrism(PrismID id) = 0;
+    virtual const TrianglesInPrism& getTrianglesInPrism(PrismID id) = 0;
+    virtual const QuadsInPrism& getQuadsInPrism(PrismID id) = 0;
+    virtual const PrismsAroundVertex& getPrismsAroundVertex(PointID id) = 0;
+    virtual const PrismsAroundEdge& getPrismsAroundEdge(EdgeID id) = 0;
+    virtual const PrismsAroundTriangle& getPrismsAroundTriangle(TriangleID id) = 0;
+    virtual const PrismsAroundQuad& getPrismsAroundQuad(QuadID id) = 0;
+
+    virtual int getVertexIndexInPrism(const Prism &p, PointID vertexIndex) const = 0;
+    virtual int getEdgeIndexInPrism(const EdgesInPrism &p, EdgeID edgeIndex) const = 0;
+    virtual int getTriangleIndexInPrism(const TrianglesInPrism &p, TriangleID triangleIndex) const = 0;
+    virtual int getQuadIndexInPrism(const QuadsInPrism &p, QuadID quadIndex) const = 0;
+
+    virtual Edge getLocalEdgesInPrism(const EdgeID i) const = 0;
+    virtual Triangle getLocalTrianglesInPrism(const TriangleID i) const = 0;
+    virtual Quad getLocalQuadsInPrism(const QuadID i) const = 0;
 
     /// Type of higher topology element contains in this container @see ElementType
     virtual sofa::geometry::ElementType getTopologyType() const = 0;
