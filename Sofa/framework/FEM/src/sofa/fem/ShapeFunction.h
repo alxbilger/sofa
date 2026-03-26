@@ -60,6 +60,18 @@ struct ShapeFunction
         return evaluateImpl(q, std::make_index_sequence<BasisSize>());
     }
 
+    /**
+     * Evaluate the derivative of the shape function at a given coordinate with respect to a given dimension.
+     * @tparam D The dimension with respect to which the derivative is taken.
+     * @param q The coordinate where to evaluate the derivative.
+     * @return The value of the derivative at q.
+     */
+    template <std::size_t D>
+    constexpr Real evaluateDerivativeAt(const Coord& q) const
+    {
+        return evaluateDerivativeImpl<D>(q, std::make_index_sequence<BasisSize>());
+    }
+
 private:
 
     /**
@@ -75,6 +87,19 @@ private:
     }
 
     /**
+     * Evaluate the derivative of one basis function scaled by its coefficient.
+     * @tparam I The index of the basis function.
+     * @tparam D The dimension with respect to which the derivative is taken.
+     * @param q The coordinate where to evaluate.
+     * @return \f$ c_I \cdot \frac{\partial b_I}{\partial q_D}(q) \f$
+     */
+    template<std::size_t I, std::size_t D>
+    constexpr Real evaluateScaledBasisDerivative(const Coord& q) const
+    {
+        return coefficients[I] * BasisSet::template derivative<I, D>(q);
+    }
+
+    /**
      * Implementation of the evaluation using parameter pack expansion.
      * @tparam I Indices of the basis functions.
      * @param q The coordinate where to evaluate.
@@ -84,6 +109,19 @@ private:
     constexpr Real evaluateImpl(const Coord& q, std::index_sequence<I...>) const
     {
         return (evaluateScaledBasis<I>(q) + ...);
+    }
+
+    /**
+     * Implementation of the derivative evaluation using parameter pack expansion.
+     * @tparam D The dimension with respect to which the derivative is taken.
+     * @tparam I Indices of the basis functions.
+     * @param q The coordinate where to evaluate.
+     * @return The sum of all scaled basis function derivatives.
+     */
+    template <std::size_t D, std::size_t... I>
+    constexpr Real evaluateDerivativeImpl(const Coord& q, std::index_sequence<I...>) const
+    {
+        return (evaluateScaledBasisDerivative<I, D>(q) + ...);
     }
 };
 
@@ -136,6 +174,23 @@ struct ShapeFunctions
         return result;
     }
 
+    /**
+     * Evaluate the derivatives of all shape functions at a given coordinate with respect to a given dimension.
+     * @tparam D The dimension with respect to which the derivative is taken.
+     * @param q The coordinate where to evaluate.
+     * @return A vector containing the derivatives of all shape functions.
+     */
+    template <std::size_t D>
+    constexpr sofa::type::Vec<BasisSize, Real> evaluateDerivativeAt(const Coord& q) const
+    {
+        sofa::type::Vec<BasisSize, Real> result { sofa::type::NOINIT };
+        for (std::size_t i = 0; i < BasisSize; ++i)
+        {
+            result[i] = functions[i].template evaluateDerivativeAt<D>(q);
+        }
+        return result;
+    }
+
 private:
     /**
      * Computes the coefficients for each shape function based on the element nodes.
@@ -163,15 +218,15 @@ private:
             }
         }
 
-        const auto canInvert = M.invert(M);
-        (void)canInvert; // TODO: handle non-invertible case if necessary
-
-        for (std::size_t i = 0; i < BasisSize; ++i)
+        if (const auto canInvert = M.invert(M))
         {
-            for (std::size_t j = 0; j < BasisSize; ++j)
+            for (std::size_t i = 0; i < BasisSize; ++i)
             {
-                // C_ij = (M^-1)_ji (since C^T = M^-1)
-                functions[i].coefficients[j] = M(j, i);
+                for (std::size_t j = 0; j < BasisSize; ++j)
+                {
+                    // C_ij = (M^-1)_ji (since C^T = M^-1)
+                    functions[i].coefficients[j] = M(j, i);
+                }
             }
         }
     }

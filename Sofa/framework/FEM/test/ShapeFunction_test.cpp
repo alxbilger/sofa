@@ -77,4 +77,27 @@ TEST(ShapeFunctionTest, EvaluateAtDifferentBasis)
     EXPECT_DOUBLE_EQ(sf.evaluateAt(q3), 13.0); // 4 + 9 = 13.0
 }
 
+TEST(ShapeFunctionTest, EvaluateDerivativeAt)
+{
+    // Basis: 1, x, y, x^2
+    static constexpr std::array<std::array<std::size_t, 2>, 4> exponents {{
+        {0, 0},
+        {1, 0},
+        {0, 1},
+        {2, 0}
+    }};
+    using Coord = sofa::type::Vec<2, double>;
+    using Basis = MonomialBasisSet<double, exponents>;
+    using SF = ShapeFunction<Coord, Basis>;
+
+    SF sf;
+    sf.coefficients = { 1.0, 2.0, 3.0, 4.0 }; // N(x, y) = 1 + 2x + 3y + 4x^2
+    // dN/dx = 2 + 8x
+    // dN/dy = 3
+
+    Coord q1; q1[0] = 0.5; q1[1] = 0.5;
+    EXPECT_DOUBLE_EQ(sf.evaluateDerivativeAt<0>(q1), 2.0 + 8.0 * 0.5); // 6.0
+    EXPECT_DOUBLE_EQ(sf.evaluateDerivativeAt<1>(q1), 3.0);
+}
+
 }

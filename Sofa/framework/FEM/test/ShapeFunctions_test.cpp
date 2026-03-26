@@ -214,4 +214,40 @@ TEST(ShapeFunctionsTest, Tetrahedron3D)
     EXPECT_NEAR(sum, 1.0, 1e-12);
 }
 
+
+TEST(ShapeFunctionsTest, EvaluateDerivativeAt)
+{
+    // Linear triangle: Basis 1, x, y
+    static constexpr std::array<std::array<std::size_t, 2>, 3> exponents {{
+        {0, 0},
+        {1, 0},
+        {0, 1}
+    }};
+    using Coord = sofa::type::Vec<2, double>;
+    using Basis = MonomialBasisSet<double, exponents>;
+    using SF = ShapeFunction<Coord, Basis>;
+    using SFS = ShapeFunctions<SF>;
+
+    // Nodes of a right triangle: (0,0), (1,0), (0,1)
+    std::array<Coord, 3> nodes;
+    nodes[0] = {0.0, 0.0};
+    nodes[1] = {1.0, 0.0};
+    nodes[2] = {0.0, 1.0};
+
+    SFS sfs(nodes);
+    // N0 = 1 - x - y, dN0/dx = -1, dN0/dy = -1
+    // N1 = x,         dN1/dx = 1,  dN1/dy = 0
+    // N2 = y,         dN2/dx = 0,  dN2/dy = 1
+
+    Coord q; q[0] = 0.2; q[1] = 0.3;
+    auto dNdx = sfs.evaluateDerivativeAt<0>(q);
+    EXPECT_DOUBLE_EQ(dNdx[0], -1.0);
+    EXPECT_DOUBLE_EQ(dNdx[1], 1.0);
+    EXPECT_DOUBLE_EQ(dNdx[2], 0.0);
+
+    auto dNdy = sfs.evaluateDerivativeAt<1>(q);
+    EXPECT_DOUBLE_EQ(dNdy[0], -1.0);
+    EXPECT_DOUBLE_EQ(dNdy[1], 0.0);
+    EXPECT_DOUBLE_EQ(dNdy[2], 1.0);
+}
 }
