@@ -51,7 +51,7 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
         {0, 0, 1}, // z
     }};
 
-    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
+    using BasisSet = MonomialBasisSet<Real, exponents>;
 
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {

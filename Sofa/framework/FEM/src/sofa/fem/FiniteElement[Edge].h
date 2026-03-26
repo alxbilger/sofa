@@ -50,7 +50,7 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         {1}, // x
     }};
 
-    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
+    using BasisSet = MonomialBasisSet<Real, exponents>;
 
     static std::array<std::function<Real(const ReferenceCoord&)>, NumberOfNodesInElement> shapeFunctions(
         const std::array<ReferenceCoord, NumberOfNodesInElement>& nodesCoordinates)

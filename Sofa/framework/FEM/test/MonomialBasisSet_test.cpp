@@ -8,12 +8,12 @@ namespace sofa::fem
 TEST(MonomialBasisSetTest, Eval)
 {
     // Basis: 1, x, y
-    constexpr std::array<std::array<std::size_t, 2>, 3> exponents {{
+    static constexpr std::array<std::array<std::size_t, 2>, 3> exponents {{
         {0, 0},
         {1, 0},
         {0, 1}
     }};
-    using Basis = MonomialBasisSet<double, 2, 3, exponents>;
+    using Basis = MonomialBasisSet<double, exponents>;
 
     sofa::type::Vec<2, double> q;
     q.fill(0.0);
@@ -28,7 +28,7 @@ TEST(MonomialBasisSetTest, Eval)
 TEST(MonomialBasisSetTest, Derivative)
 {
     // Basis: 1, x, y, x^2, xy, y^2
-    constexpr std::array<std::array<std::size_t, 2>, 6> exponents {{
+    static constexpr std::array<std::array<std::size_t, 2>, 6> exponents {{
         {0, 0}, // 1
         {1, 0}, // x
         {0, 1}, // y
@@ -36,7 +36,7 @@ TEST(MonomialBasisSetTest, Derivative)
         {1, 1}, // xy
         {0, 2}  // y^2
     }};
-    using Basis = MonomialBasisSet<double, 2, 6, exponents>;
+    using Basis = MonomialBasisSet<double, exponents>;
 
     sofa::type::Vec<2, double> q;
     q.fill(0.0);

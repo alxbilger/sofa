@@ -53,7 +53,7 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
         {0, 1}, // y
     }};
 
-    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
+    using BasisSet = MonomialBasisSet<Real, exponents>;
 
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {

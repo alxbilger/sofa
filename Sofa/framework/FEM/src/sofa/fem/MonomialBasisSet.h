@@ -33,16 +33,13 @@ namespace sofa::fem
  * The basis functions are defined by their exponents for each dimension.
  *
  * @tparam Real The real type used for calculations.
- * @tparam Dim The dimension of the space.
- * @tparam TBasisSize The number of basis functions in the set.
  * @tparam Exponents An array containing the exponents for each basis function in each dimension.
  */
-template <class Real, std::size_t Dim, std::size_t TBasisSize,
-    std::array<std::array<std::size_t, Dim>, TBasisSize> Exponents>
+template <class Real, auto& Exponents>
 struct MonomialBasisSet
 {
-    static constexpr std::size_t BasisSize = TBasisSize;
-    static constexpr std::size_t Dimension = Dim;
+    static constexpr std::size_t BasisSize = Exponents.size();
+    static constexpr std::size_t Dimension = Exponents[0].size();
 
     /**
      * @brief Evaluates the I-th basis function at the given coordinate.
@@ -54,10 +51,10 @@ struct MonomialBasisSet
      * @return The value of the I-th basis function at q.
      */
     template<std::size_t I>
-    static constexpr Real eval(const sofa::type::Vec<Dim, Real>& q)
+    static constexpr Real eval(const sofa::type::Vec<Dimension, Real>& q)
     {
         static_assert(I < BasisSize, "Basis index out of range");
-        return eval_impl<I>(q, std::make_index_sequence<Dim>());
+        return eval_impl<I>(q, std::make_index_sequence<Dimension>());
     }
 
 private:
@@ -91,7 +88,7 @@ private:
     }
 
     template<std::size_t I, std::size_t... Dims>
-    static constexpr Real eval_impl(const sofa::type::Vec<Dim, Real>& q, std::index_sequence<Dims...>)
+    static constexpr Real eval_impl(const sofa::type::Vec<Dimension, Real>& q, std::index_sequence<Dims...>)
     {
         return (pow_impl<Exponents[I][Dims]>(q[Dims]) * ...);
     }
@@ -106,10 +103,10 @@ public:
      * @return The value of the derivative.
      */
     template<std::size_t I, std::size_t D>
-    static constexpr Real derivative(const sofa::type::Vec<Dim, Real>& q)
+    static constexpr Real derivative(const sofa::type::Vec<Dimension, Real>& q)
     {
         static_assert(I < BasisSize, "Basis index out of range");
-        static_assert(D < Dim, "Derivative direction out of range");
+        static_assert(D < Dimension, "Derivative direction out of range");
 
         constexpr std::size_t exponentD = Exponents[I][D];
         if constexpr (exponentD == 0)
@@ -118,13 +115,13 @@ public:
         }
         else
         {
-            return static_cast<Real>(exponentD) * derivative_impl<I, D>(q, std::make_index_sequence<Dim>());
+            return static_cast<Real>(exponentD) * derivative_impl<I, D>(q, std::make_index_sequence<Dimension>());
         }
     }
 
 private:
     template <std::size_t I, std::size_t D, std::size_t... Dims>
-    static constexpr Real derivative_impl(const sofa::type::Vec<Dim, Real>& q, std::index_sequence<Dims...>)
+    static constexpr Real derivative_impl(const sofa::type::Vec<Dimension, Real>& q, std::index_sequence<Dims...>)
     {
         return (pow_impl<(Dims == D ? Exponents[I][Dims] - 1 : Exponents[I][Dims])>(q[Dims]) * ...);
     }

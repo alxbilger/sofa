@@ -72,7 +72,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         {1, 1, 1}, // x*y*z
     }};
 
-    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
+    using BasisSet = MonomialBasisSet<Real, exponents>;
 
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
