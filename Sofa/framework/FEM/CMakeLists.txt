@@ -15,6 +15,7 @@ set(HEADER_FILES
     ${SOFAFEMSRC_ROOT}/FiniteElement[Tetrahedron].h
     ${SOFAFEMSRC_ROOT}/FiniteElement[Triangle].h
 
+    ${SOFAFEMSRC_ROOT}/MonomialBasisSet.h
     ${SOFAFEMSRC_ROOT}/ShapeFunction.h
 )
 

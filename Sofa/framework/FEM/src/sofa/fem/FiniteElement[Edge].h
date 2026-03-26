@@ -22,6 +22,8 @@
 #pragma once
 #include <sofa/fem/FiniteElement.h>
 
+#include "MonomialBasisSet.h"
+
 #if !defined(SOFA_FEM_FINITE_ELEMENT_EDGE_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
@@ -43,19 +45,12 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         return topology.getEdges();
     }
 
-    struct BasisSet
-    {
-        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
-        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
-        {
-            switch (I)
-            {
-                case 0: return static_cast<Real>(1);
-                case 1: return q[0];
-                default: return static_cast<Real>(0);
-            }
-        }
-    };
+    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+        {0}, // 1
+        {1}, // x
+    }};
+
+    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
 
     static std::array<std::function<Real(const ReferenceCoord&)>, NumberOfNodesInElement> shapeFunctions(
         const std::array<ReferenceCoord, NumberOfNodesInElement>& nodesCoordinates)

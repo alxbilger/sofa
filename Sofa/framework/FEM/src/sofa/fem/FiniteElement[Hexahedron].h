@@ -22,6 +22,8 @@
 #pragma once
 #include <sofa/fem/FiniteElement.h>
 
+#include "MonomialBasisSet.h"
+
 #if !defined(SOFA_FEM_FINITE_ELEMENT_HEXAHEDRON_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
@@ -59,26 +61,18 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         {-1, 1, 1},
     }};
 
-    struct BasisSet
-    {
-        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
-        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
-        {
-            const auto& [x, y, z] = q;
-            switch (I)
-            {
-                case 0: return static_cast<Real>(1);
-                case 1: return x;
-                case 2: return y;
-                case 3: return z;
-                case 4: return x * y;
-                case 5: return x * z;
-                case 6: return y * z;
-                case 7: return x * y * z;
-                default: return static_cast<Real>(0);
-            }
-        }
-    };
+    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+        {0, 0, 0}, // 1
+        {1, 0, 0}, // x
+        {0, 1, 0}, // y
+        {0, 0, 1}, // z
+        {1, 1, 0}, // x*y
+        {1, 0, 1}, // x*z
+        {0, 1, 1}, // y*z
+        {1, 1, 1}, // x*y*z
+    }};
+
+    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
 
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {

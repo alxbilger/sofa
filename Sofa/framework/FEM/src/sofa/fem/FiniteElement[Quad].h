@@ -22,6 +22,8 @@
 #pragma once
 #include <sofa/fem/FiniteElement.h>
 
+#include "MonomialBasisSet.h"
+
 #if !defined(SOFA_FEM_FINITE_ELEMENT_QUAD_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
@@ -42,22 +44,14 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         {-1, 1}
     }};
 
-    struct BasisSet
-    {
-        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
-        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
-        {
-            const auto& [x, y] = q;
-            switch (I)
-            {
-                case 0: return static_cast<Real>(1);
-                case 1: return x;
-                case 2: return y;
-                case 3: return x * y;
-                default: return static_cast<Real>(0);
-            }
-        }
-    };
+    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+        {0, 0}, // 1
+        {1, 0}, // x
+        {0, 1}, // y
+        {1, 1}, // x*y
+    }};
+
+    using BasisSet = MonomialBasisSet<Real, TopologicalDimension, NumberOfNodesInElement, exponents>;
 
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
