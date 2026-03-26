@@ -42,6 +42,22 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
         {0, 0, 1}
     }};
 
+    struct BasisSet
+    {
+        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
+        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
+        {
+            switch (I)
+            {
+                case 0: return static_cast<Real>(1);
+                case 1: return q[0];
+                case 2: return q[1];
+                case 3: return q[2];
+                default: return static_cast<Real>(0);
+            }
+        }
+    };
+
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getTetrahedra();

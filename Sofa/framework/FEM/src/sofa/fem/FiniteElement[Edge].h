@@ -29,6 +29,8 @@
 namespace sofa::fem
 {
 
+
+
 template <class DataTypes>
 struct FiniteElement<sofa::geometry::Edge, DataTypes>
 {
@@ -41,10 +43,45 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         return topology.getEdges();
     }
 
+    struct BasisSet
+    {
+        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
+        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
+        {
+            switch (I)
+            {
+                case 0: return static_cast<Real>(1);
+                case 1: return q[0];
+                default: return static_cast<Real>(0);
+            }
+        }
+    };
+
+    static std::array<std::function<Real(const ReferenceCoord&)>, NumberOfNodesInElement> shapeFunctions(
+        const std::array<ReferenceCoord, NumberOfNodesInElement>& nodesCoordinates)
+    {
+        const auto& x0 = nodesCoordinates[0][0];
+        const auto& x1 = nodesCoordinates[1][0];
+
+        const auto a = x1 / (x1 - x0);
+        const auto b = -static_cast<Real>(1) / (x1 - x0);
+        const auto c = -x0 / (x1 - x0);
+        const auto d = static_cast<Real>(1) / (x1 - x0);
+
+        return {
+            [a,b](const ReferenceCoord& q){ return a + b * q[0]; },
+            [c,d](const ReferenceCoord& q){ return c + d * q[0]; }
+        };
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);
-        return {{-static_cast<Real>(0.5)}, {static_cast<Real>(0.5)}};
+        static constexpr auto x0 = referenceElementNodes[0][0];
+        static constexpr auto x1 = referenceElementNodes[1][0];
+        static constexpr auto b = -static_cast<Real>(1) / (x1 - x0);
+        static constexpr auto d = static_cast<Real>(1) / (x1 - x0);
+        return {{b}, {d}};
     }
 
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()

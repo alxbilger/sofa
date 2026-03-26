@@ -45,6 +45,21 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
         return topology.getTriangles();
     }
 
+    struct BasisSet
+    {
+        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
+        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
+        {
+            switch (I)
+            {
+                case 0: return static_cast<Real>(1);
+                case 1: return q[0];
+                case 2: return q[1];
+                default: return static_cast<Real>(0);
+            }
+        }
+    };
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);

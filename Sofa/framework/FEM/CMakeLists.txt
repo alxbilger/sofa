@@ -14,6 +14,8 @@ set(HEADER_FILES
     ${SOFAFEMSRC_ROOT}/FiniteElement[Quad].h
     ${SOFAFEMSRC_ROOT}/FiniteElement[Tetrahedron].h
     ${SOFAFEMSRC_ROOT}/FiniteElement[Triangle].h
+
+    ${SOFAFEMSRC_ROOT}/ShapeFunction.h
 )
 
 set(SOURCE_FILES

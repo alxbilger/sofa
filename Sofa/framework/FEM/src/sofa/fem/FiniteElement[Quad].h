@@ -42,6 +42,23 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         {-1, 1}
     }};
 
+    struct BasisSet
+    {
+        static constexpr std::size_t BasisSize = NumberOfNodesInElement;
+        template<std::size_t I> static constexpr Real eval(const ReferenceCoord& q)
+        {
+            const auto& [x, y] = q;
+            switch (I)
+            {
+                case 0: return static_cast<Real>(1);
+                case 1: return x;
+                case 2: return y;
+                case 3: return x * y;
+                default: return static_cast<Real>(0);
+            }
+        }
+    };
+
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getQuads();

@@ -21,6 +21,7 @@
 ******************************************************************************/
 #include <gtest/gtest.h>
 #include <sofa/fem/FiniteElement[all].h>
+#include <sofa/testing/NumericTest.h>
 
 namespace sofa
 {
@@ -81,6 +82,62 @@ TEST(FiniteElement, tetra3dWeights)
 TEST(FiniteElement, hexa3dWeights)
 {
     testSumWeights<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>(8);
+}
+
+template <class ElementType, class DataTypes>
+void testShapeFunctions()
+{
+    using FE = sofa::fem::FiniteElement<ElementType, DataTypes>;
+
+    for (std::size_t i = 0; i < FE::NumberOfNodesInElement; ++i)
+    {
+        const auto x = FE::Helper::applyReferenceShapeFunctions(FE::referenceElementNodes[i]);
+        for (std::size_t j = 0; j < FE::NumberOfNodesInElement; ++j)
+        {
+            EXPECT_FLOATINGPOINT_EQ(x[j], static_cast<sofa::Real_t<DataTypes>>(i == j));
+        }
+    }
+}
+
+TEST(FiniteElement, edge1dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Edge, sofa::defaulttype::Vec1Types>();
+}
+TEST(FiniteElement, edge2dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Edge, sofa::defaulttype::Vec2Types>();
+}
+TEST(FiniteElement, edge3dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Edge, sofa::defaulttype::Vec3Types>();
+}
+
+TEST(FiniteElement, triangle2dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Triangle, sofa::defaulttype::Vec2Types>();
+}
+TEST(FiniteElement, triangle3dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Triangle, sofa::defaulttype::Vec3Types>();
+}
+
+TEST(FiniteElement, quad2dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Quad, sofa::defaulttype::Vec2Types>();
+}
+TEST(FiniteElement, quad3dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Quad, sofa::defaulttype::Vec3Types>();
+}
+
+TEST(FiniteElement, tetra3dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>();
+}
+
+TEST(FiniteElement, hexa3dShapeFunctions)
+{
+    testShapeFunctions<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>();
 }
 
 /**

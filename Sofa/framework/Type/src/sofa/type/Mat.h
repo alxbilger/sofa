@@ -34,16 +34,25 @@
 namespace // anonymous
 {
     template<typename real>
-    real rabs(const real r)
+    constexpr real rabs(const real r)
     {
         if constexpr (std::is_signed<real>())
-            return std::abs(r);
+        {
+            if (std::is_constant_evaluated())
+            {
+                return (r < 0) ? -r : r;
+            }
+            else
+            {
+                return std::abs(r);
+            }
+        }
         else
             return r;
     }
 
     template<typename real>
-    bool equalsZero(const real r, const real epsilon = std::numeric_limits<real>::epsilon())
+    constexpr bool equalsZero(const real r, const real epsilon = std::numeric_limits<real>::epsilon())
     {
         return rabs(r) <= epsilon;
     }
@@ -1099,7 +1108,7 @@ constexpr Vec<N,real> diagonal(const Mat<N,N,real>& m)
 
 /// Matrix inversion (general case).
 template<sofa::Size S, class real>
-[[nodiscard]] bool invertMatrix(Mat<S,S,real>& dest, const Mat<S,S,real>& from)
+[[nodiscard]] constexpr bool invertMatrix(Mat<S,S,real>& dest, const Mat<S,S,real>& from)
 {
     sofa::Size i{0}, j{0}, k{0};
     Vec<S, sofa::Size> r, c, row, col;

@@ -22,12 +22,16 @@
 #pragma once
 #include <sofa/fem/config.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+#include <sofa/fem/ShapeFunction.h>
 
 namespace sofa::fem
 {
 
 template <class ElementType, class DataTypes>
 struct FiniteElement;
+
+template <class ElementType, class DataTypes>
+struct FiniteElementHelper;
 
 #define FINITEELEMENT_HEADER(ElType, DataTypes, dimension) \
     using Coord = sofa::Coord_t<DataTypes>;\
@@ -38,9 +42,10 @@ struct FiniteElement;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;\
     static constexpr sofa::Size TopologicalDimension = dimension;\
     using ReferenceCoord = sofa::type::Vec<TopologicalDimension, Real>;\
-    using ShapeFunctionType = std::function<Real(const ReferenceCoord&)>;\
     using QuadraturePoint = ReferenceCoord; \
-    using QuadraturePointAndWeight = std::pair<QuadraturePoint, Real>
+    using QuadraturePointAndWeight = std::pair<QuadraturePoint, Real>;\
+    using Helper = FiniteElementHelper<ElementType, DataTypes>;\
+
 
 
 template <class ElementType, class DataTypes>
@@ -49,6 +54,9 @@ struct FiniteElementHelper
     using FiniteElement = sofa::fem::FiniteElement<ElementType, DataTypes>;
     using Coord = typename FiniteElement::Coord;
     using Real = typename FiniteElement::Real;
+    using ReferenceCoord = typename FiniteElement::ReferenceCoord;
+    using BasisSet = typename FiniteElement::BasisSet;
+    using ShapeFunction = ShapeFunction<ReferenceCoord, BasisSet>;
 
     static constexpr sofa::Size spatial_dimensions = FiniteElement::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = FiniteElement::NumberOfNodesInElement;
@@ -78,6 +86,13 @@ struct FiniteElementHelper
             jacobian += sofa::type::dyad(elementNodesCoordinates[i], gradientShapeFunctionInReferenceElement[i]);
         }
         return jacobian;
+    }
+
+    static constexpr ShapeFunctions<ShapeFunction> referenceShapeFunctions { FiniteElement::referenceElementNodes };
+
+    static constexpr sofa::type::Vec<FiniteElement::NumberOfNodesInElement, Real> applyReferenceShapeFunctions(const FiniteElement::ReferenceCoord& q)
+    {
+        return referenceShapeFunctions.evaluateAt(q);
     }
 
 };
