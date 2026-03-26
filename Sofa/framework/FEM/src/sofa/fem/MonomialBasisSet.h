@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/type/Vec.h>
+#include <utility> // for std::index_sequence, std::make_index_sequence
 
 namespace sofa::fem
 {
@@ -56,19 +57,46 @@ struct MonomialBasisSet
     static constexpr Real eval(const sofa::type::Vec<Dim, Real>& q)
     {
         static_assert(I < BasisSize, "Basis index out of range");
-
-        Real value = static_cast<Real>(1);
-        for (std::size_t d = 0; d < Dim; ++d)
-        {
-            const auto exponent = Exponents[I][d];
-            for (std::size_t k = 0; k < exponent; ++k)
-            {
-                value *= q[d];
-            }
-        }
-        return value;
+        return eval_impl<I>(q, std::make_index_sequence<Dim>());
     }
 
+private:
+    /**
+     * @brief Internal helper to evaluate the power of a coordinate at compile-time.
+     */
+    template<std::size_t Exp>
+    static constexpr Real pow_impl(Real base)
+    {
+        if constexpr (Exp == 0)
+        {
+            return static_cast<Real>(1);
+        }
+        else if constexpr (Exp == 1)
+        {
+            return base;
+        }
+        else if constexpr (Exp == 2)
+        {
+            return base * base;
+        }
+        else
+        {
+            Real result = base;
+            for (std::size_t i = 1; i < Exp; ++i)
+            {
+                result *= base;
+            }
+            return result;
+        }
+    }
+
+    template<std::size_t I, std::size_t... Dims>
+    static constexpr Real eval_impl(const sofa::type::Vec<Dim, Real>& q, std::index_sequence<Dims...>)
+    {
+        return (pow_impl<Exponents[I][Dims]>(q[Dims]) * ...);
+    }
+
+public:
     /**
      * @brief Evaluates the derivative of the I-th basis function with respect to the D-th dimension.
      *
@@ -90,24 +118,17 @@ struct MonomialBasisSet
         }
         else
         {
-            Real value = static_cast<Real>(exponentD);
-
-            for (std::size_t d = 0; d < Dim; ++d)
-            {
-                std::size_t exponent = Exponents[I][d];
-                if (d == D)
-                {
-                    --exponent;
-                }
-
-                for (std::size_t k = 0; k < exponent; ++k)
-                {
-                    value *= q[d];
-                }
-            }
-
-            return value;
+            return static_cast<Real>(exponentD) * derivative_impl<I, D>(q, std::make_index_sequence<Dim>());
         }
     }
+
+private:
+    template <std::size_t I, std::size_t D, std::size_t... Dims>
+    static constexpr Real derivative_impl(const sofa::type::Vec<Dim, Real>& q, std::index_sequence<Dims...>)
+    {
+        return (pow_impl<(Dims == D ? Exponents[I][Dims] - 1 : Exponents[I][Dims])>(q[Dims]) * ...);
+    }
+
+public:
 };
 }
