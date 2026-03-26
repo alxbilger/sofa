@@ -26,6 +26,14 @@
 
 namespace sofa::fem
 {
+
+template <typename T, std::size_t Row, std::size_t Col>
+using Array2d = std::array<std::array<T, Col>, Row>;
+
+template <std::size_t Row, std::size_t Col>
+using Exponent = Array2d<std::size_t, Row, Col>;
+
+
 /**
  * @brief Set of monomial basis functions.
  *

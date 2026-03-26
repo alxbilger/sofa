@@ -44,6 +44,7 @@ struct FiniteElementHelper;
     using ReferenceCoord = sofa::type::Vec<TopologicalDimension, Real>;\
     using QuadraturePoint = ReferenceCoord; \
     using QuadraturePointAndWeight = std::pair<QuadraturePoint, Real>;\
+    using MonomialBasisExponents = Exponent<NumberOfNodesInElement, TopologicalDimension>;\
     using Helper = FiniteElementHelper<ElementType, DataTypes>;\
 
 

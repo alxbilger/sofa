@@ -22,6 +22,8 @@
 #pragma once
 
 #include <sofa/fem/config.h>
+#include <sofa/type/Vec.h>
+#include <sofa/type/Mat.h>
 #include <utility>
 
 namespace sofa::fem

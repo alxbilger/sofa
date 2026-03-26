@@ -47,7 +47,7 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
         return topology.getTriangles();
     }
 
-    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+    static constexpr MonomialBasisExponents exponents {{
         {0, 0}, // 1
         {1, 0}, // x
         {0, 1}, // y

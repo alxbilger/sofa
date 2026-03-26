@@ -61,7 +61,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         {-1, 1, 1},
     }};
 
-    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+    static constexpr MonomialBasisExponents exponents {{
         {0, 0, 0}, // 1
         {1, 0, 0}, // x
         {0, 1, 0}, // y

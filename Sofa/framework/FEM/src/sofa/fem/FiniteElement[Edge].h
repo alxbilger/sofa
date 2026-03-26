@@ -45,7 +45,7 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         return topology.getEdges();
     }
 
-    static constexpr std::array<std::array<std::size_t, TopologicalDimension>, NumberOfNodesInElement> exponents {{
+    static constexpr MonomialBasisExponents exponents {{
         {0}, // 1
         {1}, // x
     }};
