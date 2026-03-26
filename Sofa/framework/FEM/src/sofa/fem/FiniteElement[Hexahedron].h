@@ -22,7 +22,7 @@
 #pragma once
 #include <sofa/fem/FiniteElement.h>
 
-#include "MonomialBasisSet.h"
+#include <sofa/fem/MonomialBasisSet.h>
 
 #if !defined(SOFA_FEM_FINITE_ELEMENT_HEXAHEDRON_CPP)
 #include <sofa/defaulttype/VecTypes.h>

@@ -22,7 +22,7 @@
 #pragma once
 #include <sofa/fem/FiniteElement.h>
 
-#include "MonomialBasisSet.h"
+#include <sofa/fem/MonomialBasisSet.h>
 
 namespace sofa::fem
 {

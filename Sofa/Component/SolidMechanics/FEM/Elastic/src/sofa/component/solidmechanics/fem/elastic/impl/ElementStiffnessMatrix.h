@@ -166,9 +166,8 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
 
         // jacobian of the mapping from the reference space to the physical space, evaluated at the
         // quadrature point
-        sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian;
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-            jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
+        const sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian =
+            FiniteElement::Helper::jacobianFromReferenceToPhysical(nodesCoordinates, dN_dq_ref);
 
         const auto detJ = sofa::type::absGeneralizedDeterminant(jacobian);
         const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
