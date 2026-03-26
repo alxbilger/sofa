@@ -235,19 +235,21 @@ TEST(ShapeFunctionsTest, EvaluateDerivativeAt)
     nodes[2] = {0.0, 1.0};
 
     SFS sfs(nodes);
-    // N0 = 1 - x - y, dN0/dx = -1, dN0/dy = -1
-    // N1 = x,         dN1/dx = 1,  dN1/dy = 0
-    // N2 = y,         dN2/dx = 0,  dN2/dy = 1
+    // N0 = 1 - x - y, grad N0 = [-1, -1]
+    // N1 = x,         grad N1 = [1, 0]
+    // N2 = y,         grad N2 = [0, 1]
 
     Coord q; q[0] = 0.2; q[1] = 0.3;
-    auto dNdx = sfs.evaluateDerivativeAt<0>(q);
-    EXPECT_DOUBLE_EQ(dNdx[0], -1.0);
-    EXPECT_DOUBLE_EQ(dNdx[1], 1.0);
-    EXPECT_DOUBLE_EQ(dNdx[2], 0.0);
-
-    auto dNdy = sfs.evaluateDerivativeAt<1>(q);
-    EXPECT_DOUBLE_EQ(dNdy[0], -1.0);
-    EXPECT_DOUBLE_EQ(dNdy[1], 0.0);
-    EXPECT_DOUBLE_EQ(dNdy[2], 1.0);
+    auto dN = sfs.evaluateDerivativeAt(q);
+    
+    // N0
+    EXPECT_DOUBLE_EQ(dN(0, 0), -1.0);
+    EXPECT_DOUBLE_EQ(dN(0, 1), -1.0);
+    // N1
+    EXPECT_DOUBLE_EQ(dN(1, 0), 1.0);
+    EXPECT_DOUBLE_EQ(dN(1, 1), 0.0);
+    // N2
+    EXPECT_DOUBLE_EQ(dN(2, 0), 0.0);
+    EXPECT_DOUBLE_EQ(dN(2, 1), 1.0);
 }
 }

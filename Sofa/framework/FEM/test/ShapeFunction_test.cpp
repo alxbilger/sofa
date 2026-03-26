@@ -96,8 +96,9 @@ TEST(ShapeFunctionTest, EvaluateDerivativeAt)
     // dN/dy = 3
 
     Coord q1; q1[0] = 0.5; q1[1] = 0.5;
-    EXPECT_DOUBLE_EQ(sf.evaluateDerivativeAt<0>(q1), 2.0 + 8.0 * 0.5); // 6.0
-    EXPECT_DOUBLE_EQ(sf.evaluateDerivativeAt<1>(q1), 3.0);
+    auto grad = sf.evaluateDerivativeAt(q1);
+    EXPECT_DOUBLE_EQ(grad[0], 2.0 + 8.0 * 0.5); // 6.0
+    EXPECT_DOUBLE_EQ(grad[1], 3.0);
 }
 
 }

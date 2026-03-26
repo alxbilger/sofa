@@ -65,6 +65,45 @@ struct MonomialBasisSet
         return eval_impl<I>(q, std::make_index_sequence<Dimension>());
     }
 
+    /**
+     * @brief Evaluates the derivative of the I-th basis function with respect to the D-th dimension.
+     *
+     * @tparam I The index of the basis function.
+     * @tparam D The dimension with respect to which the derivative is taken.
+     * @param q The coordinate at which to evaluate the derivative.
+     * @return The value of the derivative.
+     */
+    template<std::size_t I, std::size_t D>
+    static constexpr Real derivative(const sofa::type::Vec<Dimension, Real>& q)
+    {
+        static_assert(I < BasisSize, "Basis index out of range");
+        static_assert(D < Dimension, "Derivative direction out of range");
+
+        constexpr std::size_t exponentD = Exponents[I][D];
+        if constexpr (exponentD == 0)
+        {
+            return static_cast<Real>(0);
+        }
+        else
+        {
+            return static_cast<Real>(exponentD) * derivative_impl<I, D>(q, std::make_index_sequence<Dimension>());
+        }
+    }
+
+    /**
+     * @brief Evaluates the gradient of the I-th basis function.
+     *
+     * @tparam I The index of the basis function.
+     * @param q The coordinate at which to evaluate the gradient.
+     * @return The gradient vector.
+     */
+    template<std::size_t I>
+    static constexpr sofa::type::Vec<Dimension, Real> gradient(const sofa::type::Vec<Dimension, Real>& q)
+    {
+        static_assert(I < BasisSize, "Basis index out of range");
+        return gradient_impl<I>(q, std::make_index_sequence<Dimension>());
+    }
+
 private:
     /**
      * @brief Internal helper to evaluate the power of a coordinate at compile-time.
@@ -101,39 +140,17 @@ private:
         return (pow_impl<Exponents[I][Dims]>(q[Dims]) * ...);
     }
 
-public:
-    /**
-     * @brief Evaluates the derivative of the I-th basis function with respect to the D-th dimension.
-     *
-     * @tparam I The index of the basis function.
-     * @tparam D The dimension with respect to which the derivative is taken.
-     * @param q The coordinate at which to evaluate the derivative.
-     * @return The value of the derivative.
-     */
-    template<std::size_t I, std::size_t D>
-    static constexpr Real derivative(const sofa::type::Vec<Dimension, Real>& q)
-    {
-        static_assert(I < BasisSize, "Basis index out of range");
-        static_assert(D < Dimension, "Derivative direction out of range");
-
-        constexpr std::size_t exponentD = Exponents[I][D];
-        if constexpr (exponentD == 0)
-        {
-            return static_cast<Real>(0);
-        }
-        else
-        {
-            return static_cast<Real>(exponentD) * derivative_impl<I, D>(q, std::make_index_sequence<Dimension>());
-        }
-    }
-
-private:
     template <std::size_t I, std::size_t D, std::size_t... Dims>
     static constexpr Real derivative_impl(const sofa::type::Vec<Dimension, Real>& q, std::index_sequence<Dims...>)
     {
         return (pow_impl<(Dims == D ? Exponents[I][Dims] - 1 : Exponents[I][Dims])>(q[Dims]) * ...);
     }
 
-public:
+    template <std::size_t I, std::size_t... D>
+    static constexpr sofa::type::Vec<Dimension, Real> gradient_impl(const sofa::type::Vec<Dimension, Real>& q, std::index_sequence<D...>)
+    {
+        return { derivative<I, D>(q)... };
+    }
+
 };
 }

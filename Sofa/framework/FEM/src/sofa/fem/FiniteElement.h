@@ -91,11 +91,15 @@ struct FiniteElementHelper
 
     static constexpr ShapeFunctions<ShapeFunction> referenceShapeFunctions { FiniteElement::referenceElementNodes };
 
-    static constexpr sofa::type::Vec<FiniteElement::NumberOfNodesInElement, Real> applyReferenceShapeFunctions(const FiniteElement::ReferenceCoord& q)
+    static constexpr sofa::type::Vec<FiniteElement::NumberOfNodesInElement, Real> applyReferenceShapeFunctionsAt(const typename FiniteElement::ReferenceCoord& q)
     {
         return referenceShapeFunctions.evaluateAt(q);
     }
 
+    static constexpr sofa::type::Mat<FiniteElement::NumberOfNodesInElement, FiniteElement::TopologicalDimension, Real> applyReferenceShapeFunctionsGradientAt(const typename FiniteElement::ReferenceCoord& q)
+    {
+        return referenceShapeFunctions.evaluateDerivativeAt(q);
+    }
 };
 
 }

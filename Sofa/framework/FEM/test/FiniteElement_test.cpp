@@ -91,7 +91,7 @@ void testShapeFunctions()
 
     for (std::size_t i = 0; i < FE::NumberOfNodesInElement; ++i)
     {
-        const auto x = FE::Helper::applyReferenceShapeFunctions(FE::referenceElementNodes[i]);
+        const auto x = FE::Helper::applyReferenceShapeFunctionsAt(FE::referenceElementNodes[i]);
         for (std::size_t j = 0; j < FE::NumberOfNodesInElement; ++j)
         {
             EXPECT_FLOATINGPOINT_EQ(x[j], static_cast<sofa::Real_t<DataTypes>>(i == j));
