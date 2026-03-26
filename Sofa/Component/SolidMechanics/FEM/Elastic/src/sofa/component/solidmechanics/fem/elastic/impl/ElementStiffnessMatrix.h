@@ -162,7 +162,7 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
     {
         // gradient of shape functions in the reference element evaluated at the quadrature point
         const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> dN_dq_ref =
-            FiniteElement::gradientShapeFunctions(quadraturePoint);
+            FiniteElement::Helper::applyReferenceShapeFunctionsGradientAt(quadraturePoint);
 
         // jacobian of the mapping from the reference space to the physical space, evaluated at the
         // quadrature point

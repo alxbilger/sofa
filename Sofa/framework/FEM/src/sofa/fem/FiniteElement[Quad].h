@@ -58,16 +58,6 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         return topology.getQuads();
     }
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
-    {
-        return {
-            {1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[1]), 1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[0])},
-            {1 / static_cast<Real>(4) * ( static_cast<Real>(1) - q[1]), 1 / static_cast<Real>(4) * (-static_cast<Real>(1) - q[0])},
-            {1 / static_cast<Real>(4) * ( static_cast<Real>(1) + q[1]), 1 / static_cast<Real>(4) * ( static_cast<Real>(1) + q[0])},
-            {1 / static_cast<Real>(4) * (-static_cast<Real>(1) - q[1]), 1 / static_cast<Real>(4) * ( static_cast<Real>(1) - q[0])}
-        };
-    }
-
     static constexpr std::array<QuadraturePointAndWeight, 3> quadraturePoints()
     {
         constexpr Real sqrt2_3 = 0.816496580928; //sqrt(2./3.)

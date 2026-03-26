@@ -52,33 +52,6 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
 
     using BasisSet = MonomialBasisSet<Real, exponents>;
 
-    static std::array<std::function<Real(const ReferenceCoord&)>, NumberOfNodesInElement> shapeFunctions(
-        const std::array<ReferenceCoord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        const auto& x0 = nodesCoordinates[0][0];
-        const auto& x1 = nodesCoordinates[1][0];
-
-        const auto a = x1 / (x1 - x0);
-        const auto b = -static_cast<Real>(1) / (x1 - x0);
-        const auto c = -x0 / (x1 - x0);
-        const auto d = static_cast<Real>(1) / (x1 - x0);
-
-        return {
-            [a,b](const ReferenceCoord& q){ return a + b * q[0]; },
-            [c,d](const ReferenceCoord& q){ return c + d * q[0]; }
-        };
-    }
-
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
-    {
-        SOFA_UNUSED(q);
-        static constexpr auto x0 = referenceElementNodes[0][0];
-        static constexpr auto x1 = referenceElementNodes[1][0];
-        static constexpr auto b = -static_cast<Real>(1) / (x1 - x0);
-        static constexpr auto d = static_cast<Real>(1) / (x1 - x0);
-        return {{b}, {d}};
-    }
-
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
         constexpr sofa::type::Vec<TopologicalDimension, Real> q0(static_cast<Real>(0));

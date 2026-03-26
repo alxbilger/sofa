@@ -55,16 +55,6 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
 
     using BasisSet = MonomialBasisSet<Real, exponents>;
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
-    {
-        SOFA_UNUSED(q);
-        return {
-            {-1, -1},
-            {1, 0},
-            {0, 1}
-        };
-    }
-
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
         return {

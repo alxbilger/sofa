@@ -149,7 +149,7 @@ private:
     template <std::size_t I, std::size_t... D>
     static constexpr sofa::type::Vec<Dimension, Real> gradient_impl(const sofa::type::Vec<Dimension, Real>& q, std::index_sequence<D...>)
     {
-        return { derivative<I, D>(q)... };
+        return sofa::type::Vec<Dimension, Real>{ derivative<I, D>(q)... };
     }
 
 };

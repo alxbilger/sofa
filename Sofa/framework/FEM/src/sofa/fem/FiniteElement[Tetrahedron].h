@@ -58,17 +58,6 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
         return topology.getTetrahedra();
     }
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
-    {
-        SOFA_UNUSED(q);
-        return {
-            {-1, -1, -1},
-            {1, 0, 0},
-            {0, 1, 0},
-            {0, 0, 1}
-        };
-    }
-
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
         constexpr sofa::type::Vec<TopologicalDimension, Real> q0(1./4., 1./4., 1./4.);

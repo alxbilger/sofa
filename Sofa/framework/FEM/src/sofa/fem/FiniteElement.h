@@ -71,7 +71,7 @@ struct FiniteElementHelper
 
         std::array<Gradient, quadraturePoints.size()> gradients;
         std::transform(quadraturePoints.begin(), quadraturePoints.end(), gradients.begin(),
-            [](const auto& qp) { return FiniteElement::gradientShapeFunctions(qp.first); });
+            [](const auto& qp) { return applyReferenceShapeFunctionsGradientAt(qp.first); });
         return gradients;
     }
 

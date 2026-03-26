@@ -149,7 +149,7 @@ void testGradientShapeFunctions(const sofa::type::Vec<sofa::fem::FiniteElement<E
     using FE = sofa::fem::FiniteElement<ElementType, DataTypes>;
     static constexpr sofa::type::Vec<FE::TopologicalDimension, sofa::Real_t<DataTypes>> zero;
 
-    const auto N = FE::gradientShapeFunctions(evaluationPoint);
+    const auto N = FE::Helper::applyReferenceShapeFunctionsGradientAt(evaluationPoint);
 
     sofa::type::Vec<FE::NumberOfNodesInElement, SReal> ones;
     std::fill(ones.begin(), ones.end(), 1);

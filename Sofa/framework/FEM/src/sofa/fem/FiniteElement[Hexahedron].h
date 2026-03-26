@@ -79,24 +79,6 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         return topology.getHexahedra();
     }
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
-    {
-        const auto [x, y, z] = q;
-        sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradient(sofa::type::NOINIT);
-        using Line = typename sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>::Line;
-
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        {
-            const auto& [xref, yref, zref] = referenceElementNodes[i];
-            gradient[i] = 1./8. * Line(
-                xref * (1 + y * yref) * (1 + z * zref),
-                yref * (1 + x * xref) * (1 + z * zref),
-                zref * (1 + x * xref) * (1 + y * yref));
-        }
-
-        return gradient;
-    }
-
     static constexpr auto quadraturePoints()
     {
         constexpr Real sqrt3 = 1.73205080757; //sqrt(3.)
