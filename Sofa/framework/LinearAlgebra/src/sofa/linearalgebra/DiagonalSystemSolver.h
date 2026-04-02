@@ -21,6 +21,7 @@
 ******************************************************************************/
 #pragma once
 #include <sofa/config.h>
+#include <sofa/linearalgebra/matrix_bloc_traits.h>
 
 namespace sofa::linearalgebra
 {
@@ -30,16 +31,30 @@ namespace sofa::linearalgebra
 /// x is the solution vector
 /// b is the right-hand side vector
 /// The diagonal matrix is stored as the list of entries in the diagonal
-template<typename Real>
+template<typename Real, typename TBlock = Real, typename Integer = sofa::Size>
 void solveDiagonalSystem(
     const sofa::Size systemSize,
     const Real* rightHandSideVector,
     Real* solution,
-    const Real* const D_values)
+    const TBlock* const D_values)
 {
+    using Traits = matrix_bloc_traits<TBlock, Integer>;
+    constexpr sofa::Size NL = Traits::NL;
+    constexpr sofa::Size NC = Traits::NC;
+
     for (sofa::Size i = 0 ; i < systemSize; ++i)
     {
-        solution[i] = rightHandSideVector[i] / D_values[i];
+        TBlock Dinv;
+        Traits::invert(Dinv, D_values[i]);
+
+        for (sofa::Size bi = 0; bi < NL; ++bi)
+        {
+            solution[i * NL + bi] = 0;
+            for (sofa::Size bj = 0; bj < NC; ++bj)
+            {
+                solution[i * NL + bi] += Traits::v(Dinv, bi, bj) * rightHandSideVector[i * NC + bj];
+            }
+        }
     }
 }
 
@@ -48,16 +63,28 @@ void solveDiagonalSystem(
 /// x is the solution vector
 /// b is the right-hand side vector
 /// The diagonal matrix is stored as the list of the inverse of the entries in the diagonal
-template<typename Real>
+template<typename Real, typename TBlock = Real, typename Integer = sofa::Size>
 void solveDiagonalSystemUsingInvertedValues(
     const sofa::Size systemSize,
     const Real* rightHandSideVector,
     Real* solution,
-    const Real* const Dinv_values)
+    const TBlock* const Dinv_values)
 {
+    using Traits = matrix_bloc_traits<TBlock, Integer>;
+    constexpr sofa::Size NL = Traits::NL;
+    constexpr sofa::Size NC = Traits::NC;
+
     for (sofa::Size i = 0 ; i < systemSize; ++i)
     {
-        solution[i] = rightHandSideVector[i] * Dinv_values[i];
+        const TBlock& Dinv = Dinv_values[i];
+        for (sofa::Size bi = 0; bi < NL; ++bi)
+        {
+            solution[i * NL + bi] = 0;
+            for (sofa::Size bj = 0; bj < NC; ++bj)
+            {
+                solution[i * NL + bi] += Traits::v(Dinv, bi, bj) * rightHandSideVector[i * NC + bj];
+            }
+        }
     }
 }
 
