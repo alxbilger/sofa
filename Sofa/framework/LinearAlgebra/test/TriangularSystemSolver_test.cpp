@@ -23,6 +23,8 @@
 #include <gtest/gtest.h>
 #include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
 #include <sofa/testing/NumericTest.h>
+#include <sofa/type/Mat.h>
+#include <sofa/type/Vec.h>
 
 
 namespace sofa
@@ -35,9 +37,7 @@ TEST(TriangularSystemSolver, empty)
     const sofa::Size* const L_columns { nullptr };
     const sofa::Size* const L_row { nullptr };
     const SReal* const L_values { nullptr };
-    EXPECT_NO_THROW(
-        sofa::linearalgebra::solveLowerUnitriangularSystemCSR(0, rightHandSideVector, solution, L_columns, L_row, L_values);
-    );
+    sofa::linearalgebra::solveLowerUnitriangularSystemCSR<SReal, sofa::Size>(0, rightHandSideVector, solution, L_row, L_columns, L_values);
 }
 
 TEST(TriangularSystemSolver, lower2x2)
@@ -56,8 +56,8 @@ TEST(TriangularSystemSolver, lower2x2)
     constexpr std::array<SReal, 3> L_values { 1, 2, 1 };
 
     sofa::linearalgebra::solveLowerUnitriangularSystemCSR(2, rightHandSideVector.data(), solution.data(), L_row.data(), L_columns.data(), L_values.data());
-    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(6))
-    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(8 - 2 * 6))
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(6));
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(8 - 2 * 6));
 }
 
 TEST(TriangularSystemSolver, lower3x3)
@@ -77,9 +77,9 @@ TEST(TriangularSystemSolver, lower3x3)
     constexpr std::array<SReal, 6> L_values { 1, 2, 1, 3, 4, 1 };
 
     sofa::linearalgebra::solveLowerUnitriangularSystemCSR(3, rightHandSideVector.data(), solution.data(), L_row.data(), L_columns.data(), L_values.data());
-    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(5))
-    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(-9 - 2 * 5))
-    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(64))
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(5));
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(-9 - 2 * 5));
+    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(64));
 }
 
 
@@ -99,8 +99,8 @@ TEST(TriangularSystemSolver, upper2x2)
     constexpr std::array<SReal, 3> L_values { 1, 2, 1 };
 
     sofa::linearalgebra::solveUpperUnitriangularSystemCSR(2, rightHandSideVector.data(), solution.data(), L_row.data(), L_columns.data(), L_values.data());
-    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(8))
-    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(-10))
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(8));
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(-10));
 }
 
 TEST(TriangularSystemSolver, upper3x3)
@@ -120,9 +120,87 @@ TEST(TriangularSystemSolver, upper3x3)
     constexpr std::array<SReal, 6> L_values { 1, 2, 3, 1, 4, 1 };
 
     sofa::linearalgebra::solveUpperUnitriangularSystemCSR(3, rightHandSideVector.data(), solution.data(), L_row.data(), L_columns.data(), L_values.data());
-    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(3))
-    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(-21))
-    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(38))
+    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(3));
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(-21));
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(38));
+}
+
+TEST(TriangularSystemSolver, lower2x2_block2x2)
+{
+    using Block = sofa::type::Mat<2, 2, SReal>;
+    constexpr std::array<SReal, 4> rightHandSideVector { 1, 2, 3, 4 };
+    std::array<SReal, 4> solution {};
+
+    /**
+     * L = [ I  0 ]
+     *     [ B  I ]
+     *
+     * B = [ 1 2 ]
+     *     [ 3 4 ]
+     *
+     * x = [ x0 ]
+     *     [ x1 ]
+     *
+     * x0 = b0 = [ 1, 2 ]
+     * x1 = b1 - B*x0 = [ 3, 4 ] - [ 1 2 ] * [ 1 ] = [ 3, 4 ] - [ 1*1 + 2*2 ] = [ 3-5, 4-11 ] = [ -2, -7 ]
+     *                             [ 3 4 ]   [ 2 ]              [ 3*1 + 4*2 ]
+     */
+
+    // CSR format (block-wise)
+    // systemSize = 2 (number of blocks)
+    constexpr std::array<sofa::Size, 3> L_row { 0, 1, 3 };
+    constexpr std::array<sofa::Size, 3> L_columns { 0, 0, 1 };
+    Block B;
+    B[0][0] = 1; B[0][1] = 2;
+    B[1][0] = 3; B[1][1] = 4;
+    const auto& I = Block::Identity();
+    std::array<Block, 3> L_values { I, B, I };
+
+    sofa::linearalgebra::solveLowerUnitriangularSystemCSR<SReal, sofa::Size, Block>(2, rightHandSideVector.data(), solution.data(), L_row.data(), L_columns.data(), L_values.data());
+
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(1));
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(2));
+    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(-2));
+    EXPECT_FLOATINGPOINT_EQ(solution[3], static_cast<SReal>(-7));
+}
+
+TEST(TriangularSystemSolver, upper2x2_block2x2)
+{
+    using Block = sofa::type::Mat<2, 2, SReal>;
+    constexpr std::array<SReal, 4> rightHandSideVector { 1, 2, 3, 4 };
+    std::array<SReal, 4> solution {};
+
+    /**
+     * U = [ I  B ]
+     *     [ 0  I ]
+     *
+     * B = [ 1 2 ]
+     *     [ 3 4 ]
+     *
+     * x = [ x0 ]
+     *     [ x1 ]
+     *
+     * x1 = b1 = [ 3, 4 ]
+     * x0 = b0 - B*x1 = [ 1, 2 ] - [ 1 2 ] * [ 3 ] = [ 1, 2 ] - [ 1*3 + 2*4 ] = [ 1-11, 2-25 ] = [ -10, -23 ]
+     *                             [ 3 4 ]   [ 4 ]              [ 3*3 + 4*4 ]
+     */
+
+    // CSR format (block-wise)
+    // systemSize = 2 (number of blocks)
+    constexpr std::array<sofa::Size, 3> U_row { 0, 2, 3 };
+    constexpr std::array<sofa::Size, 3> U_columns { 0, 1, 1 };
+    Block B;
+    B[0][0] = 1; B[0][1] = 2;
+    B[1][0] = 3; B[1][1] = 4;
+    const auto& I = Block::Identity();
+    std::array<Block, 3> U_values { I, B, I };
+
+    sofa::linearalgebra::solveUpperUnitriangularSystemCSR<SReal, sofa::Size, Block>(2, rightHandSideVector.data(), solution.data(), U_row.data(), U_columns.data(), U_values.data());
+
+    EXPECT_FLOATINGPOINT_EQ(solution[2], static_cast<SReal>(3));
+    EXPECT_FLOATINGPOINT_EQ(solution[3], static_cast<SReal>(4));
+    EXPECT_FLOATINGPOINT_EQ(solution[0], static_cast<SReal>(-10));
+    EXPECT_FLOATINGPOINT_EQ(solution[1], static_cast<SReal>(-23));
 }
 
 TEST(TriangularSystemSolver, computeLowerTriangularMatrixCoordinates)

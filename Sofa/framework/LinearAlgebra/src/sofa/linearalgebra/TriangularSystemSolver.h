@@ -24,6 +24,8 @@
 #include <cstring>
 #include <cmath>
 
+#include <sofa/linearalgebra/matrix_bloc_traits.h>
+
 namespace sofa::linearalgebra
 {
 
@@ -35,30 +37,47 @@ namespace sofa::linearalgebra
 /// b is the right-hand side vector
 /// The lower unitriangular matrix must be provided in compressed sparse row (CSR) format
 ///
-/// \param systemSize The size of the system. All other parameters must comply with this size
-/// \param rightHandSideVector The right-hand side vector
-/// \param solutionVector The solution vector
+/// \param systemSize The size of the system (number of blocks). All other parameters must comply with this size
+/// \param rightHandSideVector The right-hand side vector (as a flat array of scalars)
+/// \param solutionVector The solution vector (as a flat array of scalars)
 /// \param CSR_rows The array storing the starting index of each row in the data array.
 /// \param CSR_columns The array storing the column indices of the nonzero values in the data array.
-/// \param CSR_values The array containing the nonzero values of the matrix
-template<typename Real, typename Integer>
+/// \param CSR_values The array containing the nonzero values of the matrix (blocks or scalars)
+template<typename Real, typename Integer, typename TBlock = Real>
 void solveLowerUnitriangularSystemCSR(
     const sofa::Size systemSize,
     const Real* rightHandSideVector,
     Real* solutionVector,
     const Integer* const CSR_rows,
     const Integer* const CSR_columns,
-    const Real* const CSR_values
+    const TBlock* const CSR_values
     )
 {
+    using Traits = matrix_bloc_traits<TBlock, Integer>;
+    constexpr sofa::Size NL = Traits::NL;
+    constexpr sofa::Size NC = Traits::NC;
+
     for (sofa::Size i = 0; i < systemSize; ++i)
     {
-        Real x_i = rightHandSideVector[i];
+        for (sofa::Size bi = 0; bi < NL; ++bi)
+        {
+            solutionVector[i * NL + bi] = rightHandSideVector[i * NL + bi];
+        }
+
         for (Integer p = CSR_rows[i]; p < CSR_rows[i + 1]; ++p)
         {
-            x_i -= CSR_values[p] * solutionVector[CSR_columns[p]];
+            const Integer j = CSR_columns[p];
+            if (i == j) continue; // Skip diagonal blocks (assumed identity)
+
+            const TBlock& b = CSR_values[p];
+            for (sofa::Size bi = 0; bi < NL; ++bi)
+            {
+                for (sofa::Size bj = 0; bj < NC; ++bj)
+                {
+                    solutionVector[i * NL + bi] -= Traits::v(b, bi, bj) * solutionVector[j * NC + bj];
+                }
+            }
         }
-        solutionVector[i] = x_i;
     }
 }
 
@@ -70,30 +89,47 @@ void solveLowerUnitriangularSystemCSR(
 /// b is the right-hand side vector
 /// The upper unitriangular matrix must be provided in compressed sparse row (CSR) format
 ///
-/// \param systemSize The size of the system. All other parameters must comply with this size
-/// \param rightHandSideVector The right-hand side vector
-/// \param solutionVector The solution vector
+/// \param systemSize The size of the system (number of blocks). All other parameters must comply with this size
+/// \param rightHandSideVector The right-hand side vector (as a flat array of scalars)
+/// \param solutionVector The solution vector (as a flat array of scalars)
 /// \param CSR_rows The array storing the starting index of each row in the data array.
 /// \param CSR_columns The array storing the column indices of the nonzero values in the data array.
-/// \param CSR_values The array containing the nonzero values of the matrix
-template<typename Real, typename Integer>
+/// \param CSR_values The array containing the nonzero values of the matrix (blocks or scalars)
+template<typename Real, typename Integer, typename TBlock = Real>
 void solveUpperUnitriangularSystemCSR(
     const sofa::Size systemSize,
     const Real* rightHandSideVector,
     Real* solutionVector,
     const Integer* const CSR_rows,
     const Integer* const CSR_columns,
-    const Real* const CSR_values
+    const TBlock* const CSR_values
     )
 {
+    using Traits = matrix_bloc_traits<TBlock, Integer>;
+    constexpr sofa::Size NL = Traits::NL;
+    constexpr sofa::Size NC = Traits::NC;
+
     for (sofa::Size i = systemSize - 1; i != static_cast<sofa::Size>(-1); --i)
     {
-        Real x_i = rightHandSideVector[i];
+        for (sofa::Size bi = 0; bi < NL; ++bi)
+        {
+            solutionVector[i * NL + bi] = rightHandSideVector[i * NL + bi];
+        }
+
         for (Integer p = CSR_rows[i]; p < CSR_rows[i + 1]; ++p)
         {
-            x_i -= CSR_values[p] * solutionVector[CSR_columns[p]];
+            const Integer j = CSR_columns[p];
+            if (i == j) continue; // Skip diagonal blocks (assumed identity)
+
+            const TBlock& b = CSR_values[p];
+            for (sofa::Size bi = 0; bi < NL; ++bi)
+            {
+                for (sofa::Size bj = 0; bj < NC; ++bj)
+                {
+                    solutionVector[i * NL + bi] -= Traits::v(b, bi, bj) * solutionVector[j * NC + bj];
+                }
+            }
         }
-        solutionVector[i] = x_i;
     }
 }
 
