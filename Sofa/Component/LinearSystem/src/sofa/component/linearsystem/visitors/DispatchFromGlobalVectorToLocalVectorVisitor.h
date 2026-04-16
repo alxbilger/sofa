@@ -21,6 +21,11 @@
 ******************************************************************************/
 #pragma once
 
+#include <sofa/config.h>
+#ifndef SOFA_BUILD_SOFA_COMPONENT_LINEARSYSTEM
+SOFA_HEADER_DEPRECATED_NOT_REPLACED("v26.06", "v26.12")
+#endif
+
 #include <sofa/component/linearsystem/config.h>
 #include <sofa/simulation/BaseMechanicalVisitor.h>
 #include <sofa/component/linearsystem/MappingGraph.h>
@@ -29,10 +34,10 @@ namespace sofa::component::linearsystem
 {
 
 /**
- * Copy the values stored in a global vector to the local vectors stored in teach BaseMechanicalState
+ * Copy the values stored in a global vector to the local vectors stored in type BaseMechanicalState
  * The copy location is based on a built MappingGraph.
  */
-class SOFA_COMPONENT_LINEARSYSTEM_API DispatchFromGlobalVectorToLocalVectorVisitor : public simulation::BaseMechanicalVisitor
+class SOFA_COMPONENT_LINEARSYSTEM_API SOFA_ATTRIBUTE_DEPRECATED__LINEARSYSTEM_REMOVEVISTORS() DispatchFromGlobalVectorToLocalVectorVisitor : public simulation::BaseMechanicalVisitor
 {
 public:
 
