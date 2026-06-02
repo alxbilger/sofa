@@ -72,6 +72,9 @@ void FEMForceField<DataTypes, ElementType>::addForce(
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     m_elementForce.resize(elements.size());
 
+    for (auto& elF : m_elementForce)
+        elF.clear();
+
     this->computeElementsForces(mparams, m_elementForce, positionAccessor.ref());
 
     auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
@@ -149,6 +152,9 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
     {
         m_elementDForce.resize(elements.size());
     }
+
+    for (auto& elDf : m_elementDForce)
+        elDf.clear();
 
     this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref());
 
