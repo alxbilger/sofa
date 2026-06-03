@@ -26,6 +26,16 @@
 namespace sofa::type
 {
 
+/**
+ * @class VecView
+ * @brief A utility class designed to provide a lightweight view into a contiguous range
+ * of elements in a vector or similar container.
+ *
+ * This class allows users to access and iterate over a subset of a container
+ * without copying or modifying the underlying data. It operates on any data
+ * structure exposing a pointer to its elements or raw memory, such as a standard
+ * vector, array, or similar constructs.
+ */
 template<sofa::Size N, typename ValueType>
 struct VecView
 {
@@ -34,9 +44,12 @@ struct VecView
     typedef sofa::Size       size_type;
     typedef std::ptrdiff_t   difference_type;
 
+    static constexpr sofa::Size static_size = N;
+    static constexpr sofa::Size size() { return static_size; }
+
     template<sofa::Size L>
     VecView(sofa::type::Vec<L, ValueType>& vec)
-        : m_data(vec.data())
+        : m_data((ValueType*)vec.data())
     {}
 
     template<sofa::Size L>
@@ -44,7 +57,12 @@ struct VecView
         : m_data(&vec.elems.data()[i])
     {}
 
-    value_type operator[](sofa::Size i) const
+    ValueType* data() const
+    {
+        return m_data;
+    }
+
+    const value_type& operator[](sofa::Size i) const
     {
         return m_data[i];
     }
@@ -70,10 +88,43 @@ struct VecView
         return res;
     }
 
-    VecView& operator=(const sofa::type::Vec<N, ValueType>& vec)
+    template<class T> requires (T::static_size == N)
+    VecView& operator=(const T& vec)
     {
         for (sofa::Size i = 0; i < N; ++i)
             m_data[i] = vec[i];
+        return *this;
+    }
+
+    template<class T> requires (T::static_size == N)
+    VecView& operator+=(const T& vec)
+    {
+        for (sofa::Size i = 0; i < N; ++i)
+            m_data[i] += vec[i];
+        return *this;
+    }
+
+    template<class T> requires (T::static_size == N)
+    VecView& operator-=(const T& vec)
+    {
+        for (sofa::Size i = 0; i < N; ++i)
+            m_data[i] -= vec[i];
+        return *this;
+    }
+
+    template<std::floating_point T>
+    VecView& operator*=(const T& scalar)
+    {
+        for (sofa::Size i = 0; i < N; ++i)
+            m_data[i] *= scalar;
+        return *this;
+    }
+
+    template<std::floating_point T>
+    VecView& operator/=(const T& scalar)
+    {
+        for (sofa::Size i = 0; i < N; ++i)
+            m_data[i] /= scalar;
         return *this;
     }
 
@@ -81,15 +132,43 @@ private:
     ValueType* m_data { nullptr };
 };
 
+template<sofa::Size N, class T>
+auto makeVecView(T& v)
+{
+    return VecView<N, typename T::value_type>(v);
+}
+
+template<sofa::Size N, class T>
+auto makeVecView(T& v, sofa::Size i)
+{
+    return VecView<N, typename T::value_type>(v, i);
+}
+
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator*(const VecView<N, ValueType>& v, ValueType f)
+{
+    sofa::type::Vec<N, ValueType> res { NOINIT };
+    for (sofa::Size i = 0; i < N; ++i)
+        res[i] = v[i] * f;
+    return res;
+}
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator*(ValueType f, const VecView<N, ValueType>& v)
+{
+    return v * f;
+}
 
 template<sofa::Size L, sofa::Size C, typename ValueType>
 sofa::type::Vec<L, ValueType> operator*(const sofa::type::Mat<L, C, ValueType>& mat, const VecView<C, ValueType>& vec)
 {
-    sofa::type::Vec<L, ValueType> res;
+    sofa::type::Vec<L, ValueType> res { NOINIT};
 
     for (sofa::Size i = 0; i < L; ++i)
     {
-        for (sofa::Size j = 0; j < C; ++j)
+        res[i] = mat(i,0) * vec[0];
+        for (sofa::Size j = 1; j < C; ++j)
         {
             res[i] += mat(i, j) * vec[j];
         }
@@ -97,5 +176,59 @@ sofa::type::Vec<L, ValueType> operator*(const sofa::type::Mat<L, C, ValueType>& 
 
     return res;
 }
+
+template<sofa::Size L, sofa::Size C, typename ValueType>
+void matrixProduct(VecView<L, ValueType>& result, const sofa::type::Mat<L, C, ValueType>& mat, const VecView<C, ValueType>& vec)
+{
+    for (sofa::Size i = 0; i < L; ++i)
+    {
+        ValueType value = mat(i, 0) * vec[0];
+        for (sofa::Size j = 1; j < C; ++j)
+        {
+            value += mat(i, j) * vec[j];
+        }
+        result[i] = value;
+    }
+}
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator+(const sofa::type::Vec<N, ValueType>& a, const VecView<N, ValueType>& b)
+{
+    sofa::type::Vec<N, ValueType> result { NOINIT };
+    for (sofa::Size i = 0; i < N; ++i)
+    {
+        result[i] = a[i] + b[i];
+    }
+    return result;
+}
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator+(const VecView<N, ValueType>& a, const sofa::type::Vec<N, ValueType>& b)
+{
+    return b + a;
+}
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator-(const sofa::type::Vec<N, ValueType>& a, const VecView<N, ValueType>& b)
+{
+    sofa::type::Vec<N, ValueType> result { NOINIT };
+    for (sofa::Size i = 0; i < N; ++i)
+    {
+        result[i] = a[i] - b[i];
+    }
+    return result;
+}
+
+template<sofa::Size N, typename ValueType>
+sofa::type::Vec<N, ValueType> operator-(const VecView<N, ValueType>& a, const sofa::type::Vec<N, ValueType>& b)
+{
+    sofa::type::Vec<N, ValueType> result { NOINIT };
+    for (sofa::Size i = 0; i < N; ++i)
+    {
+        result[i] = a[i] - b[i];
+    }
+    return result;
+}
+
 
 }

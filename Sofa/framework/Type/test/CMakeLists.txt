@@ -4,18 +4,19 @@ project(Sofa.Type_test)
 
 set(SOURCE_FILES
     BoundingBox_test.cpp
+    FullySymmetric4Tensor_test.cpp
     MatSym_test.cpp
     MatTypes_test.cpp
     Material_test.cpp
     Quater_test.cpp
-    Rebind_test.cpp
     RGBAColor_test.cpp
-    StrongType_test.cpp
+    Rebind_test.cpp
     SVector_test.cpp
+    StrongType_test.cpp
     VecTypes_test.cpp
+    VecView_test.cpp
     fixed_array_test.cpp
     vector_test.cpp
-    FullySymmetric4Tensor_test.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
