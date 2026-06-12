@@ -45,6 +45,12 @@ protected:
 template<class Callable>
 struct GetComponentFromCallable;
 
+template<class Callable> requires std::is_invocable_v<Callable, core::behavior::BaseEnergy&>
+struct GetComponentFromCallable<Callable>
+{
+    using type = core::behavior::BaseEnergy;
+};
+
 template<class Callable> requires std::is_invocable_v<Callable, core::behavior::BaseForceField&>
 struct GetComponentFromCallable<Callable>
 {

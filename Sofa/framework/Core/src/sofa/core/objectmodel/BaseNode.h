@@ -165,6 +165,7 @@ public:
      BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseMechanicalState,MechanicalState, mechanicalState )
      BASENODE_ADD_SPECIAL_COMPONENT( core::BaseMapping, MechanicalMapping, mechanicalMapping )
      BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseMass, Mass, mass )
+     BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseEnergy, Energy, energies )
      BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseForceField, ForceField, forceField )
      BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseInteractionForceField, InteractionForceField, interactionForceField )
      BASENODE_ADD_SPECIAL_COMPONENT( core::behavior::BaseProjectiveConstraintSet, ProjectiveConstraintSet, projectiveConstraintSet )

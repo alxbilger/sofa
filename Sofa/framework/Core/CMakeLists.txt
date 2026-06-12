@@ -82,6 +82,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/behavior/BaseMatrixLinearSystem.h
     ${SRC_ROOT}/behavior/BaseMechanicalState.h
     ${SRC_ROOT}/behavior/BaseOrderingMethod.h
+    ${SRC_ROOT}/behavior/BaseEnergy.h
     ${SRC_ROOT}/behavior/BaseProjectiveConstraintSet.h
     ${SRC_ROOT}/behavior/BaseRotationFinder.h
     ${SRC_ROOT}/behavior/BaseVectorOperations.h
@@ -121,6 +122,8 @@ set(HEADER_FILES
     ${SRC_ROOT}/behavior/PairInteractionProjectiveConstraintSet.h
     ${SRC_ROOT}/behavior/PairInteractionProjectiveConstraintSet.inl
     ${SRC_ROOT}/behavior/PairStateAccessor.h
+    ${SRC_ROOT}/behavior/Energy.h
+    ${SRC_ROOT}/behavior/Energy.inl
     ${SRC_ROOT}/behavior/ProjectiveConstraintSet.h
     ${SRC_ROOT}/behavior/ProjectiveConstraintSet.inl
     ${SRC_ROOT}/behavior/RotationFinder.h
@@ -265,6 +268,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/BaseMatrixLinearSystem.cpp
     ${SRC_ROOT}/behavior/BaseMechanicalState.cpp
     ${SRC_ROOT}/behavior/BaseOrderingMethod.cpp
+    ${SRC_ROOT}/behavior/BaseEnergy.cpp
     ${SRC_ROOT}/behavior/BaseProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/ConstraintCorrection.cpp
     ${SRC_ROOT}/behavior/ConstraintResolution.cpp
@@ -284,6 +288,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/PairInteractionConstraint.cpp
     ${SRC_ROOT}/behavior/PairInteractionForceField.cpp
     ${SRC_ROOT}/behavior/PairInteractionProjectiveConstraintSet.cpp
+    ${SRC_ROOT}/behavior/Energy.cpp
     ${SRC_ROOT}/behavior/ProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/SingleMatrixAccessor.cpp
     ${SRC_ROOT}/behavior/SingleStateAccessor.cpp

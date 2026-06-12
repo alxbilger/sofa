@@ -88,6 +88,7 @@ Node::Node(const std::string& nodename, Node* parent)
     , constraintSolver(initLink("constraintSolver", "The ConstraintSolver(s) attached to this node"))
     , linearSolver(initLink("linearSolver", "The LinearSolver(s) attached to this node"))
     , topologyObject(initLink("topologyObject", "The topology-related objects attached to this node"))
+    , energies(initLink("energies", "The energies attached to this node"))
     , forceField(initLink("forceField", "The (non-interaction) ForceField(s) attached to this node"))
     , interactionForceField(initLink("interactionForceField", "The InteractionForceField(s) attached to this node"))
     , projectiveConstraintSet(initLink("projectiveConstraintSet", "The ProjectiveConstraintSet(s) attached to this node"))
@@ -1891,6 +1892,7 @@ NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseMechanicalState,Mechani
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::BaseMapping, MechanicalMapping, mechanicalMapping )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseMass, Mass, mass )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseForceField, ForceField, forceField )
+NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseEnergy, Energy, energies )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseInteractionForceField, InteractionForceField, interactionForceField )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseProjectiveConstraintSet, ProjectiveConstraintSet, projectiveConstraintSet )
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseConstraintSet, ConstraintSet, constraintSet )
@@ -1911,6 +1913,7 @@ template class NodeSequence<sofa::core::behavior::OdeSolver>;
 template class NodeSequence<sofa::core::behavior::ConstraintSolver>;
 template class NodeSequence<sofa::core::behavior::BaseLinearSolver>;
 template class NodeSequence<sofa::core::topology::BaseTopologyObject>;
+template class NodeSequence<sofa::core::behavior::BaseEnergy>;
 template class NodeSequence<sofa::core::behavior::BaseForceField>;
 template class NodeSequence<sofa::core::behavior::BaseInteractionForceField>;
 template class NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet>;

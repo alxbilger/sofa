@@ -97,6 +97,7 @@ SOFA_CORE_API std::istream& operator>>(std::istream& i, Tag& t);
 
 namespace sofa::core::behavior
 {
+class BaseEnergy;
 class BaseForceField;
 class BaseMass;
 class BaseMechanicalState;

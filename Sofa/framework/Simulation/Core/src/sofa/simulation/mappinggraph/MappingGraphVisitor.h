@@ -21,12 +21,13 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/simulation/config.h>
 #include <sofa/core/BaseMapping.h>
+#include <sofa/core/behavior/BaseEnergy.h>
 #include <sofa/core/behavior/BaseForceField.h>
 #include <sofa/core/behavior/BaseMass.h>
 #include <sofa/core/behavior/BaseMechanicalState.h>
 #include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
+#include <sofa/simulation/config.h>
 
 namespace sofa::simulation
 {
@@ -55,6 +56,12 @@ public:
      * @param mapping The mapping component to visit.
      */
     virtual void visit(core::BaseMapping&) {}
+
+    /**
+     * @brief Visits a potential behavior node.
+     * @param ff The potential component to visit.
+     */
+    virtual void visit(core::behavior::BaseEnergy&) {}
 
     /**
      * @brief Visits a force field behavior node.

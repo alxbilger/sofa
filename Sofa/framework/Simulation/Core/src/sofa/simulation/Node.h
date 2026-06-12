@@ -32,6 +32,8 @@
 #include <string>
 #include <stack>
 
+#include <sofa/core/behavior/BaseEnergy.h>
+
 namespace sofa::simulation
 {
 
@@ -114,6 +116,7 @@ extern template class NodeSequence<sofa::core::behavior::OdeSolver>;
 extern template class NodeSequence<sofa::core::behavior::ConstraintSolver>;
 extern template class NodeSequence<sofa::core::behavior::BaseLinearSolver>;
 extern template class NodeSequence<sofa::core::topology::BaseTopologyObject>;
+extern template class NodeSequence<sofa::core::behavior::BaseEnergy>;
 extern template class NodeSequence<sofa::core::behavior::BaseForceField>;
 extern template class NodeSequence<sofa::core::behavior::BaseInteractionForceField>;
 extern template class NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet>;
@@ -235,6 +238,7 @@ public:
     NodeSequence<sofa::core::behavior::ConstraintSolver> constraintSolver;
     NodeSequence<sofa::core::behavior::BaseLinearSolver> linearSolver;
     NodeSequence<sofa::core::topology::BaseTopologyObject> topologyObject;
+    NodeSequence<sofa::core::behavior::BaseEnergy> energies;
     NodeSequence<sofa::core::behavior::BaseForceField> forceField;
     NodeSequence<sofa::core::behavior::BaseInteractionForceField> interactionForceField;
     NodeSequence<sofa::core::behavior::BaseProjectiveConstraintSet> projectiveConstraintSet;
@@ -621,6 +625,7 @@ protected:
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::BaseMapping, MechanicalMapping, mechanicalMapping )
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseMass, Mass, mass )
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseForceField, ForceField, forceField )
+    NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseEnergy, Energy, energies )
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseInteractionForceField, InteractionForceField, interactionForceField )
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseProjectiveConstraintSet, ProjectiveConstraintSet, projectiveConstraintSet )
     NODE_DECLARE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseConstraintSet, ConstraintSet, constraintSet )

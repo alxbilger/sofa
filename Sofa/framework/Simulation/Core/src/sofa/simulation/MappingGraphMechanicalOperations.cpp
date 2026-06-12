@@ -122,6 +122,11 @@ void MappingGraphMechanicalOperations::addMBKv(const MappingGraph& mappingGraph,
         forceField.addMBKdx(&mparams, df);
     });
 
+    mappingGraph.algorithms.traverseComponentGroups_([&](core::behavior::BaseEnergy& energy)
+    {
+        // energy.accumulateHessianVectorProduct(df, mparams.dx(), )
+    });
+
     if (accumulate)
     {
         mappingGraph.algorithms.traverseBottomUp_([&](core::BaseMapping& mapping)
