@@ -18,6 +18,11 @@ public:
     Data<type::vector<Real>> d_ks;
     Data<type::vector<Real>> d_lengths;
 
+    core::behavior::EnergyType getEnergyType() override
+    {
+        return core::behavior::EnergyType::POTENTIAL;
+    }
+
 protected:
     explicit SpringEnergy(Real ks = 100.0, Real l0 = 0.0);
 

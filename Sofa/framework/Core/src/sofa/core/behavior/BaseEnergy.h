@@ -4,12 +4,24 @@
 namespace sofa::core::behavior
 {
 
+enum class EnergyType : unsigned char
+{
+    KINETIC,
+    POTENTIAL
+};
+
 class SOFA_CORE_API BaseEnergy : public StateAccessor
 {
 public:
     SOFA_CLASS(BaseEnergy, StateAccessor);
 
     void init() override;
+
+    /**
+     * Returns the energy type (kinetic, potential) as they can be treated differently (e.g.
+     * different factors)
+     */
+    virtual EnergyType getEnergyType() = 0;
 
     /**
      * Returns the energy E(q, v), where v = dq/dt, q is the coordinates, and t is the time.
