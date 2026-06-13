@@ -45,6 +45,7 @@ extern void registerTriangularBendingSprings(sofa::core::ObjectFactory* factory)
 extern void registerTriangularBiquadraticSpringsForceField(sofa::core::ObjectFactory* factory);
 extern void registerTriangularQuadraticSpringsForceField(sofa::core::ObjectFactory* factory);
 extern void registerVectorSpringForceField(sofa::core::ObjectFactory* factory);
+extern void registerSpringEnergy(sofa::core::ObjectFactory* factory);
 
 extern "C" {
     SOFA_EXPORT_DYNAMIC_LIBRARY void initExternalModule();
@@ -89,6 +90,7 @@ void registerObjects(sofa::core::ObjectFactory* factory)
     registerTriangularBiquadraticSpringsForceField(factory);
     registerTriangularQuadraticSpringsForceField(factory);
     registerVectorSpringForceField(factory);
+    registerSpringEnergy(factory);
 }
 
 void init()
