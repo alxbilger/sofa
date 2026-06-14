@@ -62,6 +62,7 @@ public:
     {
         sofa::type::vector<core::behavior::BaseMechanicalState*> mechanicalStates;
         sofa::type::vector<core::BaseMapping*> mappings;
+        sofa::type::vector<core::behavior::BaseEnergy*> energies;
         sofa::type::vector<core::behavior::BaseForceField*> forceFields;
         sofa::type::vector<core::behavior::BaseMass*> masses;
         sofa::type::vector<core::behavior::BaseProjectiveConstraintSet*> projectedConstraints;

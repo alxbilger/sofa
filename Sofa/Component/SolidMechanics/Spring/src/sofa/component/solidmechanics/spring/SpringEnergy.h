@@ -34,7 +34,7 @@ protected:
         VecDeriv_t<DataTypes>& out_gradient,
        const VecCoord_t<DataTypes>& in_coordinates,
        const VecDeriv_t<DataTypes>& in_timeDerivatives,
-       SReal k_q, SReal k_v) override;
+       Real_t<DataTypes> k_q, Real_t<DataTypes> k_v) override;
 
     void doAccumulateHessianVectorProduct(
         VecDeriv_t<DataTypes>& outVector,

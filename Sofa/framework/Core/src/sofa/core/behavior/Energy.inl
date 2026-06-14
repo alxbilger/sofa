@@ -77,7 +77,8 @@ void Energy<TDataTypes>::accumulateGradient(
         gradientAccessor.wref(),
         coordinatesAccessor.ref(),
         timeDerivativesAccessor.ref(),
-        k_q, k_v);
+        static_cast<Real_t<TDataTypes>>(k_q),
+        static_cast<Real_t<TDataTypes>>(k_v));
 }
 
 template <class TDataTypes>

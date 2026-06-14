@@ -25,16 +25,16 @@ Real_t<DataTypes> SpringEnergy<DataTypes>::doComputeEnergy(
     const auto indices1 = sofa::helper::getReadAccessor(d_indices1);
     const auto indices2 = sofa::helper::getReadAccessor(d_indices2);
     const auto ks = sofa::helper::getReadAccessor(d_ks);
-    const auto l0 = sofa::helper::getReadAccessor(d_lengths);
+    const auto lengths = sofa::helper::getReadAccessor(d_lengths);
 
-    const std::size_t nbSprings = std::min({indices1.size(), indices2.size(), ks.size(), l0.size()});
+    const std::size_t nbSprings = std::min({indices1.size(), indices2.size(), ks.size(), lengths.size()});
 
     for (std::size_t i = 0; i < nbSprings; ++i)
     {
         const auto i1 = indices1[i];
         const auto i2 = indices2[i];
         const auto k = ks[i];
-        const auto l = l0[i];
+        const auto l = lengths[i];
 
         energy += 0.5 * std::pow( (in_coordinates[i1] - in_coordinates[i2]).norm() - l, 2);
     }
@@ -47,8 +47,34 @@ void SpringEnergy<DataTypes>::doAccumulateGradient(
     VecDeriv_t<DataTypes>& out_gradient,
     const VecCoord_t<DataTypes>& in_coordinates,
     const VecDeriv_t<DataTypes>& in_timeDerivatives,
-    SReal k_q, SReal k_v)
+    Real_t<DataTypes> k_q, Real_t<DataTypes> k_v)
 {
+    const auto indices1 = sofa::helper::getReadAccessor(d_indices1);
+    const auto indices2 = sofa::helper::getReadAccessor(d_indices2);
+    const auto ks = sofa::helper::getReadAccessor(d_ks);
+    const auto l0 = sofa::helper::getReadAccessor(d_lengths);
+
+    const std::size_t nbSprings = std::min({indices1.size(), indices2.size(), ks.size(), l0.size()});
+
+    for (std::size_t i = 0; i < nbSprings; ++i)
+    {
+        const auto i1 = indices1[i];
+        const auto i2 = indices2[i];
+        const auto k = ks[i];
+        const auto l = l0[i];
+
+        auto u = in_coordinates[i1] - in_coordinates[i2];
+        const auto d = u.norm();
+        if (d < 1e-12) // Guard against division by zero if particles are coincident
+            continue;
+        const auto inv_d = static_cast<Real>(1.0) / d;
+        u *= inv_d;
+        const auto elongation = d - l;
+        const auto force = k_q * k * elongation * u;
+
+        out_gradient[i1] += force;
+        out_gradient[i2] -= force;
+    }
 }
 
 template <class DataTypes>

@@ -31,6 +31,48 @@ public:
                                  const ConstVecDerivId& in_timeDerivativesId, SReal k_q, SReal k_vv,
                                  SReal k_qv, SReal k_vq) override {}
 
+    template<class T>
+    static bool canCreate(T*& obj, objectmodel::BaseContext* context, objectmodel::BaseObjectDescription* arg)
+    {
+        if (context)
+        {
+            if (arg)
+            {
+                static const std::string attributeName {"mstate"};
+                const std::string mstateLink = arg->getAttribute(attributeName,"");
+                if (mstateLink.empty())
+                {
+                    if (dynamic_cast<MechanicalState<TDataTypes>*>(context->getMechanicalState()) == nullptr)
+                    {
+                        arg->logError("Since the attribute '" + attributeName + "' has not been specified, a mechanical state "
+                            "with the datatype '" + TDataTypes::Name() + "' has been searched in the current context, but not found.");
+                        return false;
+                    }
+                }
+                else
+                {
+                    MechanicalState<TDataTypes>* mstate = nullptr;
+                    context->findLinkDest(mstate, mstateLink, nullptr);
+                    if (!mstate)
+                    {
+                        arg->logError("Data attribute '" + attributeName + "' does not point to a valid mechanical state of datatype '" + std::string(TDataTypes::Name()) + "'.");
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (dynamic_cast<MechanicalState<TDataTypes>*>(context->getMechanicalState()) == nullptr)
+                {
+                    return false;
+                }
+            }
+
+            return sofa::core::objectmodel::BaseComponent::canCreate(obj, context, arg);
+        }
+        return false;
+    }
+
 protected:
     virtual void initPotential() {}
 
@@ -45,7 +87,7 @@ protected:
         VecDeriv_t<TDataTypes>& out_gradient,
         const VecCoord_t<TDataTypes>& in_coordinates,
         const VecDeriv_t<TDataTypes>& in_timeDerivatives,
-        SReal k_q, SReal k_v
+        Real_t<TDataTypes> k_q, Real_t<TDataTypes> k_v
     ) = 0;
 
     virtual void doAccumulateHessianVectorProduct(

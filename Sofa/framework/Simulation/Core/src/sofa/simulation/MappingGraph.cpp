@@ -15,6 +15,7 @@ MappingGraph::InputLists MappingGraph::InputLists::makeFromNode(core::objectmode
     {
         node->getObjects(inputLists.mechanicalStates, core::objectmodel::BaseContext::SearchDirection::SearchDown);
         node->getObjects(inputLists.mappings, core::objectmodel::BaseContext::SearchDirection::SearchDown);
+        node->getObjects(inputLists.energies, core::objectmodel::BaseContext::SearchDirection::SearchDown);
         node->getObjects(inputLists.forceFields, core::objectmodel::BaseContext::SearchDirection::SearchDown);
         node->getObjects(inputLists.masses, core::objectmodel::BaseContext::SearchDirection::SearchDown);
         node->getObjects(inputLists.projectedConstraints, core::objectmodel::BaseContext::SearchDirection::SearchDown);
@@ -288,6 +289,7 @@ void MappingGraph::build(const InputLists& input)
         }
     };
 
+    processComponents(input.energies);
     processComponents(input.forceFields);
     processComponents(input.masses);
     processComponents(input.projectedConstraints);
