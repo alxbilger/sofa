@@ -70,10 +70,10 @@ void SpringEnergy<DataTypes>::doAccumulateGradient(
         const auto inv_d = static_cast<Real>(1.0) / d;
         u *= inv_d;
         const auto elongation = d - l;
-        const auto force = k_q * k * elongation * u;
+        const auto force = (k_q * k * elongation) * u;
 
-        out_gradient[i1] += force;
-        out_gradient[i2] -= force;
+        out_gradient[i1] -= force;
+        out_gradient[i2] += force;
     }
 }
 

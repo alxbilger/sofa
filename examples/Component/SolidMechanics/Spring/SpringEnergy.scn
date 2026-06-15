@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Node name="root" dt="0.001">
+    <VisualGrid size="2" nbSubdiv="20"/>
+    <LineAxis/>
+    <DefaultAnimationLoop/>
+    <EulerExplicitSolver/>
+    <MechanicalObject template="Vec2" name="state" position="0 0  1 0" showObject="true" showObjectScale="10"/>
+    <FixedProjectiveConstraint indices="0"/>
+    <UniformMass totalMass="1"/>
+    <SpringEnergy indices1="0" indices2="1" stiffness="200" restLength="1"/>
+    <VisualPointCloud template="Vec2" position="@state.position" drawMode="Sphere" sphereRadius="0.05" color="lime"/>
+</Node>

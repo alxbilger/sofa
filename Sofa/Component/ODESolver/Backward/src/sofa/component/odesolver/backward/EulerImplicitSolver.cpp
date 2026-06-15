@@ -129,15 +129,6 @@ void EulerImplicitSolver::solve(const core::ExecParams* params, SReal dt, sofa::
         mop->setImplicit(true); // this solver is implicit
         // compute the net forces at the beginning of the time step
         mop.computeForce(m_mappingGraph, f, true, true, nullptr);
-        m_mappingGraph.algorithms.traverse_(
-            [](sofa::core::behavior::BaseEnergy& potential)
-            {
-               potential.accumulateGradient(
-                   core::vec_id::write_access::force,
-                   core::vec_id::read_access::position,
-                   core::vec_id::read_access::velocity,
-                   1_sreal, 1_sreal);
-            });
 
         msg_info() << "initial f = " << f;
     }
