@@ -10,8 +10,8 @@ void Energy<TDataTypes>::init()
 }
 
 template <class TDataTypes>
-SReal Energy<TDataTypes>::computeEnergy(const ConstVecCoordId& in_coordinatesId,
-                                        const ConstVecDerivId& in_timeDerivativesId)
+SReal Energy<TDataTypes>::computeEnergy(const ConstMultiVecCoordId& in_coordinatesId,
+                                        const ConstMultiVecDerivId& in_timeDerivativesId)
 {
     if (this->isComponentStateInvalid()) return 0_sreal;
 
@@ -22,8 +22,8 @@ SReal Energy<TDataTypes>::computeEnergy(const ConstVecCoordId& in_coordinatesId,
     }
 
     // input
-    const auto* coordinatesDataPtr = this->mstate->read(in_coordinatesId);
-    const auto* timeDerivativesDataPtr = this->mstate->read(in_timeDerivativesId);
+    const auto* coordinatesDataPtr = in_coordinatesId[this->mstate.get()].read();
+    const auto* timeDerivativesDataPtr = in_timeDerivativesId[this->mstate.get()].read();
 
     msg_error_when(!coordinatesDataPtr)
         << "Cannot access to the coordinates through the id " << in_coordinatesId;
@@ -41,9 +41,9 @@ SReal Energy<TDataTypes>::computeEnergy(const ConstVecCoordId& in_coordinatesId,
 
 template <class TDataTypes>
 void Energy<TDataTypes>::accumulateGradient(
-    const VecDerivId& out_gradientId,
-    const ConstVecCoordId& /*q*/in_coordinatesId,
-    const ConstVecDerivId& /*v*/in_timeDerivativesId,
+    const MultiVecDerivId& out_gradientId,
+    const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+    const ConstMultiVecDerivId& /*v*/in_timeDerivativesId,
     SReal k_q, SReal k_v)
 {
     if (this->isComponentStateInvalid()) return;
@@ -55,10 +55,10 @@ void Energy<TDataTypes>::accumulateGradient(
     }
 
     // input
-    const auto* coordinatesDataPtr = this->mstate->read(in_coordinatesId);
-    const auto* timeDerivativesDataPtr = this->mstate->read(in_timeDerivativesId);
+    const auto* coordinatesDataPtr = in_coordinatesId[this->mstate.get()].read();
+    const auto* timeDerivativesDataPtr = in_timeDerivativesId[this->mstate.get()].read();
     // output
-    auto* gradientDataPtr = this->mstate->write(out_gradientId);
+    auto* gradientDataPtr = out_gradientId[this->mstate.get()].write();
 
     msg_error_when(!coordinatesDataPtr)
         << "Cannot access to the coordinates through the id " << in_coordinatesId;
@@ -83,9 +83,9 @@ void Energy<TDataTypes>::accumulateGradient(
 
 template <class TDataTypes>
 void Energy<TDataTypes>::accumulateHessianVectorProduct(
-    VecDerivId outVector, ConstVecDerivId inU,
-    const ConstVecCoordId& in_coordinatesId,
-    const ConstVecDerivId& in_timeDerivativesId,
+    MultiVecDerivId outVector, ConstMultiVecDerivId inU,
+    const ConstMultiVecCoordId& in_coordinatesId,
+    const ConstMultiVecDerivId& in_timeDerivativesId,
     SReal k_q, SReal k_vv, SReal k_qv, SReal k_vq)
 {
     if (this->isComponentStateInvalid()) return;
@@ -97,11 +97,11 @@ void Energy<TDataTypes>::accumulateHessianVectorProduct(
     }
 
     // input
-    const auto* coordinatesDataPtr = this->mstate->read(in_coordinatesId);
-    const auto* timeDerivativesDataPtr = this->mstate->read(in_timeDerivativesId);
-    const auto* uDataPtr = this->mstate->read(inU);
+    const auto* coordinatesDataPtr = in_coordinatesId[this->mstate.get()].read();
+    const auto* timeDerivativesDataPtr = in_timeDerivativesId[this->mstate.get()].read();
+    const auto* uDataPtr = inU[this->mstate.get()].read();
     // output
-    auto* out = this->mstate->write(outVector);
+    auto* out = outVector[this->mstate.get()].write();
 
     msg_error_when(!coordinatesDataPtr)
         << "Cannot access to the coordinates through the id " << in_coordinatesId;
@@ -131,13 +131,13 @@ void Energy<TDataTypes>::accumulateHessianVectorProduct(
 }
 
 template <class TDataTypes>
-void Energy<TDataTypes>::initBasePotential()
+void Energy<TDataTypes>::initBaseEnergy()
 {
     SingleStateAccessor<TDataTypes>::init();
 
     if (!this->isComponentStateInvalid())
     {
-        initPotential();
+        initEnergy();
     }
 }
 

@@ -79,6 +79,16 @@ void MappingGraphMechanicalOperations::computeForce(const MappingGraph& mappingG
         forceField.addForce(&mparams, result);
     }, sofa::simulation::VisitorApplication::ALL_NODES, taskScheduler);
 
+    mappingGraph.algorithms.traverse_(
+            [&](sofa::core::behavior::BaseEnergy& energy)
+            {
+               energy.accumulateGradient(
+                   result,
+                   mparams.x(),
+                   mparams.v(),
+                   1_sreal, 1_sreal);
+            });
+
     if (accumulateForcesFromMappedStates)
     {
         /**
@@ -124,7 +134,11 @@ void MappingGraphMechanicalOperations::addMBKv(const MappingGraph& mappingGraph,
 
     mappingGraph.algorithms.traverseComponentGroups_([&](core::behavior::BaseEnergy& energy)
     {
-        // energy.accumulateHessianVectorProduct(df, mparams.dx(), )
+        const SReal k_qq = k.get();
+        constexpr SReal k_vv = 0;
+        const SReal k_qv = b.get();
+        constexpr SReal k_vq = 0;
+        energy.accumulateHessianVectorProduct(df, mparams.dx(), mparams.x(), mparams.v(), k_qq, k_vv, k_qv, k_vq);
     });
 
     if (accumulate)

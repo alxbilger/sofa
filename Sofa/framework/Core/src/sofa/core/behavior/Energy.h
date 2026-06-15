@@ -12,24 +12,24 @@ public:
 
     void init() final;
 
-    SReal computeEnergy(const ConstVecCoordId& in_coordinatesId,
-                        const ConstVecDerivId& in_timeDerivativesId) override;
+    SReal computeEnergy(const ConstMultiVecCoordId& in_coordinatesId,
+                        const ConstMultiVecDerivId& in_timeDerivativesId) override;
 
     void accumulateGradient(
-        const VecDerivId& out_gradientId,
-        const ConstVecCoordId& /*q*/in_coordinatesId,
-        const ConstVecDerivId& /*v*/in_timeDerivativesId,
+        const MultiVecDerivId& out_gradientId,
+        const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+        const ConstMultiVecDerivId& /*v*/in_timeDerivativesId,
         SReal k_q, SReal k_v) override;
 
     void accumulateHessianVectorProduct(
-        VecDerivId outVector, ConstVecDerivId inU,
-        const ConstVecCoordId& in_coordinatesId,
-        const ConstVecDerivId& in_timeDerivativesId,
-        SReal k_q, SReal k_vv, SReal k_qv, SReal k_vq) override;
+        MultiVecDerivId outVector, ConstMultiVecDerivId inU,
+        const ConstMultiVecCoordId& in_coordinatesId,
+        const ConstMultiVecDerivId& in_timeDerivativesId,
+        SReal k_qq, SReal k_vv, SReal k_qv, SReal k_vq) override;
 
-    void accumulateHessianMatrix(const ConstVecCoordId& in_coordinatesId,
-                                 const ConstVecDerivId& in_timeDerivativesId, SReal k_q, SReal k_vv,
-                                 SReal k_qv, SReal k_vq) override {}
+    void accumulateHessianMatrix(const ConstMultiVecCoordId& in_coordinatesId,
+                                 const ConstMultiVecDerivId& in_timeDerivativesId,
+                                 SReal k_qq, SReal k_vv, SReal k_qv, SReal k_vq) override {}
 
     template<class T>
     static bool canCreate(T*& obj, objectmodel::BaseContext* context, objectmodel::BaseObjectDescription* arg)
@@ -74,9 +74,9 @@ public:
     }
 
 protected:
-    virtual void initPotential() {}
+    virtual void initEnergy() {}
 
-    void initBasePotential() final;
+    void initBaseEnergy() final;
 
     virtual Real_t<TDataTypes> doComputeEnergy(
         const VecCoord_t<TDataTypes>& in_coordinates,

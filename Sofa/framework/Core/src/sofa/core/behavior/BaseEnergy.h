@@ -29,14 +29,13 @@ public:
      * q and v are provided as ids pointing to a vector in the state associated with this component.
      */
     virtual SReal computeEnergy(
-        const ConstVecCoordId& /*q*/in_coordinatesId,
-        const ConstVecDerivId& /*v*/in_timeDerivativesId) = 0;
+        const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+        const ConstMultiVecDerivId& /*v*/in_timeDerivativesId) = 0;
 
     /**
      * Accumulate the energy gradient into a vector
      *
-     * Compute out += ∇E(q,v),
-     * where ∇E(q,v) = k_q * (дE/дq)(q,v) + k_v * (дE/дv)(q,v),
+     * Compute out += k_q * (дE/дq)(q,v) + k_v * (дE/дv)(q,v),
      * E = E(q, v) is the energy, and v = dq/dt.
      *
      * Warning: This component must handle the sign in front of the energy.
@@ -44,9 +43,9 @@ public:
      * energy which has a plus sign.
      */
     virtual void accumulateGradient(
-        const VecDerivId& out_gradientId,
-        const ConstVecCoordId& /*q*/in_coordinatesId,
-        const ConstVecDerivId& /*v*/in_timeDerivativesId,
+        const MultiVecDerivId& out_gradientId,
+        const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+        const ConstMultiVecDerivId& /*v*/in_timeDerivativesId,
         SReal k_q, SReal k_v) = 0;
 
     /**
@@ -57,31 +56,33 @@ public:
      * q is the coordinates and v=dq/dt
      * u is a given input vector
      * H_qq = д²E/д²q
-     * H_vv = д²E/д²q
+     * H_vv = д²E/д²v
      * H_qv = д²E/дqдv
      * H_vq = д²E/дvдq
      * k_qq, k_vv, k_qv, k_vq are given factors
      *
      * Note that some Hessian terms may be zero. In this case, the associated factor won't be used.
+     *
+     * For potential energies, H_qq is the stiffness matrix, and H_qv is the damping matrix.
      */
     virtual void accumulateHessianVectorProduct(
-        VecDerivId outVector,
-        ConstVecDerivId /*u*/inU,
-        const ConstVecCoordId& /*q*/in_coordinatesId,
-        const ConstVecDerivId& /*v*/in_timeDerivativesId,
-        SReal k_q, SReal k_vv, SReal k_qv, SReal k_vq) = 0;
+        MultiVecDerivId outVector,
+        ConstMultiVecDerivId /*u*/inU,
+        const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+        const ConstMultiVecDerivId& /*v*/in_timeDerivativesId,
+        SReal k_qq, SReal k_vv, SReal k_qv, SReal k_vq) = 0;
 
     virtual void accumulateHessianMatrix(
-        const ConstVecCoordId& /*q*/in_coordinatesId,
-        const ConstVecDerivId& /*v*/in_timeDerivativesId,
-        SReal k_q, SReal k_vv, SReal k_qv, SReal k_vq) = 0;
+        const ConstMultiVecCoordId& /*q*/in_coordinatesId,
+        const ConstMultiVecDerivId& /*v*/in_timeDerivativesId,
+        SReal k_qq, SReal k_vv, SReal k_qv, SReal k_vq) = 0;
 
     bool insertInNode( objectmodel::BaseNode* node ) override;
     bool removeInNode( objectmodel::BaseNode* node ) override;
 
 protected:
 
-    virtual void initBasePotential() {}
+    virtual void initBaseEnergy() {}
 };
 
 }  // namespace sofa::core::behavior

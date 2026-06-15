@@ -10,7 +10,7 @@ void BaseEnergy::init()
 
     if (!this->isComponentStateInvalid())
     {
-        initBasePotential();
+        initBaseEnergy();
     }
 }
 bool BaseEnergy::insertInNode(objectmodel::BaseNode* node)
