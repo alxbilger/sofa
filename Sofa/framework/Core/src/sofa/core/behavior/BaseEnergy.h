@@ -35,7 +35,7 @@ public:
     /**
      * Accumulate the energy gradient into a vector
      *
-     * Compute out += k_q * (дE/дq)(q,v) + k_v * (дE/дv)(q,v),
+     * Compute out += k_q * (∂E/∂q)(q,v) + k_v * (∂E/∂v)(q,v),
      * E = E(q, v) is the energy, and v = dq/dt.
      *
      * Warning: This component must handle the sign in front of the energy.
@@ -55,10 +55,10 @@ public:
      * where:
      * q is the coordinates and v=dq/dt
      * u is a given input vector
-     * H_qq = д²E/д²q
-     * H_vv = д²E/д²v
-     * H_qv = д²E/дqдv
-     * H_vq = д²E/дvдq
+     * H_qq = ∂²E/∂²q
+     * H_vv = ∂²E/∂²v
+     * H_qv = ∂²E/∂q∂v
+     * H_vq = ∂²E/∂v∂q
      * k_qq, k_vv, k_qv, k_vq are given factors
      *
      * Note that some Hessian terms may be zero. In this case, the associated factor won't be used.
