@@ -32,7 +32,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
                 <TetrahedronFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" method="large" />
 
                 <BoxROI drawBoxes="0" box="0 0 0 1 1 0.05" name="box"/>
@@ -48,7 +48,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
 
                 <Node name="tetras">
                         <MeshTopology name="Container"/>
@@ -70,7 +70,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
 
                 <Node name="tetras">
                         <MeshTopology name="Container"/>
@@ -93,7 +93,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
 
                 <Node name="tetras">
                         <MeshTopology name="Container"/>
@@ -116,7 +116,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
 
                 <Node name="tetras">
                         <MeshTopology name="Container"/>
@@ -138,7 +138,7 @@
 
                 <MechanicalObject name="mechObj"/>
 
-                <MeshMatrixMass totalMass="1.0"/>
+                
 
                 <Node name="tetras">
                         <MeshTopology name="Container"/>
