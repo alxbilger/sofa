@@ -546,6 +546,8 @@ static_assert(sizeof(VecId) == sizeof(VecCoordId));
 namespace vec_id
 {
 
+namespace configuration
+{
 struct Current{};
 static constexpr inline Current current;
 
@@ -557,29 +559,30 @@ static constexpr inline Prediction prediction;
 
 struct Reset{};
 static constexpr inline Reset reset;
+}
 
 template <VecAccess vaccess>
 struct FieldState
 {
-    const auto& operator[](const Current&) const noexcept
+    const auto& operator[](const configuration::Current&) const noexcept
     {
         static auto v =  TVecId<V_COORD, vaccess>::template state<CoordState::POSITION>();
         return v;
     }
 
-    const auto& operator[](const AtRest&) const noexcept
+    const auto& operator[](const configuration::AtRest&) const noexcept
     {
         static auto v =  TVecId<V_COORD, vaccess>::template state<CoordState::REST_POSITION>();
         return v;
     }
 
-    const auto& operator[](const Prediction&) const noexcept
+    const auto& operator[](const configuration::Prediction&) const noexcept
     {
         static auto v =  TVecId<V_COORD, vaccess>::template state<CoordState::FREE_POSITION>();
         return v;
     }
 
-    const auto& operator[](const Reset&) const noexcept
+    const auto& operator[](const configuration::Reset&) const noexcept
     {
         static auto v =  TVecId<V_COORD, vaccess>::template state<CoordState::RESET_POSITION>();
         return v;
@@ -587,19 +590,19 @@ struct FieldState
 
     struct TimeDerivative
     {
-        const auto& operator[](const Current&) const noexcept
+        const auto& operator[](const configuration::Current&) const noexcept
         {
             static auto v = TVecId<V_DERIV, vaccess>::template state<DerivState::VELOCITY>();
             return v;
         }
 
-        const auto& operator[](const Prediction&) const noexcept
+        const auto& operator[](const configuration::Prediction&) const noexcept
         {
             static auto v =  TVecId<V_DERIV, vaccess>::template state<DerivState::RESET_VELOCITY>();
             return v;
         }
 
-        const auto& operator[](const Reset&) const noexcept
+        const auto& operator[](const configuration::Reset&) const noexcept
         {
             static auto v =  TVecId<V_DERIV, vaccess>::template state<DerivState::FREE_VELOCITY>();
             return v;
@@ -623,14 +626,14 @@ static constexpr inline auto constraintJacobian = ConstMatrixDerivId::state<Matr
 static constexpr inline auto mappingJacobian = ConstMatrixDerivId::state<MatrixDerivState::MAPPING_JACOBIAN>();
 
 //deprecated
-static inline const auto position = fieldState[current];
-static inline const auto restPosition = fieldState[atRest];
-static inline const auto freePosition = fieldState[prediction];
-static inline const auto resetPosition = fieldState[reset];
+static inline const auto position = fieldState[configuration::current];
+static inline const auto restPosition = fieldState[configuration::atRest];
+static inline const auto freePosition = fieldState[configuration::prediction];
+static inline const auto resetPosition = fieldState[configuration::reset];
 
-static inline const auto velocity = fieldState.timeDerivative[current];
-static inline const auto resetVelocity = fieldState.timeDerivative[reset];
-static inline const auto freeVelocity = fieldState.timeDerivative[prediction];
+static inline const auto velocity = fieldState.timeDerivative[configuration::current];
+static inline const auto resetVelocity = fieldState.timeDerivative[configuration::reset];
+static inline const auto freeVelocity = fieldState.timeDerivative[configuration::prediction];
 }
 
 namespace write_access
