@@ -190,16 +190,16 @@ MechanicalObject<DataTypes>::MechanicalObject()
     rotation2       .setGroup("Transformation");
     scale           .setGroup("Transformation");
 
-    setVecCoord(core::vec_id::write_access::position, &x);
-    setVecCoord(core::vec_id::write_access::freePosition, &xfree);
-    setVecCoord(core::vec_id::write_access::restPosition, &x0);
-    setVecCoord(core::vec_id::write_access::resetPosition, &reset_position);
-    setVecDeriv(core::vec_id::write_access::velocity, &v);
+    setVecCoord(core::vec_id::write_access::fieldState[core::vec_id::current], &x);
+    setVecCoord(core::vec_id::write_access::fieldState[core::vec_id::prediction], &xfree);
+    setVecCoord(core::vec_id::write_access::fieldState[core::vec_id::atRest], &x0);
+    setVecCoord(core::vec_id::write_access::fieldState[core::vec_id::reset], &reset_position);
+    setVecDeriv(core::vec_id::write_access::fieldState.timeDerivative[core::vec_id::current], &v);
     setVecDeriv(core::vec_id::write_access::force, &f);
     setVecDeriv(core::vec_id::write_access::externalForce, &externalForces);
     setVecDeriv(core::vec_id::write_access::dx, &dx);
-    setVecDeriv(core::vec_id::write_access::freeVelocity, &vfree);
-    setVecDeriv(core::vec_id::write_access::resetVelocity, &reset_velocity);
+    setVecDeriv(core::vec_id::write_access::fieldState.timeDerivative[core::vec_id::prediction], &vfree);
+    setVecDeriv(core::vec_id::write_access::fieldState.timeDerivative[core::vec_id::reset], &reset_velocity);
     setVecMatrixDeriv(core::vec_id::write_access::constraintJacobian, &c);
     setVecMatrixDeriv(core::vec_id::write_access::mappingJacobian, &m);
 
@@ -1079,9 +1079,9 @@ void MechanicalObject<DataTypes>::init()
     VecDeriv& v_wA = *v_wAData->beginEdit();
 
     //case if X0 has been set but not X
-    if (read(core::vec_id::read_access::restPosition)->getValue().size() > x_wA.size())
+    if (read(core::vec_id::read_access::fieldState[core::vec_id::atRest])->getValue().size() > x_wA.size())
     {
-        vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::position, sofa::core::vec_id::read_access::restPosition);
+        vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::position, sofa::core::vec_id::read_access::fieldState[core::vec_id::atRest]);
     }
 
     // the given position and velocity vectors are empty
@@ -1142,13 +1142,13 @@ void MechanicalObject<DataTypes>::init()
     reinit();
 
     // storing X0 must be done after reinit() that possibly applies transformations
-    if( read(core::vec_id::read_access::restPosition)->getValue().size()!=x_wA.size() )
+    if( read(core::vec_id::read_access::fieldState[core::vec_id::atRest])->getValue().size()!=x_wA.size() )
     {
         // storing X0 from X
         if( restScale.getValue()!=1 )
-            vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::restPosition, core::ConstVecId::null(), sofa::core::vec_id::write_access::position, restScale.getValue());
+            vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::fieldState[core::vec_id::atRest], core::ConstVecId::null(), sofa::core::vec_id::write_access::position, restScale.getValue());
         else
-            vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::restPosition, sofa::core::vec_id::write_access::position);
+            vOp(core::execparams::defaultInstance(), sofa::core::vec_id::write_access::fieldState[core::vec_id::atRest], sofa::core::vec_id::write_access::fieldState[core::vec_id::current]);
     }
 
 
