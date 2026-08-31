@@ -161,6 +161,23 @@ protected:
     MyVecId id;
 };
 
+/**
+ * @class TMultiVecId
+ * @brief Identifies vector locations across multiple State instances in a simulation hierarchy.
+ *
+ * @tparam vtype   The category of the vector (e.g., VecType::V_COORD, VecType::V_DERIV, VecType::V_ALL).
+ * @tparam vaccess The access level (VecAccess::V_READ for read-only or VecAccess::V_WRITE for read-write).
+ *
+ * @details
+ * In multi-state or mapped simulations, different mechanical states might store their vectors
+ * (coordinates, derivatives, etc.) at different vector indices. TMultiVecId provides a mechanism
+ * to reference a vector across multiple State objects uniformly by defining:
+ * - A default TVecId applied to any state.
+ * - An optional override map (IdMap) associating specific BaseState pointers to customized TVecId entries.
+ *
+ * The internal ID mapping uses Copy-On-Write (CoW) semantics via std::shared_ptr to ensure lightweight
+ * copying and lazy allocation only when state-specific overrides are registered.
+ */
 template <VecType vtype, VecAccess vaccess>
 class TMultiVecId
 {
@@ -321,6 +338,15 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Sets the fallback/default vector identifier.
+     *
+     * @param id The vector identifier to use as default.
+     *
+     * @note This sets the ID used for any state that does not have an explicit
+     *       entry in the internal ID map. It does not modify or clear existing
+     *       overrides in the ID map.
+     */
     void setDefaultId(const MyVecId& id)
     {
         defaultId = id;
@@ -330,22 +356,51 @@ public:
     void setId(const std::set<State>& states, const MyVecId& id)
     {
         IdMap& map = writeIdMap();
-        for (typename std::set<State>::const_iterator it = states.begin(), itend = states.end(); it != itend; ++it)
+        for (const BaseState* it : states)
+        {
             map[*it] = id;
+        }
     }
 
+    /**
+     * @brief Associates a specific vector identifier with an individual state.
+     *
+     * @param s  Pointer to the BaseState instance.
+     * @param id The vector identifier to assign to this specific state.
+     *
+     * @note This allocates or updates the internal ID map using Copy-On-Write (CoW).
+     */
     void setId(const BaseState* s, const MyVecId& id)
     {
         IdMap& map = writeIdMap();
         map[s] = id;
     }
 
+    /**
+     * @brief Assigns a default vector identifier and clears all state-specific overrides.
+     *
+     * @param id The new default vector identifier.
+     *
+     * @details Resets the internal ID map shared pointer (releasing allocated map memory
+     *          if not referenced elsewhere) and sets the default ID. Afterwards, hasIdMap()
+     *          returns false and all states will resolve to @p id.
+     */
     void assign(const MyVecId& id)
     {
         defaultId = id;
         idMap_ptr.reset();
     }
 
+    /**
+     * @brief Retrieves the vector identifier associated with a specific State.
+     *
+     * @param s Pointer to the BaseState whose vector identifier is being queried.
+     * @return const MyVecId& The state-specific TVecId if registered in the ID map;
+     *         otherwise, the default TVecId (getDefaultId()).
+     *
+     * @note If no state overrides have been set (i.e., hasIdMap() returns false) or if
+     *       the given state pointer is not found in the map, this method returns the default ID.
+     */
     const MyVecId& getId(const BaseState* s) const
     {
         if (!hasIdMap()) return defaultId;
@@ -410,6 +465,35 @@ public:
         return true;
     }
 
+    /**
+     * @brief Resolves the vector identifier for a mutable State and returns an accessor to read/write its Data container.
+     *
+     * @tparam DataTypes The template data type of the State (e.g., Vec3Types, Rigid3Types).
+     * @param s          Pointer to the target mutable State instance.
+     * @return StateVecAccessor<DataTypes, vtype, vaccess> A helper proxy bound to @p s and the resolved
+     *         vector identifier `getId(s)`.
+     *
+     * @details
+     * Looks up the appropriate `TVecId` for the given state @p s (using the state-specific ID from the map,
+     * or falling back to the default ID) and wraps both into a `StateVecAccessor`.
+     *
+     * Depending on @p vaccess and @p vtype, the returned proxy allows:
+     * - Calling `.read()` to obtain a `const Data<VectorType>*` via `s->read(id)`.
+     * - Calling `.write()` (if `vaccess == V_WRITE`) to obtain a `Data<VectorType>*` via `s->write(id)`.
+     * - Implicit conversion to `TVecId<vtype, vaccess>`.
+     *
+     * @code{.cpp}
+     * // Example usage in a ForceField (e.g., writing accumulated force):
+     * MultiVecDerivId fId = ...;
+     * MechanicalState<DataTypes>* mstate = ...;
+     * auto forceData = fId[mstate].write(); // returns Data<VecDeriv>*
+     * if (forceData) {
+     *     auto forces = sofa::helper::getWriteOnlyAccessor(*forceData);
+     *     // modify forces...
+     *     forceData->endEdit();
+     * }
+     * @endcode
+     */
     template <class DataTypes>
     StateVecAccessor<DataTypes,vtype,vaccess> operator[](State<DataTypes>* s) const
     {
@@ -556,8 +640,10 @@ public:
     void setId(const StateSet& states, const MyVecId& id)
     {
         IdMap& map = writeIdMap();
-        for (typename StateSet::const_iterator it = states.begin(), itend = states.end(); it != itend; ++it)
-            map[*it] = id;
+        for (const BaseState* state : states)
+        {
+            map[*state] = id;
+        }
     }
 
     void setId(const BaseState* s, const MyVecId& id)
