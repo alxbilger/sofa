@@ -502,4 +502,53 @@ TEST(MultiVecIdTest, ConversionCarriesAndSharesIdMap)
               static_cast<const void*>(&generic.getIdMap()));
 }
 
+// ============================================================================
+// 4. Assignment
+// ============================================================================
+
+/// operator= and assign() are deliberately not the same operation, and callers
+/// rely on the difference: MechanicalParams and ConstraintParams use assign()
+/// for the TVecId overload of their setters and operator= for the multi-vec
+/// overload. Assigning a TVecId replaces the default id only; assign() also
+/// drops the per-state overrides.
+TEST(MultiVecIdTest, AssignmentFromVecIdKeepsIdMap)
+{
+    MockBaseState state("state");
+
+    core::MultiVecCoordId v(core::vec_id::write_access::position);
+    v.setId(&state, core::vec_id::write_access::freePosition);
+
+    v = core::vec_id::write_access::restPosition;
+    EXPECT_TRUE(v.hasIdMap());
+    EXPECT_EQ(v.getId(&state), core::vec_id::write_access::freePosition);
+    EXPECT_EQ(v.getDefaultId(), core::vec_id::write_access::restPosition);
+
+    v.assign(core::vec_id::write_access::restPosition);
+    EXPECT_FALSE(v.hasIdMap());
+    EXPECT_EQ(v.getId(&state), core::vec_id::write_access::restPosition);
+}
+
+/// Narrowing V_ALL to a specific vtype is explicit for construction but
+/// available as a plain assignment. Every id involved here is a V_COORD one:
+/// the conversion asserts on the vtype of each map entry, so a map holding a
+/// V_DERIV id would abort in a debug build rather than fail an expectation.
+TEST(MultiVecIdTest, AssignmentFromGenericToSpecific)
+{
+    MockBaseState state("state");
+
+    core::MultiVecId all(core::vec_id::write_access::position);
+    all.setId(&state, core::vec_id::write_access::freePosition);
+
+    core::MultiVecCoordId coord;
+    coord = all;
+    EXPECT_TRUE(coord.hasIdMap());
+    EXPECT_EQ(coord.getDefaultId(), core::vec_id::write_access::position);
+    EXPECT_EQ(coord.getId(&state), core::vec_id::write_access::freePosition);
+
+    core::ConstMultiVecId constAll(core::vec_id::read_access::position);
+    core::ConstMultiVecCoordId constCoord;
+    constCoord = constAll;
+    EXPECT_EQ(constCoord.getDefaultId(), core::vec_id::read_access::position);
+}
+
 } // namespace sofa
