@@ -551,4 +551,40 @@ TEST(MultiVecIdTest, AssignmentFromGenericToSpecific)
     EXPECT_EQ(constCoord.getDefaultId(), core::vec_id::read_access::position);
 }
 
+// ============================================================================
+// 5. Copy-on-write
+// ============================================================================
+
+/// writeIdMap() clones the map as soon as it is shared, so that mutating one
+/// multi-vec id never reaches through to another. Every setId() elsewhere in
+/// this file runs at use_count() == 1 and therefore never reaches that branch
+/// -- which is the branch the shared_ptr::unique() fix repairs, and which does
+/// not even compile before it.
+TEST(MultiVecIdTest, WritingToASharedIdMapClonesIt)
+{
+    MockBaseState state("state");
+
+    core::MultiVecCoordId a(core::vec_id::write_access::position);
+    a.setId(&state, core::vec_id::write_access::freePosition);
+
+    core::MultiVecCoordId b(a);
+    EXPECT_EQ(static_cast<const void*>(&a.getIdMap()),
+              static_cast<const void*>(&b.getIdMap()));
+
+    b.setId(&state, core::vec_id::write_access::restPosition);
+    EXPECT_EQ(a.getId(&state), core::vec_id::write_access::freePosition);
+    EXPECT_EQ(b.getId(&state), core::vec_id::write_access::restPosition);
+    EXPECT_NE(static_cast<const void*>(&a.getIdMap()),
+              static_cast<const void*>(&b.getIdMap()));
+
+    // Same on the V_ALL specialisation.
+    core::MultiVecId genericA(core::vec_id::write_access::position);
+    genericA.setId(&state, core::vec_id::write_access::freePosition);
+
+    core::MultiVecId genericB(genericA);
+    genericB.setId(&state, core::vec_id::write_access::restPosition);
+    EXPECT_EQ(genericA.getId(&state), core::vec_id::write_access::freePosition);
+    EXPECT_EQ(genericB.getId(&state), core::vec_id::write_access::restPosition);
+}
+
 } // namespace sofa
