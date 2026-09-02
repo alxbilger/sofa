@@ -466,4 +466,40 @@ TEST(MultiVecIdTest, GetNameWithAllocatedEmptyMap)
     EXPECT_EQ(coord.getName(), core::vec_id::write_access::position.getName());
 }
 
+// ============================================================================
+// 3. Id map propagation through conversions
+// ============================================================================
+
+/// Converting a TMultiVecId must carry the per-state id map over, and must do
+/// so without copying it. The no-copy part is a documented design contract:
+/// BaseVecId in VecId.h holds all the data precisely so that TVecId templates
+/// are layout-compatible and the shared_ptr can be shared instead of the map
+/// being duplicated -- see the note on BaseVecId, which calls out passing a
+/// stored TMultiVecId<!V_ALL, V_WRITE> to a const TMultiVecId<V_ALL, V_READ>&
+/// as the operation this buys. That path runs several times per solver
+/// iteration, so an O(n) copy there is a real regression, not a detail.
+TEST(MultiVecIdTest, ConversionCarriesAndSharesIdMap)
+{
+    MockBaseState state("state");
+
+    core::MultiVecCoordId src(core::vec_id::write_access::position);
+    src.setId(&state, core::vec_id::write_access::freePosition);
+
+    // Same vtype, write -> read.
+    core::ConstMultiVecCoordId sameType(src);
+    EXPECT_TRUE(sameType.hasIdMap());
+    EXPECT_EQ(sameType.getDefaultId(), core::vec_id::read_access::position);
+    EXPECT_EQ(sameType.getId(&state), core::vec_id::read_access::freePosition);
+    EXPECT_EQ(static_cast<const void*>(&src.getIdMap()),
+              static_cast<const void*>(&sameType.getIdMap()));
+
+    // Specific vtype -> V_ALL.
+    core::ConstMultiVecId generic(src);
+    EXPECT_TRUE(generic.hasIdMap());
+    EXPECT_EQ(generic.getDefaultId(), core::vec_id::read_access::position);
+    EXPECT_EQ(generic.getId(&state), core::vec_id::read_access::freePosition);
+    EXPECT_EQ(static_cast<const void*>(&src.getIdMap()),
+              static_cast<const void*>(&generic.getIdMap()));
+}
+
 } // namespace sofa
