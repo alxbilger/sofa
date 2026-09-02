@@ -430,10 +430,34 @@ TEST(MultiVecIdTest, GetNameAndStreamingWithValidMockState)
     EXPECT_EQ(name.back(), '}');
     EXPECT_NE(name.find("state1"), std::string::npos);
     EXPECT_NE(name.find("state2"), std::string::npos);
+}
+
+/// operator<< is implemented as `out << v.getName()`, so comparing the stream
+/// against getName() only checks the implementation against itself. Pin the
+/// actual format against literals instead, on a single-state map so that the
+/// map's iteration order (by BaseState address) cannot affect the result.
+TEST(MultiVecIdTest, GetNameFormatAndStreaming)
+{
+    MockBaseState state("state1");
+
+    core::MultiVecCoordId coord(core::vec_id::write_access::position);
+    coord.setId(&state, core::vec_id::write_access::freePosition);
+
+    // Entries whose vtype matches the default id are printed by index.
+    EXPECT_EQ(coord.getName(), "{position(V_COORD)[*],3[state1]}");
 
     std::ostringstream ss;
     ss << coord;
-    EXPECT_EQ(ss.str(), name);
+    EXPECT_EQ(ss.str(), "{position(V_COORD)[*],3[state1]}");
+
+    // Entries of a different vtype are printed by full name instead.
+    core::MultiVecId generic(core::vec_id::write_access::position);
+    generic.setId(&state, core::vec_id::write_access::velocity);
+    EXPECT_EQ(generic.getName(), "{position(V_COORD)[*],velocity(V_DERIV)[state1]}");
+
+    std::ostringstream genericStream;
+    genericStream << generic;
+    EXPECT_EQ(genericStream.str(), "{position(V_COORD)[*],velocity(V_DERIV)[state1]}");
 }
 
 TEST(MultiVecIdTest, AccessConversionCompatibility)
