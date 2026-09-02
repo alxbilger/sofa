@@ -26,6 +26,7 @@
 #include <string>
 #include <set>
 #include <sstream>
+#include <type_traits>
 
 namespace sofa
 {
@@ -44,6 +45,49 @@ public:
     core::objectmodel::BaseData* baseWrite(core::VecId) override { return nullptr; }
     const core::objectmodel::BaseData* baseRead(core::ConstVecId) const override { return nullptr; }
 };
+
+// ============================================================================
+// 0. Compile-time conversion and assignment contract
+//
+// TMultiVecId's API surface is mostly a type system: which conversions are
+// implicit, which must stay explicit, and which must not exist at all. None of
+// that is observable from a runtime EXPECT, so it is pinned here. A refactor
+// that silently drops one of these overloads breaks downstream code without
+// touching a single test body.
+// ============================================================================
+
+// A TVecId converts implicitly into the matching TMultiVecId.
+static_assert(std::is_convertible_v<core::VecCoordId, core::MultiVecCoordId>);
+static_assert(std::is_convertible_v<core::VecCoordId, core::ConstMultiVecCoordId>);
+
+// Write access converts implicitly to read access, never the other way round.
+static_assert(std::is_convertible_v<core::MultiVecCoordId, core::ConstMultiVecCoordId>);
+static_assert(std::is_convertible_v<core::MultiVecDerivId, core::ConstMultiVecDerivId>);
+static_assert(std::is_convertible_v<core::MultiMatrixDerivId, core::ConstMultiMatrixDerivId>);
+
+// A specific vtype widens implicitly to the generic V_ALL one.
+static_assert(std::is_convertible_v<core::MultiVecCoordId, core::MultiVecId>);
+static_assert(std::is_convertible_v<core::MultiVecCoordId, core::ConstMultiVecId>);
+static_assert(std::is_convertible_v<core::MultiVecId, core::ConstMultiVecId>);
+
+// Narrowing V_ALL back to a specific vtype stays explicit: the caller has to
+// have checked the type first.
+static_assert(!std::is_convertible_v<core::MultiVecId, core::MultiVecCoordId>);
+static_assert(!std::is_convertible_v<core::ConstMultiVecId, core::ConstMultiVecCoordId>);
+static_assert(std::is_constructible_v<core::MultiVecCoordId, core::MultiVecId>);
+static_assert(std::is_constructible_v<core::ConstMultiVecCoordId, core::ConstMultiVecId>);
+
+// Unrelated vtypes never interconvert.
+static_assert(!std::is_constructible_v<core::MultiVecCoordId, core::MultiVecDerivId>);
+static_assert(!std::is_constructible_v<core::MultiVecDerivId, core::MultiMatrixDerivId>);
+static_assert(!std::is_assignable_v<core::MultiVecCoordId&, core::MultiVecDerivId>);
+
+// Assignment mirrors construction, including the V_ALL -> specific direction.
+static_assert(std::is_assignable_v<core::MultiVecCoordId&, core::VecCoordId>);
+static_assert(std::is_assignable_v<core::ConstMultiVecCoordId&, core::MultiVecCoordId>);
+static_assert(std::is_assignable_v<core::MultiVecId&, core::MultiVecCoordId>);
+static_assert(std::is_assignable_v<core::MultiVecCoordId&, core::MultiVecId>);
+static_assert(std::is_assignable_v<core::ConstMultiVecCoordId&, core::ConstMultiVecId>);
 
 // ============================================================================
 // 1. Generic & Template Specialization Standard Functionality Tests
