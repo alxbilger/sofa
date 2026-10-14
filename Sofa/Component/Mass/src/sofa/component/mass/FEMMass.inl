@@ -45,12 +45,7 @@ FEMMass<TDataTypes, TElementType>::FEMMass()
 template <class TDataTypes, class TElementType>
 void FEMMass<TDataTypes, TElementType>::init()
 {
-    TopologyAccessor::init();
-
-    if (!this->isComponentStateInvalid())
-    {
-        core::behavior::Mass<TDataTypes>::init();
-    }
+    this->wrapperInit();
 
     if (!this->isComponentStateInvalid())
     {
@@ -228,7 +223,7 @@ void FEMMass<TDataTypes, TElementType>::addForce(const core::MechanicalParams* m
 
     auto forceAccessor = sofa::helper::getWriteAccessor(f);
 
-    const auto g = getContext()->getGravity();
+    const auto g = this->getContext()->getGravity();
     Deriv_t<DataTypes> theGravity;
     DataTypes::set( theGravity, g[0], g[1], g[2] );
 
@@ -378,7 +373,7 @@ SReal FEMMass<TDataTypes, TElementType>::getPotentialEnergy(
     SReal potentialEnergy = 0.0;
     auto xAccessor = sofa::helper::getReadAccessor(x);
 
-    const auto g = getContext()->getGravity();
+    const auto g = this->getContext()->getGravity();
     Deriv_t<DataTypes> theGravity;
     DataTypes::set( theGravity, g[0], g[1], g[2] );
 

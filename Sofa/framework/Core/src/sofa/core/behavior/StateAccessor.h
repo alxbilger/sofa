@@ -30,6 +30,13 @@
 namespace sofa::core::behavior
 {
 
+template<class TBaseClass>
+class StateAccessorWrapper : public TBaseClass
+{
+public:
+    SOFA_ABSTRACT_CLASS(StateAccessorWrapper<TBaseClass>, objectmodel::BaseComponent);
+};
+
 /**
  * Base class for components having access to one or more mechanical states, in order to read and/or write state variables.
  * Example: force field, mass, constraints etc

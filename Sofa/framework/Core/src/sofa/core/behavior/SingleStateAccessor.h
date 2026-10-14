@@ -27,6 +27,15 @@
 namespace sofa::core::behavior
 {
 
+template<class TBaseClass, class DataTypes>
+class SingleStateAccessorWrapper : public StateAccessorWrapper<TBaseClass>
+{
+public:
+    SOFA_ABSTRACT_CLASS(
+        SOFA_TEMPLATE2(SingleStateAccessorWrapper, TBaseClass, DataTypes),
+        StateAccessorWrapper<TBaseClass>);
+};
+
 /**
  * Base class for components having access to one mechanical state with a specific template parameter, in order to read
  * and/or write state variables.

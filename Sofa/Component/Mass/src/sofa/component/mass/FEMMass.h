@@ -55,15 +55,13 @@ namespace sofa::component::mass
  */
 template<class TDataTypes, class TElementType>
 class FEMMass :
-    public core::behavior::Mass<TDataTypes>,
-    public virtual sofa::core::behavior::TopologyAccessor
+    public sofa::core::behavior::AddTopologyAccessTo<core::behavior::Mass<TDataTypes>>
 {
 public:
     using DataTypes = TDataTypes;
     using ElementType = TElementType;
-    SOFA_CLASS2(SOFA_TEMPLATE2(FEMMass, DataTypes, ElementType),
-        core::behavior::Mass<TDataTypes>,
-        sofa::core::behavior::TopologyAccessor);
+    SOFA_CLASS(SOFA_TEMPLATE2(FEMMass, DataTypes, ElementType),
+        sofa::core::behavior::TopologyAccessorWrapper<core::behavior::Mass<TDataTypes>>);
 
 protected:
     using FiniteElement = sofa::fem::FiniteElement<ElementType, DataTypes>;
@@ -95,10 +93,9 @@ public:
      * @brief Initializes the component.
      *
      * This method performs several initialization steps:
-     * 1. Initializes the topology accessor.
-     * 2. Initializes the base Mass class.
-     * 3. Validates that a valid nodal mass density is linked.
-     * 4. Computes and assembles the global mass matrix.
+     * 1. Initializes the base Mass class.
+     * 2. Validates that a valid nodal mass density is linked.
+     * 3. Computes and assembles the global mass matrix.
      */
     void init() final;
 
