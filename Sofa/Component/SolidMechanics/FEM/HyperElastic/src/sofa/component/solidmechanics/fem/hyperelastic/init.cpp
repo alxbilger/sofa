@@ -29,6 +29,7 @@ namespace sofa::component::solidmechanics::fem::hyperelastic
     extern void registerMooneyRivlinMaterial(sofa::core::ObjectFactory* factory);
     extern void registerNeoHookeanMaterial(sofa::core::ObjectFactory* factory);
     extern void registerOgdenMaterial(sofa::core::ObjectFactory* factory);
+    extern void registerStableNeoHookeanMaterial(sofa::core::ObjectFactory* factory);
     extern void registerPlasticMaterial(sofa::core::ObjectFactory* factory);
     extern void registerStVenantKirchhoffMaterial(sofa::core::ObjectFactory* factory);
     extern void registerIncompressibleMooneyRivlinMaterial(sofa::core::ObjectFactory* factory);
@@ -63,6 +64,7 @@ void registerObjects(sofa::core::ObjectFactory* factory)
     registerMooneyRivlinMaterial(factory);
     registerNeoHookeanMaterial(factory);
     registerOgdenMaterial(factory);
+    registerStableNeoHookeanMaterial(factory);
     registerPlasticMaterial(factory);
     registerStVenantKirchhoffMaterial(factory);
     registerIncompressibleMooneyRivlinMaterial(factory);

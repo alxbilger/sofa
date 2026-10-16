@@ -42,6 +42,8 @@ set(HEADER_FILES
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/NeoHookeanMaterial.inl
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/OgdenMaterial.h
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/OgdenMaterial.inl
+    ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StableNeoHookeanMaterial.h
+    ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StableNeoHookeanMaterial.inl
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StVenantKirchhoffMaterial.h
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StVenantKirchhoffMaterial.inl
 )
@@ -60,6 +62,7 @@ set(SOURCE_FILES
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/MooneyRivlinMaterial.cpp
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/NeoHookeanMaterial.cpp
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/OgdenMaterial.cpp
+    ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StableNeoHookeanMaterial.cpp
     ${SOFACOMPONENTSOLIDMECHANICSFEMHYPERELASTIC_SOURCE_DIR}/hyperelasticmaterials/StVenantKirchhoffMaterial.cpp
 )
 
