@@ -290,7 +290,10 @@ struct SOFA_CORE_API DrawElementColoredMesh<sofa::geometry::Hexahedron>
             }
         }
 
-        drawTool->drawQuads(renderedPoints, colors);
+        if (!renderedPoints.empty() && !colors.empty())
+        {
+            drawTool->drawQuads(renderedPoints, colors);
+        }
     }
 
 };
